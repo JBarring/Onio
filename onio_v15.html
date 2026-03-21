@@ -1,0 +1,3802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>ONIO</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none;}
+html,body{width:100%;height:100%;overflow:hidden;background:#1a0a00;touch-action:none;}
+
+/* ===== SCREENS ===== */
+.screen{position:absolute;inset:0;display:none;overflow:hidden;}
+.screen.active{display:flex;flex-direction:column;}
+
+/* ===== HOME ===== */
+#home-screen{background:#FFF6E8;align-items:center;justify-content:center;}
+#home-screen::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 10% 10%,rgba(232,160,48,.13) 0%,transparent 55%),
+             radial-gradient(ellipse at 90% 90%,rgba(232,80,40,.09) 0%,transparent 55%),
+             radial-gradient(ellipse at 80% 10%,rgba(160,48,180,.06) 0%,transparent 40%);}
+.bg-monster{position:absolute;opacity:.11;pointer-events:none;animation:bgFloat linear infinite;}
+@keyframes bgFloat{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-16px) rotate(8deg)}}
+.home-monster{font-size:clamp(80px,22vw,118px);animation:wiggle 1s ease-in-out infinite;display:block;position:relative;z-index:1;margin-bottom:-4px;}
+@keyframes wiggle{0%,100%{transform:rotate(-8deg) scale(1)}50%{transform:rotate(8deg) scale(1.06)}}
+.home-logo{font-family:'Fredoka One',cursive;font-size:clamp(66px,19vw,104px);color:#C0560A;
+  text-shadow:4px 4px 0 #FF8C30,8px 8px 0 rgba(192,86,10,.22);letter-spacing:5px;line-height:1;
+  animation:logoBob 2s ease-in-out infinite;position:relative;z-index:1;}
+@keyframes logoBob{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-7px) rotate(1deg)}}
+.home-sub{font-family:'Nunito',sans-serif;font-size:clamp(12px,3.2vw,16px);color:#A07040;font-weight:700;
+  letter-spacing:2.5px;text-transform:uppercase;margin-top:5px;z-index:1;}
+#snark-bubble{font-family:'Nunito',sans-serif;font-size:clamp(12px,3.2vw,15px);color:#C0560A;
+  background:rgba(255,255,255,.9);border:2px solid #E8C070;border-radius:20px;padding:8px 18px;
+  margin-top:14px;z-index:1;text-align:center;max-width:86vw;font-weight:700;
+  min-height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;
+  animation:snarkFade .4s ease;}
+@keyframes snarkFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+#snark-bubble:active{transform:scale(.97);}
+.home-btn-row{display:flex;gap:12px;margin-top:26px;z-index:1;}
+
+/* ===== BUTTONS ===== */
+.big-btn{background:#E8A030;color:white;border:none;font-family:'Fredoka One',cursive;
+  font-size:clamp(20px,5.5vw,26px);padding:14px 40px;border-radius:50px;cursor:pointer;
+  box-shadow:0 6px 0 #B07020,0 10px 20px rgba(232,160,48,.28);letter-spacing:2px;
+  animation:btnpulse 2s ease-in-out infinite;transition:transform .1s,box-shadow .1s;}
+.big-btn.secondary{background:#FFF0D8;color:#C0560A;box-shadow:0 6px 0 #E8C070;
+  font-size:clamp(17px,4.5vw,21px);padding:14px 24px;animation:none;}
+.big-btn.purple{background:#7B2D8B;box-shadow:0 6px 0 #4A1A5A;animation:none;}
+@keyframes btnpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+.big-btn:active{transform:translateY(4px)!important;box-shadow:0 2px 0 #B07020!important;animation:none;}
+.big-btn.secondary:active{box-shadow:0 2px 0 #E8C070!important;}
+.big-btn.purple:active{box-shadow:0 2px 0 #4A1A5A!important;}
+
+/* ===== PROFILE ===== */
+#profile-screen{background:#FFF6E8;}
+.panel-header{padding:20px 20px 16px;display:flex;align-items:center;gap:14px;flex-shrink:0;}
+.panel-header.orange{background:#C0560A;}
+.panel-header.purple{background:#7B2D8B;}
+.panel-back{font-size:22px;cursor:pointer;color:white;font-family:'Fredoka One',cursive;
+  background:rgba(255,255,255,.18);border:none;padding:6px 12px;border-radius:12px;}
+.panel-title{font-family:'Fredoka One',cursive;font-size:26px;color:white;letter-spacing:1px;}
+.panel-body{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:14px;}
+.card{background:white;border-radius:18px;border:1.5px solid #F0D8A0;padding:16px 16px 13px;
+  box-shadow:0 3px 14px rgba(192,86,10,.07);}
+.card-title{font-family:'Fredoka One',cursive;font-size:13px;color:#A07040;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;}
+#profile-token-canvas{display:block;margin:0 auto 8px;border-radius:50%;}
+.stat-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid #F5E8CC;}
+.stat-row:last-child{border-bottom:none;}
+.stat-label{font-family:'Nunito',sans-serif;font-size:14px;color:#A07040;font-weight:700;}
+.stat-value{font-family:'Fredoka One',cursive;font-size:20px;color:#C0560A;}
+#roast-box{background:#FFF0D8;border-radius:14px;padding:13px 16px;font-family:'Nunito',sans-serif;
+  font-size:15px;color:#C0560A;font-weight:700;line-height:1.5;text-align:center;
+  border:1.5px dashed #E8C070;cursor:pointer;transition:background .2s;position:relative;}
+#roast-box::after{content:'(tap for more)';display:block;font-size:11px;color:#C09060;margin-top:4px;font-weight:400;font-style:italic;}
+#roast-box:active{background:#FFE8C0;}
+.share-row{display:flex;gap:10px;}
+.share-btn{flex:1;background:#E8A030;color:white;border:none;font-family:'Fredoka One',cursive;
+  font-size:17px;padding:13px;border-radius:14px;cursor:pointer;box-shadow:0 4px 0 #B07020;letter-spacing:1px;}
+.share-btn:active{transform:translateY(3px);box-shadow:none;}
+.share-btn.secondary{background:#FFF0D8;color:#C0560A;box-shadow:0 4px 0 #E8C070;}
+
+/* ===== STORE ===== */
+#store-screen{background:#FFF6E8;}
+.store-snark{background:#7B2D8B;color:white;font-family:'Nunito',sans-serif;font-weight:700;
+  font-size:clamp(12px,3.2vw,14px);padding:9px 18px;text-align:center;flex-shrink:0;letter-spacing:.3px;}
+.store-section{font-family:'Fredoka One',cursive;font-size:13px;color:#A07040;letter-spacing:1.5px;text-transform:uppercase;padding:0 2px;}
+.store-item{background:white;border-radius:18px;border:1.5px solid #F0D8A0;padding:15px 14px;
+  display:flex;align-items:center;gap:12px;cursor:pointer;position:relative;
+  box-shadow:0 3px 14px rgba(0,0,0,.05);transition:transform .1s,box-shadow .1s;overflow:hidden;}
+.store-item:active{transform:scale(.98);box-shadow:0 1px 6px rgba(0,0,0,.08);}
+.store-item.featured{border-color:#7B2D8B;border-width:2px;}
+.store-badge{position:absolute;top:0;right:0;background:#7B2D8B;color:white;
+  font-family:'Fredoka One',cursive;font-size:11px;padding:4px 10px;border-radius:0 16px 0 12px;letter-spacing:1px;}
+.store-icon{font-size:34px;flex-shrink:0;}
+.store-info{flex:1;}
+.store-name{font-family:'Fredoka One',cursive;font-size:17px;color:#333;margin-bottom:3px;}
+.store-desc{font-family:'Nunito',sans-serif;font-size:13px;color:#777;font-weight:700;line-height:1.4;}
+.store-note{color:#BFAB8A;font-weight:400;font-style:italic;}
+.store-price-col{text-align:right;flex-shrink:0;}
+.store-price{font-family:'Fredoka One',cursive;font-size:20px;color:#7B2D8B;}
+.store-stock{font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;color:#BFAB8A;margin-top:2px;}
+.store-stock.owned{color:#7B2D8B;}
+
+/* ===== GAME ===== */
+#game-screen{background:#FFF6E8;}
+#game-screen::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 20% 20%,rgba(232,160,48,.07) 0%,transparent 50%),
+             radial-gradient(circle at 80% 80%,rgba(232,80,40,.05) 0%,transparent 50%);}
+#dtimer-wrap{position:absolute;top:0;left:0;right:0;height:5px;z-index:11;background:rgba(0,0,0,.08);display:none;}
+#dtimer-bar{height:100%;background:linear-gradient(90deg,#4CAF50,#FFEB3B,#F44336);width:100%;transition:width .1s linear;}
+#hud{width:100%;padding:14px 16px 6px;display:flex;justify-content:space-between;align-items:center;z-index:10;pointer-events:none;flex-shrink:0;}
+#level-pill{font-family:'Fredoka One',cursive;font-size:16px;color:white;background:#C0560A;padding:4px 14px;border-radius:20px;letter-spacing:1px;}
+#skip-pill{display:none;font-family:'Fredoka One',cursive;font-size:13px;color:white;background:#7B2D8B;padding:3px 10px;border-radius:14px;}
+#msg-bar{width:100%;text-align:center;padding:0 16px;z-index:10;pointer-events:none;flex-shrink:0;margin-top:2px;}
+#msg-text{font-family:'Fredoka One',cursive;font-size:clamp(17px,5.2vw,24px);color:#C0560A;
+  background:rgba(255,255,255,.92);padding:6px 20px;border-radius:25px;border:2.5px solid #E8C070;
+  box-shadow:0 3px 12px rgba(192,86,10,.1);display:inline-block;}
+#arena{flex:1;width:100%;position:relative;overflow:hidden;z-index:1;}
+
+/* Onio */
+#onio{position:absolute;font-size:72px;cursor:pointer;z-index:5;line-height:1;
+  transition:left .18s cubic-bezier(.4,2,.6,1),top .18s cubic-bezier(.4,2,.6,1);transform-origin:center bottom;}
+.decoy{position:absolute;font-size:72px;cursor:pointer;z-index:4;line-height:1;animation:decoyFloat .9s ease-in-out infinite alternate;}
+@keyframes decoyFloat{from{transform:translateY(0)}to{transform:translateY(-7px)}}
+
+/* speech */
+.speech{position:absolute;background:white;border:2.5px solid #555;border-radius:14px;
+  padding:7px 14px;font-family:'Fredoka One',cursive;font-size:clamp(12px,3.5vw,15px);
+  color:#333;pointer-events:none;z-index:20;white-space:nowrap;animation:popIn .15s ease;max-width:170px;white-space:normal;line-height:1.3;}
+@keyframes popIn{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+.speech::after{content:'';position:absolute;bottom:-11px;left:16px;border:7px solid transparent;border-top-color:#555;}
+
+/* ===== INSTRUCTION OVERLAY — tap to dismiss ===== */
+.instr-overlay{display:none;position:absolute;inset:0;background:rgba(0,0,0,.78);z-index:50;
+  flex-direction:column;align-items:center;justify-content:center;gap:14px;cursor:pointer;}
+.instr-overlay.active{display:flex;}
+.instr-icon{font-size:clamp(54px,16vw,76px);animation:iconBounce .6s ease-in-out infinite alternate;}
+@keyframes iconBounce{from{transform:scale(1)}to{transform:scale(1.1)}}
+.instr-title{font-family:'Fredoka One',cursive;font-size:clamp(28px,8vw,42px);color:white;text-align:center;padding:0 20px;}
+.instr-sub{font-family:'Nunito',sans-serif;font-size:clamp(14px,4vw,17px);color:rgba(255,255,255,.72);text-align:center;font-weight:700;padding:0 28px;}
+.instr-tap-hint{font-family:'Nunito',sans-serif;font-size:clamp(12px,3.5vw,14px);color:rgba(255,255,255,.45);
+  margin-top:10px;font-style:italic;animation:blink 1.2s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:.4}50%{opacity:1}}
+
+/* hold ring */
+#hold-ring-wrap{display:none;position:absolute;pointer-events:none;z-index:6;}
+#hold-ring-wrap.active{display:block;}
+
+/* shake */
+#shake-ind{display:none;position:absolute;inset:0;background:rgba(232,160,48,.13);z-index:6;pointer-events:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;}
+#shake-ind.active{display:flex;}
+.shake-txt{font-family:'Fredoka One',cursive;font-size:clamp(34px,11vw,52px);color:#C0560A;text-align:center;animation:shakeT .22s ease-in-out infinite;}
+@keyframes shakeT{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+#shake-count{font-family:'Fredoka One',cursive;font-size:clamp(44px,14vw,64px);color:#E8A030;}
+
+/* drag zone */
+#drag-zone{display:none;position:absolute;border:3px dashed #E8A030;border-radius:20px;z-index:4;pointer-events:none;background:rgba(232,160,48,.09);}
+#drag-zone.active{display:block;animation:dzPulse 1s ease-in-out infinite alternate;}
+@keyframes dzPulse{from{border-color:#E8A030;background:rgba(232,160,48,.09)}to{border-color:#FF8C30;background:rgba(232,160,48,.18)}}
+.zone-lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:clamp(12px,3.5vw,15px);color:#E8A030;letter-spacing:1px;}
+
+/* MIC challenge */
+#mic-challenge{display:none;position:absolute;inset:0;z-index:6;pointer-events:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+#mic-challenge.active{display:flex;}
+#mic-onio{font-size:clamp(64px,20vw,96px);transition:transform .1s;}
+#mic-meter-wrap{width:clamp(180px,60vw,260px);height:14px;background:rgba(0,0,0,.1);border-radius:8px;overflow:hidden;}
+#mic-meter-bar{height:100%;width:0%;background:linear-gradient(90deg,#4CAF50,#E8A030,#E84030);border-radius:8px;transition:width .08s linear;}
+#mic-status{font-family:'Fredoka One',cursive;font-size:clamp(14px,4vw,18px);color:#C0560A;text-align:center;}
+.mic-ripple{position:absolute;border-radius:50%;border:3px solid rgba(232,160,48,.55);pointer-events:none;z-index:6;animation:ripO .5s ease forwards;}
+@keyframes ripO{from{transform:scale(.3);opacity:1}to{transform:scale(2.5);opacity:0}}
+
+/* fake pause */
+#fake-pause{display:none;position:absolute;inset:0;background:rgba(0,0,0,.8);z-index:60;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
+#fake-pause.active{display:flex;}
+.pause-title{font-family:'Fredoka One',cursive;font-size:clamp(38px,12vw,58px);color:white;letter-spacing:4px;}
+.pause-sub{font-family:'Nunito',sans-serif;font-size:16px;color:rgba(255,255,255,.5);font-weight:700;}
+
+/* fake text */
+#fake-text{display:none;position:absolute;inset:0;background:#111;z-index:55;flex-direction:column;}
+#fake-text.active{display:flex;}
+.ft-bar{background:#1a1a1a;padding:14px 16px 10px;display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.ft-av{width:40px;height:40px;border-radius:50%;background:#E8A030;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+.ft-name{font-family:'Nunito',sans-serif;font-weight:900;color:white;font-size:16px;}
+.ft-online{font-size:11px;color:#4CAF50;font-family:'Nunito',sans-serif;font-weight:700;}
+.ft-msgs{flex:1;padding:14px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;}
+.ft-row{display:flex;align-items:flex-end;gap:8px;}
+.ft-row.me{flex-direction:row-reverse;}
+.ft-bub{max-width:72%;padding:10px 14px;border-radius:18px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;line-height:1.4;}
+.ft-row.them .ft-bub{background:#2a2a2a;color:white;border-bottom-left-radius:4px;}
+.ft-row.me .ft-bub{background:#E8A030;color:white;border-bottom-right-radius:4px;}
+.ft-typing{display:flex;align-items:center;gap:5px;padding:10px 14px;background:#2a2a2a;border-radius:18px;border-bottom-left-radius:4px;width:fit-content;}
+.ft-typing span{width:7px;height:7px;border-radius:50%;background:#888;animation:tdot 1.2s ease-in-out infinite;}
+.ft-typing span:nth-child(2){animation-delay:.2s;}
+.ft-typing span:nth-child(3){animation-delay:.4s;}
+@keyframes tdot{0%,80%,100%{transform:scale(1);opacity:.4}40%{transform:scale(1.3);opacity:1}}
+#ft-close-wrap{padding:14px;flex-shrink:0;}
+#ft-close{width:100%;background:#E8A030;border:none;color:white;font-family:'Fredoka One',cursive;font-size:18px;padding:14px;border-radius:14px;cursor:pointer;box-shadow:0 4px 0 #B07020;}
+#ft-close:active{transform:translateY(3px);box-shadow:none;}
+
+/* level splash */
+#lvl-splash{display:none;position:absolute;inset:0;z-index:70;align-items:center;justify-content:center;background:rgba(192,86,10,.12);backdrop-filter:blur(3px);}
+#lvl-splash.active{display:flex;}
+#splash-box{padding:22px 34px;background:white;border-radius:22px;box-shadow:0 8px 40px rgba(192,86,10,.2);
+  font-family:'Fredoka One',cursive;font-size:clamp(30px,10vw,50px);color:#C0560A;text-align:center;
+  animation:splashPop .4s cubic-bezier(.4,2,.6,1);line-height:1.2;}
+@keyframes splashPop{from{transform:scale(.3) rotate(-8deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+
+/* progress bar */
+
+/* miss/hit fx */
+.miss-flash{position:absolute;border-radius:50%;background:rgba(232,80,40,.28);pointer-events:none;z-index:15;animation:missO .4s ease forwards;}
+@keyframes missO{from{transform:scale(0);opacity:1}to{transform:scale(3);opacity:0}}
+.hit-flash{position:absolute;border-radius:50%;background:rgba(232,160,48,.35);pointer-events:none;z-index:15;animation:hitO .3s ease forwards;}
+@keyframes hitO{from{transform:scale(0);opacity:1}to{transform:scale(2.5);opacity:0}}
+
+/* ===== DEATH SCREEN ===== */
+#death-screen{background:#FFF6E8;align-items:center;justify-content:flex-start;overflow-y:auto;}
+#death-screen::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 35%,rgba(192,86,10,.08) 0%,transparent 60%);pointer-events:none;}
+.death-inner{display:flex;flex-direction:column;align-items:center;gap:13px;padding:26px 22px 34px;width:100%;position:relative;z-index:1;}
+.death-emoji{font-size:clamp(52px,16vw,78px);animation:deathWob 1s ease-in-out infinite;}
+@keyframes deathWob{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+.death-title{font-family:'Fredoka One',cursive;font-size:clamp(32px,10vw,48px);color:#C0560A;text-align:center;line-height:1.1;}
+.death-lvl{font-family:'Nunito',sans-serif;font-size:clamp(14px,4vw,17px);color:#A07040;font-weight:700;text-align:center;}
+.death-roast{font-family:'Nunito',sans-serif;font-size:clamp(13px,3.5vw,15px);color:#C0560A;font-weight:700;text-align:center;
+  background:rgba(255,255,255,.86);border:1.5px solid #E8C070;border-radius:16px;padding:10px 18px;max-width:85vw;line-height:1.5;}
+.death-btn-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;width:100%;}
+.death-btn{background:#E8A030;color:white;border:none;font-family:'Fredoka One',cursive;font-size:clamp(16px,4.5vw,19px);
+  padding:13px 26px;border-radius:40px;cursor:pointer;box-shadow:0 5px 0 #B07020;letter-spacing:1px;}
+.death-btn.secondary{background:#FFF0D8;color:#C0560A;box-shadow:0 5px 0 #E8C070;}
+.death-btn:active{transform:translateY(3px);box-shadow:none!important;}
+.token-lbl{font-family:'Nunito',sans-serif;font-size:12px;color:#C09060;font-style:italic;}
+
+/* ===== PURCHASE MODAL ===== */
+#pm-modal{display:none;position:fixed;inset:0;z-index:300;align-items:center;justify-content:center;background:rgba(0,0,0,.62);}
+#pm-modal.active{display:flex;}
+.pm-box{background:white;border-radius:24px;padding:26px 24px 20px;max-width:88vw;width:340px;text-align:center;
+  box-shadow:0 16px 48px rgba(0,0,0,.25);animation:splashPop .3s cubic-bezier(.4,2,.6,1);}
+.pm-onio{font-size:50px;margin-bottom:4px;animation:wiggle 1s ease-in-out infinite;}
+.pm-title{font-family:'Fredoka One',cursive;font-size:24px;color:#333;margin-bottom:3px;}
+.pm-snark{font-family:'Nunito',sans-serif;font-size:14px;color:#7B2D8B;font-weight:700;font-style:italic;margin-bottom:11px;}
+.pm-item{font-family:'Fredoka One',cursive;font-size:18px;color:#7B2D8B;}
+.pm-desc{font-family:'Nunito',sans-serif;font-size:13px;color:#888;font-weight:700;margin-top:5px;line-height:1.4;}
+.pm-btns{display:flex;gap:10px;margin-top:16px;}
+.pm-btn{flex:1;background:#7B2D8B;color:white;border:none;font-family:'Fredoka One',cursive;font-size:17px;
+  padding:13px 0;border-radius:40px;cursor:pointer;box-shadow:0 5px 0 #4A1A5A;letter-spacing:1px;}
+.pm-btn.secondary{background:#F5EEF8;color:#7B2D8B;box-shadow:0 5px 0 #DDD0E8;}
+.pm-btn:active{transform:translateY(3px);box-shadow:none;}
+.pm-note{font-family:'Nunito',sans-serif;font-size:11px;color:#CCC;margin-top:13px;font-style:italic;}
+
+/* skip banner */
+#skip-banner{display:none;position:absolute;inset:0;z-index:80;align-items:center;justify-content:center;background:rgba(123,45,139,.88);}
+#skip-banner.active{display:flex;}
+.skip-box{background:white;border-radius:22px;padding:26px 30px;text-align:center;max-width:85vw;}
+.skip-lvl{font-family:'Fredoka One',cursive;font-size:28px;color:#7B2D8B;margin-bottom:5px;}
+.skip-snark{font-family:'Nunito',sans-serif;font-size:13px;color:#999;font-style:italic;}
+
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#222;color:white;
+  font-family:'Nunito',sans-serif;font-weight:700;padding:11px 22px;border-radius:30px;
+  font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:400;white-space:nowrap;}
+#toast.show{opacity:1;}
+/* ===== CHAOS SYSTEM ===== */
+@keyframes glitch {
+  0%   { transform: translate(0,0) skew(0deg); filter: none; }
+  10%  { transform: translate(-3px,1px) skew(-1deg); filter: hue-rotate(40deg); }
+  20%  { transform: translate(3px,-1px) skew(1deg); filter: hue-rotate(-40deg); }
+  30%  { transform: translate(-2px,2px); filter: saturate(3) brightness(1.1); }
+  40%  { transform: translate(2px,-2px) skew(0.5deg); filter: none; }
+  50%  { transform: translate(-1px,1px); }
+  60%  { transform: translate(0,0); filter: hue-rotate(20deg); }
+  100% { transform: translate(0,0); filter: none; }
+}
+@keyframes screenShake {
+  0%,100% { transform: translate(0,0); }
+  15%  { transform: translate(-4px, 2px); }
+  30%  { transform: translate(4px, -2px); }
+  45%  { transform: translate(-3px, -1px); }
+  60%  { transform: translate(3px, 1px); }
+  75%  { transform: translate(-2px, 2px); }
+}
+@keyframes chromaShift {
+  0%,100%{text-shadow: 2px 0 #f00, -2px 0 #00f;}
+  50%{text-shadow: -2px 0 #f00, 2px 0 #00f;}
+}
+.chaos-glitch { animation: glitch 0.4s steps(1) !important; }
+.chaos-shake  { animation: screenShake 0.3s ease !important; }
+
+/* chaos tint overlay */
+#chaos-tint {
+  position:absolute; inset:0; pointer-events:none; z-index:8;
+  opacity:0; transition:opacity .5s;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(232,40,40,0.08) 100%);
+}
+#chaos-tint.active { opacity:1; }
+
+/* glitch lines overlay */
+#glitch-lines {
+  position:absolute; inset:0; pointer-events:none; z-index:9;
+  opacity:0;
+}
+#glitch-lines.active { opacity:1; animation: glitchLines .15s steps(1) infinite; }
+@keyframes glitchLines {
+  0%  { background: linear-gradient(transparent 47%, rgba(255,0,0,.06) 48%, rgba(255,0,0,.06) 49%, transparent 50%); }
+  33% { background: linear-gradient(transparent 28%, rgba(0,0,255,.05) 29%, rgba(0,0,255,.05) 30%, transparent 31%, transparent 65%, rgba(255,0,0,.06) 66%, transparent 67%); }
+  66% { background: linear-gradient(transparent 70%, rgba(0,255,200,.05) 71%, transparent 72%); }
+  100%{ background: none; }
+}
+
+/* level pill hidden state */
+#level-pill.hidden-lv { background: #888; cursor: default; }
+#level-pill.hidden-lv::after { content: '???'; }
+/* ===== NUMBER SLAM ===== */
+@keyframes slamIn  { from{opacity:0;transform:scale(1.3)} to{opacity:1;transform:scale(1)} }
+@keyframes slamOut { from{opacity:1;transform:scale(1)} to{opacity:0;transform:scale(0.85)} }
+@keyframes slamNum { from{opacity:0;transform:scale(0.3) rotate(-10deg)} to{opacity:1;transform:scale(1) rotate(0)} }
+
+/* ===== EMOTIONAL MODES ===== */
+/* playful = default orange, affectionate = warm pink, lonely = cool blue-grey */
+body.mode-affectionate #home-screen { background: #FFF0F4; }
+body.mode-affectionate #home-screen::before {
+  background: radial-gradient(ellipse at 50% 30%,rgba(255,180,200,.2) 0%,transparent 60%),
+              radial-gradient(ellipse at 80% 80%,rgba(255,120,160,.08) 0%,transparent 50%);
+}
+body.mode-affectionate .home-logo { color: #C0308A; text-shadow: 4px 4px 0 #FF80B0, 8px 8px 0 rgba(192,48,138,.2); }
+body.mode-affectionate #snark-bubble { border-color: #F0A0C0; color: #A0306A; }
+
+body.mode-lonely #home-screen { background: #F0F2F8; }
+body.mode-lonely #home-screen::before {
+  background: radial-gradient(ellipse at 50% 50%,rgba(100,120,200,.1) 0%,transparent 60%);
+}
+body.mode-lonely .home-logo { color: #4060A0; text-shadow: 4px 4px 0 #8090C0, 8px 8px 0 rgba(64,96,160,.2); }
+body.mode-lonely .home-monster { animation: lonelyWiggle 3s ease-in-out infinite !important; }
+body.mode-lonely #snark-bubble { border-color: #A0B0D0; color: #4060A0; }
+@keyframes lonelyWiggle { 0%,100%{transform:rotate(-3deg) scale(1)} 50%{transform:rotate(3deg) scale(1.01)} }
+
+/* mood pill on home screen */
+#mood-indicator {
+  position: absolute; top: 16px; right: 16px; z-index: 10;
+  font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 700;
+  padding: 4px 10px; border-radius: 12px; opacity: 0.6;
+  pointer-events: none; letter-spacing: 0.5px;
+}
+body.mode-affectionate #mood-indicator { background: #FFD0E0; color: #A0306A; }
+body.mode-lonely #mood-indicator { background: #C8D0E8; color: #4060A0; }
+body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; }
+
+/* weakness warning banner - shows when Onio about to weaponize your weakness */
+#weakness-banner {
+  display: none; position: absolute; bottom: 80px; left: 50%;
+  transform: translateX(-50%); z-index: 30;
+  background: rgba(192,86,10,.92); color: white;
+  font-family: 'Fredoka One', cursive; font-size: clamp(13px,3.5vw,16px);
+  padding: 8px 20px; border-radius: 20px; white-space: nowrap;
+  animation: snarkFade .3s ease;
+}
+#weakness-banner.show { display: block; }
+
+/* return greeting overlay */
+#return-greeting {
+  display: none; position: absolute; inset: 0; z-index: 90;
+  align-items: center; justify-content: center; flex-direction: column;
+  background: rgba(255,246,232,.96); gap: 16px;
+}
+#return-greeting.active { display: flex; }
+.rg-emoji { font-size: clamp(60px,18vw,90px); animation: wiggle 1s ease-in-out infinite; }
+.rg-text { font-family: 'Fredoka One', cursive; font-size: clamp(20px,6vw,28px);
+  color: #C0560A; text-align: center; max-width: 80vw; line-height: 1.3; }
+.rg-sub { font-family: 'Nunito', sans-serif; font-size: clamp(13px,3.5vw,16px);
+  color: #A07040; font-weight: 700; text-align: center; max-width: 75vw; }
+/* ===== TAP SIGN ===== */
+#onio-sign {
+  position: absolute;
+  pointer-events: none;
+  z-index: 22;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  transform-origin: bottom center;
+  animation: signBob 1.2s ease-in-out infinite;
+}
+#onio-sign.active { display: flex; }
+@keyframes signBob { 0%,100%{transform:rotate(-4deg)} 50%{transform:rotate(4deg)} }
+#onio-sign.shake { animation: signShake .35s ease !important; }
+@keyframes signShake { 0%,100%{transform:rotate(0deg)} 20%{transform:rotate(-12deg) scale(1.1)} 40%{transform:rotate(10deg)} 60%{transform:rotate(-8deg)} 80%{transform:rotate(6deg)} }
+.sign-board {
+  background: #FFF8E8;
+  border: 3px solid #8B5E3C;
+  border-radius: 8px;
+  width: 54px; height: 48px;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+}
+.sign-board::before {
+  content: '';
+  position: absolute; inset: 3px;
+  border: 1.5px dashed rgba(139,94,60,0.25);
+  border-radius: 4px;
+  pointer-events: none;
+}
+.sign-number {
+  font-family: 'Fredoka One', cursive;
+  font-size: 26px;
+  color: #C0560A;
+  line-height: 1;
+  transition: transform 0.15s cubic-bezier(.4,2,.6,1);
+}
+.sign-number.bump { animation: signBump .2s cubic-bezier(.4,2,.6,1); }
+@keyframes signBump { 0%{transform:scale(1)} 50%{transform:scale(1.5)} 100%{transform:scale(1)} }
+.sign-number.erasing { animation: signErase .4s ease forwards; }
+@keyframes signErase { 0%{opacity:1;transform:scaleX(1)} 40%{opacity:.2;transform:scaleX(0.1)} 60%{opacity:0;} 100%{opacity:0;} }
+.sign-number.writing { animation: signWrite .3s ease forwards; }
+@keyframes signWrite { 0%{opacity:0;transform:scale(0.3)} 100%{opacity:1;transform:scale(1)} }
+.sign-stick {
+  width: 4px; height: 18px;
+  background: #8B5E3C;
+  border-radius: 2px;
+}
+/* eraser dust particles */
+.chalk-dust {
+  position: absolute;
+  pointer-events: none;
+  z-index: 23;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #E8C070;
+  animation: dustFloat .6s ease forwards;
+}
+@keyframes dustFloat { 0%{opacity:.9;transform:translate(0,0) scale(1)} 100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(0.3)} }
+
+/* ===== HIT FEEDBACK ===== */
+.hit-burst {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 25;
+  animation: burstOut .4s cubic-bezier(.2,.8,.4,1) forwards;
+}
+@keyframes burstOut { 0%{transform:scale(0);opacity:1} 100%{transform:scale(4);opacity:0} }
+.hit-star {
+  position: absolute;
+  pointer-events: none;
+  z-index: 25;
+  font-size: 22px;
+  animation: starFly .6s cubic-bezier(.2,.8,.3,1) forwards;
+}
+@keyframes starFly { 0%{transform:translate(0,0) scale(0) rotate(0deg);opacity:1} 100%{transform:translate(var(--sx),var(--sy)) scale(1.2) rotate(var(--sr));opacity:0} }
+.knockout-flash {
+  position: absolute; inset: 0;
+  background: white;
+  pointer-events: none;
+  z-index: 30;
+  opacity: 0;
+  animation: koFlash .35s ease forwards;
+}
+@keyframes koFlash { 0%{opacity:0} 15%{opacity:.9} 100%{opacity:0} }
+.onio-ko {
+  animation: onioKO .5s cubic-bezier(.4,2,.6,1) forwards !important;
+}
+@keyframes onioKO { 0%{transform:scale(1) rotate(0deg)} 30%{transform:scale(1.4) rotate(-15deg)} 60%{transform:scale(0.7) rotate(20deg) translateY(-20px)} 100%{transform:scale(1) rotate(0deg)} }
+
+/* ===== CHEEKY DEFEAT ===== */
+#cheeky-moment {
+  display: none; position: absolute; inset: 0; z-index: 65;
+  align-items: center; justify-content: center; flex-direction: column;
+  gap: 12px; background: rgba(255,246,232,.96);
+}
+#cheeky-moment.active { display: flex; }
+.cheeky-onio { font-size: clamp(60px,18vw,90px); animation: wiggle .8s ease-in-out infinite; }
+.cheeky-line { font-family: 'Fredoka One', cursive; font-size: clamp(18px,5.5vw,26px);
+  color: #C0560A; text-align: center; max-width: 82vw; line-height: 1.3; }
+.cheeky-sub { font-family: 'Nunito', sans-serif; font-size: clamp(12px,3.5vw,15px);
+  color: #A07040; font-weight: 700; text-align: center; max-width: 75vw; }
+
+/* ===== LEVEL CLEAR ===== */
+#level-clear {
+  display: none; position: absolute; inset: 0; z-index: 68;
+  align-items: center; justify-content: center; flex-direction: column; gap: 10px;
+  background: rgba(255,246,232,.0); pointer-events: none;
+}
+#level-clear.active { display: flex; }
+.lc-text {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(44px,13vw,68px);
+  color: #C0560A;
+  animation: lcPop .4s cubic-bezier(.4,2,.6,1);
+  text-shadow: 3px 3px 0 rgba(232,160,48,.4);
+}
+@keyframes lcPop { from{transform:scale(0) rotate(-10deg);opacity:0} to{transform:scale(1) rotate(0);opacity:1} }
+.lc-sub {
+  font-family: 'Nunito', sans-serif; font-size: clamp(14px,4vw,18px);
+  color: #A07040; font-weight: 700; font-style: italic;
+  animation: lcFadeIn .3s ease .2s both;
+}
+@keyframes lcFadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="home-screen" class="screen active">
+  <div id="mood-indicator"></div>
+  <div id="return-greeting">
+    <div class="rg-emoji">😈</div>
+    <div class="rg-text" id="rg-text">oh. you came back.</div>
+    <div class="rg-sub" id="rg-sub">i wasn't waiting or anything.</div>
+    <button class="big-btn" onclick="dismissReturnGreeting()" style="margin-top:8px;">let's go 😤</button>
+  </div>
+  <span class="home-monster">😈</span>
+  <div class="home-logo">ONIO</div>
+  <div class="home-sub">the little menace</div>
+  <div id="snark-bubble" onclick="nextSnark()">Loading sass...</div>
+  <div class="home-btn-row">
+    <button class="big-btn" onclick="startGame()">PLAY</button>
+    <button class="big-btn secondary" onclick="showScreen('profile-screen')">👤 ME</button>
+  </div>
+  <button class="big-btn secondary" onclick="showScreen('store-screen')" style="margin-top:11px;z-index:1;font-size:clamp(16px,4.5vw,19px);padding:11px 30px;">🛒 STORE</button>
+</div>
+
+<!-- PROFILE -->
+<div id="profile-screen" class="screen">
+  <div class="panel-header orange">
+    <button class="panel-back" onclick="showScreen('home-screen')">← Back</button>
+    <div class="panel-title">😈 Your Stats</div>
+  </div>
+  <div class="panel-body">
+    <div class="card">
+      <div class="card-title">Best Run</div>
+      <canvas id="profile-token-canvas" width="140" height="140"></canvas>
+      <div style="font-family:'Fredoka One',cursive;font-size:13px;color:#C09060;text-align:center;margin-top:4px;" id="profile-token-lbl">No runs yet</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Lifetime Stats</div>
+      <div class="stat-row"><span class="stat-label">Best Level</span><span class="stat-value" id="stat-best">—</span></div>
+      <div class="stat-row"><span class="stat-label">Total Runs</span><span class="stat-value" id="stat-runs">0</span></div>
+      <div class="stat-row"><span class="stat-label">Total Hits</span><span class="stat-value" id="stat-hits">0</span></div>
+      <div class="stat-row"><span class="stat-label">Deaths</span><span class="stat-value" id="stat-deaths">0</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Onio's Verdict</div>
+      <div id="roast-box" onclick="nextRoast()">...</div>
+    </div>
+    <div class="share-row">
+      <button class="share-btn" onclick="saveProfileToken()">💾 Save Token</button>
+      <button class="share-btn secondary" onclick="shareScore()">🔗 Share</button>
+    </div>
+    <div style="height:10px;"></div>
+  </div>
+</div>
+
+<!-- STORE -->
+<div id="store-screen" class="screen">
+  <div class="panel-header purple">
+    <button class="panel-back" onclick="showScreen('home-screen')">← Back</button>
+    <div class="panel-title">🛒 Onio's Store</div>
+  </div>
+  <div class="store-snark" id="store-snark">oh good. you found this.</div>
+  <div class="panel-body" style="gap:12px;">
+    <div class="store-section">⚡ Skip Packs</div>
+    <div class="store-item" onclick="attemptPurchase('skip1')">
+      <div class="store-icon">🎲</div>
+      <div class="store-info">
+        <div class="store-name">Lucky Skip</div>
+        <div class="store-desc">Start 3–7 levels ahead next game.<br><span class="store-note">Onio picks the number. Randomly.</span></div>
+      </div>
+      <div class="store-price-col"><div class="store-price">$0.99</div><div class="store-stock" id="stk-skip1">× 0</div></div>
+    </div>
+    <div class="store-item" onclick="attemptPurchase('skip2')">
+      <div class="store-icon">🚀</div>
+      <div class="store-info">
+        <div class="store-name">Big Skip</div>
+        <div class="store-desc">Start 8–15 levels ahead next game.<br><span class="store-note">More chaos, sooner. Your call.</span></div>
+      </div>
+      <div class="store-price-col"><div class="store-price">$1.99</div><div class="store-stock" id="stk-skip2">× 0</div></div>
+    </div>
+    <div class="store-item featured" onclick="attemptPurchase('skip3')">
+      <div class="store-badge">BEST VALUE</div>
+      <div class="store-icon">🌪️</div>
+      <div class="store-info">
+        <div class="store-name">Chaos Bundle</div>
+        <div class="store-desc">3× Lucky + 1× Big Skip.<br><span class="store-note">4 uses. Onio is annoyed you got this.</span></div>
+      </div>
+      <div class="store-price-col"><div class="store-price">$2.99</div><div class="store-stock" id="stk-skip3">× 0</div></div>
+    </div>
+    <div class="store-section" style="margin-top:4px;">❤️ Support</div>
+    <div class="store-item" onclick="attemptPurchase('donate')">
+      <div class="store-icon">☕</div>
+      <div class="store-info">
+        <div class="store-name">Buy Onio a Coffee</div>
+        <div class="store-desc">Pure donation. No benefit.<br><span class="store-note">He'll use it to troll you harder.</span></div>
+      </div>
+      <div class="store-price-col"><div class="store-price">$1.99</div><div class="store-stock" style="color:#E8A030;">♾</div></div>
+    </div>
+    <div style="height:20px;"></div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="game-screen" class="screen">
+  <div id="dtimer-wrap"><div id="dtimer-bar"></div></div>
+  <div id="hud">
+    <div id="level-pill">LVL 1</div>
+    <div id="skip-pill">⚡ 0</div>
+  </div>
+  <div id="msg-bar"><div id="msg-text">TAP ME!</div></div>
+  <div id="arena">
+    <div id="onio">😈</div>
+
+    <!-- Tap sign — Onio holds this showing remaining taps -->
+    <div id="onio-sign">
+      <div class="sign-board"><div class="sign-number" id="sign-number">3</div></div>
+      <div class="sign-stick"></div>
+    </div>
+
+    <!-- Level clear celebration -->
+    <div id="level-clear">
+      <div class="lc-text" id="lc-text">LEVEL UP!</div>
+      <div class="lc-sub" id="lc-sub">getting harder...</div>
+    </div>
+
+    <!-- Cheeky defeat moment before transitioning -->
+    <div id="cheeky-moment">
+      <div class="cheeky-onio">😈</div>
+      <div class="cheeky-line" id="cheeky-line">ok fine. you got me.</div>
+      <div class="cheeky-sub" id="cheeky-sub">...this time.</div>
+    </div>
+
+    <!-- Instructions — tap to dismiss -->
+    <div class="instr-overlay" id="instr-hold">
+      <div class="instr-icon">☝️</div>
+      <div class="instr-title">HOLD IT!</div>
+      <div class="instr-sub">Press and hold Onio until the ring fills completely</div>
+      <div class="instr-tap-hint">tap anywhere to start</div>
+    </div>
+    <div class="instr-overlay" id="instr-drag">
+      <div class="instr-icon">👆</div>
+      <div class="instr-title">DRAG ME!</div>
+      <div class="instr-sub">Drag Onio into the glowing drop zone</div>
+      <div class="instr-tap-hint">tap anywhere to start</div>
+    </div>
+    <div class="instr-overlay" id="instr-shake">
+      <div class="instr-icon">📱</div>
+      <div class="instr-title">SHAKE IT!</div>
+      <div class="instr-sub">Shake your phone hard to bonk Onio</div>
+      <div class="instr-tap-hint">tap anywhere to start</div>
+    </div>
+    <div class="instr-overlay" id="instr-blow">
+      <div class="instr-icon">💨</div>
+      <div class="instr-title">BLOW!</div>
+      <div class="instr-sub">Blow into your mic — watch the meter fill up</div>
+      <div class="instr-tap-hint">tap anywhere to start</div>
+    </div>
+
+    <!-- hold ring -->
+    <div id="hold-ring-wrap">
+      <svg width="110" height="110" viewBox="0 0 110 110">
+        <circle cx="55" cy="55" r="48" fill="none" stroke="rgba(232,160,48,.2)" stroke-width="8"/>
+        <circle id="hold-arc" cx="55" cy="55" r="48" fill="none" stroke="#E8A030" stroke-width="8"
+          stroke-linecap="round" stroke-dasharray="301.6" stroke-dashoffset="301.6"
+          transform="rotate(-90 55 55)" style="transition:stroke-dashoffset .05s linear;"/>
+      </svg>
+    </div>
+
+    <!-- shake counter -->
+    <div id="shake-ind">
+      <div class="shake-txt">SHAKE! 📳</div>
+      <div id="shake-count">0</div>
+    </div>
+
+    <!-- mic challenge UI -->
+    <div id="mic-challenge">
+      <div id="mic-onio">😈</div>
+      <div id="mic-meter-wrap"><div id="mic-meter-bar"></div></div>
+      <div id="mic-status">keep blowing...</div>
+    </div>
+
+    <!-- drag zone -->
+    <div id="drag-zone"><div class="zone-lbl">DROP HERE 🎯</div></div>
+
+    <!-- fake pause -->
+    <div id="fake-pause">
+      <div class="pause-title">⏸ PAUSED</div>
+      <div class="pause-sub">jk lol</div>
+      <button class="big-btn" id="resume-btn" style="margin-top:10px;font-size:18px;padding:12px 30px;animation:none;">ok fine, unpause 🙄</button>
+    </div>
+
+    <!-- fake text -->
+    <div id="fake-text">
+      <div class="ft-bar">
+        <div class="ft-av">😈</div>
+        <div><div class="ft-name">Onio</div><div class="ft-online">● online</div></div>
+      </div>
+      <div class="ft-msgs" id="ft-msgs"></div>
+      <div id="ft-close-wrap"><button id="ft-close">ok fine, I'm back 😤</button></div>
+    </div>
+
+    <!-- level splash -->
+    <div id="lvl-splash"><div id="splash-box">LEVEL 2!<br>😈</div></div>
+
+    <!-- skip banner (inside game screen) -->
+    <div id="skip-banner">
+      <div class="skip-box">
+        <div style="font-size:52px;margin-bottom:8px;">🎲</div>
+        <div class="skip-lvl" id="skip-lvl-text">Starting at Level 5!</div>
+        <div class="skip-snark" id="skip-snark-text">you paid for this, by the way</div>
+        <button class="big-btn purple" style="margin-top:18px;font-size:20px;padding:13px 36px;" onclick="dismissSkipBanner()">LET'S GO 😤</button>
+      </div>
+    </div>
+
+    <div id="chaos-tint"></div>
+    <div id="glitch-lines"></div>
+    <div id="weakness-banner"></div>
+  </div>
+</div>
+
+<!-- DEATH -->
+<div id="death-screen" class="screen">
+  <div class="death-inner">
+    <div class="death-emoji" id="death-emoji">💀</div>
+    <div class="death-title">ONIO WINS</div>
+    <div class="death-lvl" id="death-lvl">You reached Level 4</div>
+    <div class="death-roast" id="death-roast"></div>
+    <canvas id="death-token-canvas" width="160" height="160"></canvas>
+    <div class="token-lbl" id="death-token-lbl"></div>
+    <div class="death-btn-row">
+      <button class="death-btn" onclick="saveCanvas('death-token-canvas')">💾 Token</button>
+      <button class="death-btn secondary" onclick="shareScore()">🔗 Share</button>
+    </div>
+    <button class="death-btn" onclick="startGame()" style="margin-top:0;">Try Again 😤</button>
+    <button class="death-btn secondary" onclick="showScreen('home-screen')" style="margin-top:0;">🏠 Home</button>
+  </div>
+</div>
+
+<!-- PURCHASE MODAL -->
+<div id="pm-modal">
+  <div class="pm-box">
+    <div class="pm-onio">😈</div>
+    <div class="pm-title" id="pm-title">You sure?</div>
+    <div class="pm-snark" id="pm-snark"></div>
+    <div class="pm-item" id="pm-item"></div>
+    <div class="pm-desc" id="pm-desc"></div>
+    <div class="pm-btns">
+      <button class="pm-btn secondary" id="pm-cancel">nevermind</button>
+      <button class="pm-btn" id="pm-confirm">confirm 💸</button>
+    </div>
+    <div class="pm-note">💳 Payments simulated — real IAP coming soon.</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+
+// ============================================================
+// DEBUG FLAGS — change these to test specific behaviours
+// ============================================================
+const DEBUG = {
+  TAP_ONLY:        false, // true = only tap challenge, ignore all others
+  FORCE_TAP_COUNT: null,  // null = random | set integer e.g. 3 to always use 3 taps
+  SHOW_HIT_COUNT:  true,  // always keep remaining count visible in message bar
+  FAST_TRANSITIONS:false, // true = skip cheeky defeat + level clear animations
+};
+
+// ============================================================
+// CONTENT
+// ============================================================
+const HOME_SNARKS = [
+  "oh you're back. brave.","you lost last time. just saying.",
+  "i'm not going to make this easy for you.","tapping me is a privilege, not a right.",
+  "statistically, you will lose. again.","the fact that you're here means you have nothing better to do.",
+  "i've been waiting. not patiently.","lol you came back.",
+  "your high score is embarrassing and I will not explain further.",
+  "ready to disappoint yourself again?","i hope you stretched. this will not go well.",
+  "you look different. worse somehow.",
+  "my grandma could tap faster and she doesn't have thumbs.",
+  "new phone? still the same terrible player.",
+  "i'm literally just standing here and you still can't catch me.",
+  "last time was cute. this time will be painful.",
+  "welcome back, bestie 😈 (i don't mean that)",
+  "ok fine. let's do this. i'll go easy. lol jk.",
+  "every time you open this app, i gain more power.",
+  "another day, another L incoming for you.",
+  "you could be doing literally anything else right now.",
+  "i've been practicing. you clearly have not.",
+  "don't get excited. this ends the same way it always does.",
+  "i already know how this ends and it's hilarious.",
+  "oh good, more entertainment for me.",
+  "play again? yes, feed my ego.",
+  "the audacity to return after last time 💅",
+  "i respect the commitment to losing repeatedly.",
+  "you and i both know how this goes.",
+  "still here huh. ok.",
+].sort(() => Math.random()-.5);
+
+const PROFILE_ROASTS = [
+  "these numbers are a cry for help.",
+  "i've seen better stats from someone who dropped their phone in a lake.",
+  "congrats on being terrible in a consistent way.",
+  "at this rate you'll hit level 10 by retirement age.",
+  "i've seen babies tap faster. actual babies.",
+  "your dedication to being mid is truly something.",
+  "remarkable. somehow getting worse over time.",
+  "i would say 'nice try' but it wasn't.",
+  "lol. lmao even.",
+  "these stats are why i don't feel bad about dodging you.",
+  "somewhere out there, someone is doing better. probably a dog.",
+  "bold of you to keep a record of this.",
+  "not zero runs. that's something. a small something.",
+  "your total hits are a number that exists. that's the best i can say.",
+  "i'm not roasting you. the numbers are doing it for me.",
+].sort(() => Math.random()-.5);
+
+const DEATH_ROASTS = [
+  "and that's why you don't mess with Onio.",
+  "lol. lmao even.", "you tried. that's the most i can say.",
+  "truly a heroic effort. by a coward.",
+  "maybe stick to simpler games. like watching paint dry.",
+  "the funniest part is you'll try again.",
+  "this will be in my highlight reel.",
+  "i wasn't even trying and here we are.",
+  "a moment of silence for your dignity.",
+  "i didn't want this for you. wait, yes i did.",
+  "you were so close. kidding. you weren't close.",
+  "your phone deserved better.",
+  "i've already forgotten this. you won't though.",
+  "same time next week when you inevitably come back?",
+  "relatable. embarrassing, but relatable.",
+  "the worst part is you'll tell someone about this.",
+].sort(() => Math.random()-.5);
+
+const STORE_SNARKS = [
+  "oh good. you found this. great.",
+  "spending money on me. interesting life choice.",
+  "a store. for a game. that trolls you. you're welcome.",
+  "yes, give me money. this makes total sense.",
+  "the audacity to think buying stuff will help you.",
+  "welcome to the part where i win financially too.",
+  "i cannot be bought. but i can be rented.",
+  "don't worry, the skip packs don't guarantee anything.",
+  "honestly impressed you're here. not in a good way.",
+  "real payments coming soon. until then, enjoy the illusion.",
+].sort(() => Math.random()-.5);
+
+const PURCHASE_SNARKS = {
+  skip1:["oh you need HELP? adorable.","paying to skip the hard part. classic.",
+    "bold strategy. statistically pointless.","fine. i'll let you cheat. a little.","lol ok. enjoy your shortcut, shortcut."],
+  skip2:["big skip energy. i respect the commitment to losing faster.",
+    "skipping more levels just means more chaos sooner. but sure.",
+    "you paid more. i respect nothing about this.",
+    "the audacity of this purchase. the AUDACITY.","ok fine. you bought the big one. i'm almost proud."],
+  skip3:["the BUNDLE. of course you bought the bundle.",
+    "multiple skips. you're planning multiple losses. efficiency.",
+    "four uses. four future embarrassments. congrats.",
+    "honestly? this one hurt a little. not in a sad way.","giving money to a menace. peak decision making."],
+  donate:["giving money and getting nothing back. this is my favorite purchase.",
+    "pure generosity. i will use this to improve my trolling.",
+    "the coffee will be used irresponsibly. i promise.",
+    "a donation with zero benefit. i love you for this.","peak financial decision making."],
+};
+
+const SKIP_BANNER_SNARKS = [
+  "you paid for this, by the way","real commitment to losing later instead of now",
+  "enjoy the head start. it won't matter.",
+  "skipping levels you haven't even failed yet. bold.",
+  "shortcut brought to you by questionable financial decisions",
+  "Onio approved this. Onio also finds it hilarious.",
+];
+
+const FAKE_TEXT_CONVOS = [
+  [{s:'them',t:"yo u free rn??",d:800},{s:'me',t:"kinda in a game rn",cd:60,d:1200},
+   {s:'them',t:"lmaoooo are u being chased 💀",d:900},{s:'me',t:"yeah this person keeps tapping me",cd:55,d:1400},
+   {s:'them',t:"tell them you have rights",d:700},{s:'them',t:"also touch grass",d:600},
+   {s:'me',t:"ok brb 😈",cd:50,d:900}],
+  [{s:'them',t:"did u see the show last night",d:700},{s:'me',t:"bro I'm literally being hunted rn",cd:60,d:1100},
+   {s:'them',t:"..hunted?",d:600},{s:'me',t:"some person keeps trying to tap me",cd:55,d:1300},
+   {s:'me',t:"I keep moving tho 😂",cd:50,d:800},{s:'them',t:"you are so weird",d:600},
+   {s:'me',t:"later!! busy!!",cd:50,d:700}],
+  [{s:'them',t:"are you free for lunch?",d:700},{s:'me',t:"can't, I'm playing onio",cd:65,d:1000},
+   {s:'them',t:"what is onio",d:500},{s:'me',t:"it's a game where I troll someone",cd:60,typo:"it's a gmae where I troll someone",typoAt:9,d:1200},
+   {s:'them',t:"so you're the game.",d:600},{s:'me',t:"I prefer 'the experience'",cd:50,d:1100},
+   {s:'them',t:"ok weirdo bye",d:500}],
+  [{s:'them',t:"hello?",d:500},{s:'them',t:"HELLO??",d:700},
+   {s:'me',t:"sorry I was dodging someone",cd:70,d:1300},{s:'them',t:"in a game or irl",d:500},
+   {s:'me',t:"yes",cd:55,d:700},{s:'them',t:"...",d:400},{s:'them',t:"ok nevermind",d:500},
+   {s:'me',t:"wait no come back I'm bored now 😭",cd:50,d:1200}],
+  [{s:'them',t:"new job update?",d:600},{s:'me',t:"currently employed as a menace",cd:60,d:1100},
+   {s:'them',t:"that's not a job",d:500},{s:'me',t:"tell that to the person trying to tap me rn",cd:55,d:1400},
+   {s:'them',t:"I'm concerned",d:600},
+   {s:'me',t:"don't be, I'm thriving",cd:50,typo:"don't be, I'm thrivign",typoAt:18,d:1000},
+   {s:'them',t:"you misspelled thriving",d:600},
+   {s:'me',t:"I do that on purpose for personality",cd:45,d:1100}],
+];
+
+// ============================================================
+// PERSISTENT STATE
+// ============================================================
+let bestLevel  = +localStorage.getItem('onio_best')   || 0;
+let totalRuns  = +localStorage.getItem('onio_runs')   || 0;
+let totalHits  = +localStorage.getItem('onio_hits')   || 0;
+let totalDeaths= +localStorage.getItem('onio_deaths') || 0;
+let inventory  = JSON.parse(localStorage.getItem('onio_inv') || '{"lucky":0,"big":0}');
+
+function saveStats() {
+  localStorage.setItem('onio_best',   bestLevel);
+  localStorage.setItem('onio_runs',   totalRuns);
+  localStorage.setItem('onio_hits',   totalHits);
+  localStorage.setItem('onio_deaths', totalDeaths);
+  localStorage.setItem('onio_inv',    JSON.stringify(inventory));
+}
+
+// ============================================================
+// ADAPTIVE PLAYER PROFILE — the brain that makes Onio personal
+// ============================================================
+const DEFAULT_PROFILE = {
+  challengeStats: {},   // { challengeId: { attempts, failures, totalMs } }
+  failStreak: 0,        // consecutive challenge failures this session
+  winStreak: 0,
+  totalSessions: 0,
+  lastPlayedTs: 0,      // timestamp of last session
+  sessionCount: 0,      // lifetime sessions
+  frustrationScore: 0,  // 0-100, rises on fail streaks, falls on wins
+  weaknesses: [],       // top 3 challenge ids the player struggles with most
+  firstEverPlay: true,
+};
+
+let playerProfile = JSON.parse(localStorage.getItem('onio_profile') || 'null') || {...DEFAULT_PROFILE};
+
+function saveProfile() {
+  localStorage.setItem('onio_profile', JSON.stringify(playerProfile));
+}
+
+function recordChallengeResult(challengeId, failed, durationMs) {
+  if (!playerProfile.challengeStats[challengeId]) {
+    playerProfile.challengeStats[challengeId] = { attempts:0, failures:0, totalMs:0 };
+  }
+  const s = playerProfile.challengeStats[challengeId];
+  s.attempts++;
+  s.totalMs += durationMs;
+  if (failed) {
+    s.failures++;
+    playerProfile.failStreak++;
+    playerProfile.winStreak = 0;
+    playerProfile.frustrationScore = Math.min(100, playerProfile.frustrationScore + 8);
+  } else {
+    playerProfile.failStreak = 0;
+    playerProfile.winStreak++;
+    playerProfile.frustrationScore = Math.max(0, playerProfile.frustrationScore - 4);
+  }
+  // Recalculate weaknesses — challenges with fail rate > 40% and at least 3 attempts
+  playerProfile.weaknesses = Object.entries(playerProfile.challengeStats)
+    .filter(([,s]) => s.attempts >= 3)
+    .sort(([,a],[,b]) => (b.failures/b.attempts) - (a.failures/a.attempts))
+    .slice(0, 3)
+    .map(([id]) => id);
+  saveProfile();
+}
+
+// Adaptive weight modifier — easier early game, ramps smoothly, then weaponizes weaknesses
+const CHALLENGE_RAMP_SPAN = {
+  tap: 2, hold: 8, clones: 8, swarmAll: 10, drag: 10, dodge: 12, timer: 12,
+  mirror: 14, shake: 12, blow: 14, fakepause: 14, faketext: 16, teleport: 14,
+  upsidedown: 18, swarmFind: 16, swarmMove: 18, swarmSpawn: 20,
+  swipeCode: 12, tracePath: 14, rhythmTap: 14, pinchTrap: 16, twoFinger: 16,
+  tiltBalance: 18, freeze: 14,
+};
+
+function getAdaptiveWeight(challenge) {
+  const base = challenge.w;
+  const span = CHALLENGE_RAMP_SPAN[challenge.id] || 12;
+  const introRamp = Math.max(0.08, Math.min(1, (level - challenge.minLv + 1) / span));
+  let weight = base * introRamp;
+
+  // Keep levels 1-5 approachable; avoid hard-difficulty spikes too early.
+  if (level <= 5 && challenge.id !== 'tap') weight *= 0.55;
+  else if (level <= 10 && ['swarmAll', 'timer', 'dodge'].includes(challenge.id)) weight *= 0.8;
+
+  // After a few runs, weaknesses become more likely, but gradually.
+  const isWeakness = playerProfile.weaknesses.includes(challenge.id);
+  if (totalRuns >= 4 && level >= 8 && isWeakness) {
+    weight *= 1.25 + Math.min(1.1, playerProfile.frustrationScore / 65);
+  }
+
+  return Math.max(0.05, weight);
+}
+
+// ============================================================
+// EMOTIONAL MODE SYSTEM
+// ============================================================
+// Three modes: playful (default), affectionate (doing well), lonely (away or struggling)
+let emotionalMode = 'playful'; // 'playful' | 'affectionate' | 'lonely'
+let challengeStartMs = 0;
+
+function updateEmotionalMode() {
+  const hoursSincePlay = (Date.now() - playerProfile.lastPlayedTs) / 3600000;
+  const wasAway = hoursSincePlay > 12;
+  const onStreak = playerProfile.winStreak >= 3;
+  const struggling = playerProfile.frustrationScore >= 60 || playerProfile.failStreak >= 4;
+
+  let newMode = 'playful';
+  if (wasAway && playerProfile.sessionCount > 0) newMode = 'lonely';
+  else if (onStreak && !struggling)               newMode = 'affectionate';
+  else if (struggling)                            newMode = 'playful'; // mean playful when frustrated
+
+  emotionalMode = newMode;
+  document.body.className = newMode !== 'playful' ? 'mode-'+newMode : '';
+
+  const moodEl = document.getElementById('mood-indicator');
+  if (newMode === 'affectionate') moodEl.textContent = '🌸 soft mode';
+  else if (newMode === 'lonely')  moodEl.textContent = '💙 missed you';
+  else                             moodEl.textContent = '';
+}
+
+// Mode-aware speech lines
+const SPEECH_BY_MODE = {
+  playful: {
+    miss:    ['hehe','nope!','lolol','miss!','try harder','👀','wow.','cute','not even close'],
+    hit:     ["ow!","hey!","not fair!","nooo!","rude","ugh","STOP IT","ok FINE","😭"],
+    taunt:   ['nope','heh','lol','nice try','too slow'],
+    tired:   ["ugh FINE 🏳️","ok ok you got me 🏳️","...fine. 🏳️","i give up (for now) 🏳️"],
+  },
+  affectionate: {
+    miss:    ["it's ok! try again 💕","almost!","so close though","you're getting it","keep going!"],
+    hit:     ["ow... but well done","ok that was good i guess","fine. you earned that","i'll allow it 🌸","...nice one."],
+    taunt:   ['nice try though','you almost had me','keep going!','so close'],
+    tired:   ["ok ok you wore me out 🏳️","you're really trying huh 🏳️","...i respect it. fine. 🏳️"],
+  },
+  lonely: {
+    miss:    ["it's fine...","i'm not judging","you'll get it","no rush really","...i'm just happy you're here"],
+    hit:     ["ow... that's ok","you got me 💙","...nice.","i deserved that probably","ok fine, well done"],
+    taunt:   ['please don\'t leave','i\'ll slow down...','just a little longer','ok fine you can have this one'],
+    tired:   ["ok fine 🏳️ i missed you too","you can have this one 💙","...i was going easy anyway 🏳️"],
+  },
+};
+
+function modeLines(category) {
+  return SPEECH_BY_MODE[emotionalMode]?.[category] || SPEECH_BY_MODE.playful[category];
+}
+
+// Mode-aware home snarks — entirely different pools per mood
+const HOME_SNARKS_AFFECTIONATE = [
+  "oh hey! you're back 🌸 i'm glad.",
+  "you came back. that means something. probably.",
+  "ready to try again? i believe in you. a little.",
+  "you've been improving. i won't say that again.",
+  "i made it slightly less impossible today. slightly.",
+  "i was thinking about our last game. don't read into that.",
+  "you're getting better. it's annoying how much i like that.",
+  "today might actually be your day. or not. but maybe.",
+  "i respect the persistence. genuinely.",
+  "ok fine. i've been rooting for you. secretly.",
+].sort(() => Math.random()-.5);
+
+const HOME_SNARKS_LONELY = [
+  "oh. you came back. i wasn't waiting or anything.",
+  "it's been a while. the game got quieter without you.",
+  "i thought you forgot about me. it's fine. i'm fine.",
+  "you were gone so long i started talking to the title screen.",
+  "welcome back. i missed... the chaos. just the chaos.",
+  "i redecorated while you were gone. you probably won't notice.",
+  "you're back. ok. cool. i'm not emotional about this.",
+  "hey. hi. you were gone a while. it's whatever.",
+  "i kept the levels warm for you. that's not weird.",
+  "finally. i've been practicing my taunts for nothing.",
+].sort(() => Math.random()-.5);
+
+// ============================================================
+// RETURN GREETING — fires when player comes back after 12+ hours
+// ============================================================
+const RETURN_GREETINGS = [
+  { text: "oh. you came back.",         sub: "i wasn't waiting or anything." },
+  { text: "there you are.",             sub: "i've been here. obviously. i live here." },
+  { text: "you were gone a while.",     sub: "i counted. don't ask how many days." },
+  { text: "oh it's YOU.",               sub: "i thought you quit. it's fine. i'm fine." },
+  { text: "welcome back i guess.",      sub: "i redecorated while you were gone. you won't notice." },
+  { text: "finally.",                   sub: "the title screen is terrible company." },
+  { text: "i kept the levels warm.",    sub: "that's not weird. stop making it weird." },
+  { text: "oh! hi! hey. no reason.",    sub: "i definitely wasn't hoping you'd come back." },
+];
+
+// First-ever play greeting
+const FIRST_PLAY_GREETING = {
+  text: "oh. a new one.",
+  sub: "this won't end well for you. welcome anyway. 😈"
+};
+
+function checkReturnGreeting() {
+  const hoursSince = (Date.now() - playerProfile.lastPlayedTs) / 3600000;
+  const isFirstEver = playerProfile.firstEverPlay;
+
+  if (isFirstEver) {
+    showReturnGreeting(FIRST_PLAY_GREETING.text, FIRST_PLAY_GREETING.sub);
+    playerProfile.firstEverPlay = false;
+    saveProfile();
+    return;
+  }
+
+  if (playerProfile.sessionCount > 0 && hoursSince > 12) {
+    const g = RETURN_GREETINGS[Math.floor(Math.random()*RETURN_GREETINGS.length)];
+    // Personalise with time away
+    let sub = g.sub;
+    if (hoursSince > 72) sub = "it's been " + Math.floor(hoursSince/24) + " days. i'm not mad. i'm disappointed.";
+    else if (hoursSince > 24) sub = "it's been over a day. i did not notice. (i noticed.)";
+    showReturnGreeting(g.text, sub);
+  }
+}
+
+function showReturnGreeting(text, sub) {
+  document.getElementById('rg-text').textContent = text;
+  document.getElementById('rg-sub').textContent = sub;
+  document.getElementById('return-greeting').classList.add('active');
+}
+
+function dismissReturnGreeting() {
+  document.getElementById('return-greeting').classList.remove('active');
+}
+
+// ============================================================
+// WEAKNESS BANNER — Onio telegraphs that he's coming for you
+// ============================================================
+const WEAKNESS_TAUNTS = {
+  dodge:      ["oh you hate this one don't you 😈","let's do the thing you hate","dodge time. you love this. (you don't)"],
+  hold:       ["hold challenge incoming. good luck lol","you always let go too early 😏","HOLD. you can do it. (probably not)"],
+  clones:     ["can you find the real me? spoiler: no","find the real one. this should be fun to watch.","which one am i? answer: not the one you pick"],
+  swarmAll:   ["tapping time. all of them. yes ALL.","swarm incoming. you love these. (you don't)","lots of me. every one of them wants chaos."],
+  swarmFind:  ["find the real me among the fakes. good luck.","somewhere in here... the real Onio. somewhere."],
+  drag:       ["drag challenge. remember to actually drop me IN the zone.","drag me. into the zone. not near it. in it."],
+  shake:      ["time to shake. yes literally. shake your phone.","shake it. shake it. shake it. still shaking?"],
+  timer:      ["fast one coming. don't blink.","HURRY challenge. you struggle with these.","timer incoming. tick. tick. tick."],
+  swipeCode:  ["swipe combo incoming. memory check.","remember the order. then panic.","left right up down... or was it?"],
+  tracePath:  ["trace the path. steady hands only.","path challenge. don't drift.","follow the line. no shortcuts."],
+  rhythmTap:  ["rhythm test. tap on beat.","timing challenge. don't spam.","feel the beat or eat defeat."],
+  pinchTrap:  ["pinch challenge. two fingers, one fate.","zoom out my ego if you can.","pinch me. i dare you."],
+  twoFinger:  ["two-finger lock incoming.","bring both thumbs this time.","dual-touch challenge. yes, both."],
+  tiltBalance:["tilt control time. stay centered.","balance me in the zone.","steady tilt, steady hands."],
+  freeze:     ["freeze challenge. don't touch.","hands off. literally.","the hardest move: do nothing."],
+  mirror:     ["mirror time. left is right. right is wrong.","everything flipped. you've been warned."],
+  upsidedown: ["prepare to read upside down.","¡dn ǝpᴉsdn"],
+};
+
+function maybeShowWeaknessBanner(challengeId) {
+  if (!playerProfile.weaknesses.includes(challengeId)) return;
+  if (Math.random() > 0.55) return; // not every time, just often enough
+  const lines = WEAKNESS_TAUNTS[challengeId];
+  if (!lines) return;
+  const banner = document.getElementById('weakness-banner');
+  banner.textContent = '😈 ' + lines[Math.floor(Math.random()*lines.length)];
+  banner.classList.add('show');
+  setTimeout(() => banner.classList.remove('show'), 2800);
+}
+
+// ============================================================
+// GAME STATE
+// ============================================================
+let level=1, hits=0, misses=0, trickActive=false;
+let onioX=0, onioY=0, gW=0, gH=0;
+let speechEl=null, decoyEls=[];
+let deathTimerInterval=null, deathTimerMs=0, deathTimerMax=0;
+let holdInterval=null, isDragging=false, dragOffX=0, dragOffY=0;
+let micStream=null, micAnalyser=null, micInterval=null, audioCtx=null;
+let lastAx=0, lastAy=0, lastAz=0, shakeCheckInterval=null;
+let lastChallengeId=null, currentTrickCleanup=null;
+let snarkIdx=0, roastIdx=0, storeSnarkIdx=0, deathRoastIdx=0;
+let suppressArenaMiss = false;
+let challengeTimeoutIds = [];
+
+function scheduleChallengeTimeout(fn, delayMs) {
+  const timeoutId = setTimeout(() => {
+    challengeTimeoutIds = challengeTimeoutIds.filter(id => id !== timeoutId);
+    fn();
+  }, delayMs);
+  challengeTimeoutIds.push(timeoutId);
+  return timeoutId;
+}
+
+function clearChallengeTimeouts() {
+  challengeTimeoutIds.forEach(clearTimeout);
+  challengeTimeoutIds = [];
+}
+
+const onio = document.getElementById('onio');
+const arena = document.getElementById('arena');
+
+// ============================================================
+// SCREEN / NAVIGATION
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id === 'home-screen') {
+    updateEmotionalMode();
+    nextSnark();
+    spawnBgMonsters();
+  }
+  if (id === 'profile-screen') loadProfile();
+  if (id === 'store-screen') { openStoreView(); }
+}
+
+// ============================================================
+// HOME SNARKS
+// ============================================================
+function nextSnark() {
+  const el = document.getElementById('snark-bubble');
+  el.style.animation = 'none'; void el.offsetWidth; el.style.animation = 'snarkFade .4s ease';
+  let pool;
+  if (emotionalMode === 'affectionate') pool = HOME_SNARKS_AFFECTIONATE;
+  else if (emotionalMode === 'lonely')  pool = HOME_SNARKS_LONELY;
+  else                                  pool = HOME_SNARKS;
+  el.textContent = pool[snarkIdx++ % pool.length];
+}
+setInterval(() => { if (document.getElementById('home-screen').classList.contains('active')) nextSnark(); }, 3800);
+
+function spawnBgMonsters() {
+  const h = document.getElementById('home-screen');
+  h.querySelectorAll('.bg-monster').forEach(m => m.remove());
+  const emojis = ['😈','👹','👺','😜','🤪','😂','💀','🔥','👻','😤'];
+  for (let i=0; i<14; i++) {
+    const m = document.createElement('div');
+    m.className = 'bg-monster';
+    m.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    m.style.cssText = `left:${Math.random()*90}%;top:${Math.random()*90}%;font-size:${18+Math.random()*22}px;animation-duration:${2.5+Math.random()*3}s;animation-delay:${Math.random()*2}s;`;
+    h.appendChild(m);
+  }
+}
+
+// ============================================================
+// PROFILE
+// ============================================================
+function loadProfile() {
+  document.getElementById('stat-best').textContent = bestLevel || '—';
+  document.getElementById('stat-runs').textContent = totalRuns;
+  document.getElementById('stat-hits').textContent = totalHits;
+  document.getElementById('stat-deaths').textContent = totalDeaths;
+  drawToken('profile-token-canvas', 140, bestLevel);
+  document.getElementById('profile-token-lbl').textContent = bestLevel > 0 ? tokenLabel(bestLevel) : 'Play to earn your token!';
+  nextRoast();
+}
+function nextRoast() {
+  const el = document.getElementById('roast-box');
+  if (el.childNodes[0]) el.childNodes[0].textContent = PROFILE_ROASTS[roastIdx++ % PROFILE_ROASTS.length];
+  else el.insertAdjacentText('afterbegin', PROFILE_ROASTS[roastIdx++ % PROFILE_ROASTS.length]);
+}
+
+// ============================================================
+// STORE
+// ============================================================
+const STORE_ITEMS = {
+  skip1:{name:'Lucky Skip',price:'$0.99',gives:{lucky:1}},
+  skip2:{name:'Big Skip',price:'$1.99',gives:{big:1}},
+  skip3:{name:'Chaos Bundle',price:'$2.99',gives:{lucky:3,big:1}},
+  donate:{name:'Buy Onio a Coffee',price:'$1.99',gives:{}},
+};
+
+function openStoreView() {
+  document.getElementById('store-snark').textContent = STORE_SNARKS[storeSnarkIdx++ % STORE_SNARKS.length];
+  updateStoreStock();
+}
+function updateStoreStock() {
+  const set = (id, n) => {
+    const el = document.getElementById(id);
+    el.textContent = '× ' + n;
+    el.className = 'store-stock' + (n>0?' owned':'');
+  };
+  set('stk-skip1', inventory.lucky);
+  set('stk-skip2', inventory.big);
+  set('stk-skip3', inventory.lucky + inventory.big);
+}
+
+function attemptPurchase(itemId) {
+  const item = STORE_ITEMS[itemId];
+  const snarks = PURCHASE_SNARKS[itemId];
+  document.getElementById('pm-snark').textContent = '"' + snarks[Math.floor(Math.random()*snarks.length)] + '"';
+  document.getElementById('pm-item').textContent = item.name + ' — ' + item.price;
+  const descs = {
+    skip1:'Adds 1 Lucky Skip. Start 3–7 levels ahead on your next game.',
+    skip2:'Adds 1 Big Skip. Start 8–15 levels ahead — more chaos sooner.',
+    skip3:'3× Lucky + 1× Big. Four chaotic head starts.',
+    donate:'Pure donation. Onio gets a coffee. You get nothing. He\'s fine with this.',
+  };
+  document.getElementById('pm-desc').textContent = descs[itemId];
+  document.getElementById('pm-cancel').onclick = closePM;
+  document.getElementById('pm-confirm').onclick = () => confirmPurchase(itemId);
+  document.getElementById('pm-modal').classList.add('active');
+}
+
+function confirmPurchase(itemId) {
+  const item = STORE_ITEMS[itemId];
+  if (item.gives.lucky) inventory.lucky += item.gives.lucky;
+  if (item.gives.big)   inventory.big   += item.gives.big;
+  saveStats();
+  closePM();
+  updateStoreStock();
+  updateSkipPill();
+  const toasts = {skip1:"fine. it's in your inventory.",skip2:"big spender. noted.",skip3:"the bundle buyer. I'll remember this.",donate:"received. spent immediately."};
+  showToast(toasts[itemId] || '✓ done');
+  setTimeout(() => { document.getElementById('store-snark').textContent = STORE_SNARKS[storeSnarkIdx++ % STORE_SNARKS.length]; }, 400);
+}
+
+function closePM() { document.getElementById('pm-modal').classList.remove('active'); }
+
+// ============================================================
+// GAME START / SKIP FLOW
+// ============================================================
+function startGame() {
+  cleanupAll();
+  totalRuns++;
+  playerProfile.sessionCount++;
+  playerProfile.failStreak = 0;
+  playerProfile.winStreak = 0;
+  playerProfile.lastPlayedTs = Date.now();
+  saveProfile(); saveStats();
+  showScreen('game-screen');
+  level=1; hits=0; misses=0;
+  if (inventory.lucky > 0 || inventory.big > 0) {
+    showSkipPrompt();
+  } else {
+    finishGameStart();
+  }
+}
+
+function showSkipPrompt() {
+  document.getElementById('pm-snark').textContent = '"you have skips sitting there. this is your moment. probably."';
+  document.getElementById('pm-item').textContent =
+    (inventory.lucky>0 ? `🎲 Lucky ×${inventory.lucky}  ` : '') +
+    (inventory.big>0   ? `🚀 Big ×${inventory.big}` : '');
+  document.getElementById('pm-desc').textContent = 'Use your best skip to start ahead, or just start from Level 1.';
+  document.getElementById('pm-cancel').textContent = 'start from 1';
+  document.getElementById('pm-confirm').textContent = 'use skip 🎲';
+  document.getElementById('pm-cancel').onclick = () => { closePM(); finishGameStart(); };
+  document.getElementById('pm-confirm').onclick = () => { closePM(); activateSkip(); };
+  document.getElementById('pm-modal').classList.add('active');
+}
+
+function activateSkip() {
+  let amt;
+  if (inventory.big > 0) { amt = 8+Math.floor(Math.random()*8); inventory.big--; }
+  else                    { amt = 3+Math.floor(Math.random()*5); inventory.lucky--; }
+  saveStats();
+  updateSkipPill();
+  level = 1 + amt; hits = getLevelBase(level);
+  document.getElementById('skip-lvl-text').textContent = `Starting at Level ${level} 🔥`;
+  document.getElementById('skip-snark-text').textContent = SKIP_BANNER_SNARKS[Math.floor(Math.random()*SKIP_BANNER_SNARKS.length)];
+  document.getElementById('skip-banner').classList.add('active');
+}
+
+function dismissSkipBanner() {
+  document.getElementById('skip-banner').classList.remove('active');
+  finishGameStart();
+}
+
+function finishGameStart() {
+  misses=0; updateHUD(); updateSkipPill(); resize();
+  placeOnio(gW/2-40, gH/2-40, true);
+  startChaosSystem();
+  setTimeout(runNextChallenge, 500);
+}
+
+// ============================================================
+// RESIZE / ONIO MOVEMENT
+// ============================================================
+function resize() {
+  gW = arena.offsetWidth;
+  gH = arena.offsetHeight;
+}
+window.addEventListener('resize', resize);
+
+function placeOnio(x, y, instant) {
+  onioX = Math.max(10, Math.min(gW-90, x));
+  onioY = Math.max(10, Math.min(gH-100, y));
+  onio.style.transition = instant ? 'none' : 'left .18s cubic-bezier(.4,2,.6,1),top .18s cubic-bezier(.4,2,.6,1)';
+  onio.style.left = onioX+'px'; onio.style.top = onioY+'px';
+  // Keep sign in sync
+  if (document.getElementById('onio-sign').classList.contains('active')) {
+    setTimeout(positionSign, instant ? 0 : 200);
+  }
+}
+function randPos(mx=80, my=130) {
+  return { x: mx+Math.random()*(gW-mx*2-80), y: my+Math.random()*(gH-my-120) };
+}
+function moveOnio(instant) { const p=randPos(); placeOnio(p.x, p.y, instant); }
+
+// ============================================================
+// HUD
+// ============================================================
+function setMsg(t) { document.getElementById('msg-text').textContent = t; }
+function updateHUD() {
+  if (!levelHidden) document.getElementById('level-pill').textContent = 'LVL '+level;
+  // No score pill, no progress bar — clean HUD
+}
+function getLevelBase(lv) { let b=0; for(let i=1;i<lv;i++) b+=getHitsForLevel(i); return b; }
+function getHitsForLevel(lv) { return Math.max(2, Math.min(6, Math.floor(2+lv*0.6))); }
+function updateSkipPill() {
+  const n = inventory.lucky+inventory.big;
+  const p = document.getElementById('skip-pill');
+  p.style.display = n>0 ? 'block' : 'none';
+  p.textContent = '⚡ '+n;
+}
+
+// ============================================================
+// SPEECH BUBBLE
+// ============================================================
+function speech(text, dur) {
+  clearSpeech();
+  const b = document.createElement('div');
+  b.className = 'speech';
+  b.textContent = text;
+  b.style.left = Math.min(onioX+82, gW-155)+'px';
+  b.style.top  = Math.max(onioY-20, 10)+'px';
+  arena.appendChild(b); speechEl = b;
+  if (dur) setTimeout(clearSpeech, dur);
+}
+function clearSpeech() { if (speechEl) { speechEl.remove(); speechEl=null; } }
+
+// ============================================================
+// FX
+// ============================================================
+function spawnRipple(x, y, cls) {
+  const r = document.createElement('div');
+  r.className = cls;
+  r.style.cssText = `width:44px;height:44px;left:${x-22}px;top:${y-22}px;`;
+  arena.appendChild(r); setTimeout(()=>r.remove(), 450);
+}
+function haptic(ms=30) { if (navigator.vibrate) navigator.vibrate(ms); }
+
+// ============================================================
+// DEATH TIMER
+// ============================================================
+function startDeathTimer(ms) {
+  clearDeathTimer();
+  deathTimerMax=ms; deathTimerMs=ms;
+  const bar=document.getElementById('dtimer-bar'), wrap=document.getElementById('dtimer-wrap');
+  bar.style.width='100%'; wrap.style.display='block';
+  deathTimerInterval = setInterval(()=>{
+    deathTimerMs -= 100;
+    bar.style.width = Math.max(0,(deathTimerMs/deathTimerMax)*100)+'%';
+    if (deathTimerMs<=0) { clearDeathTimer(); triggerDeath('too slow!'); }
+  }, 100);
+}
+function clearDeathTimer() {
+  if (deathTimerInterval) { clearInterval(deathTimerInterval); deathTimerInterval=null; }
+  document.getElementById('dtimer-wrap').style.display='none';
+  document.getElementById('dtimer-bar').style.width='100%';
+}
+
+// ============================================================
+// DEATH
+// ============================================================
+function triggerDeath(reason) {
+  if (!document.getElementById('game-screen').classList.contains('active')) return;
+  // Record the challenge that killed the player as a failure
+  if (lastChallengeId) recordChallengeResult(lastChallengeId, true, Date.now()-challengeStartMs);
+  cleanupAll();
+  speech('hehe... '+reason, 0);
+  haptic([50,30,80]);
+  setTimeout(()=>{ cleanupAll(); doDeathScreen(); }, 900);
+}
+
+const DEATH_ROASTS_AFFECTIONATE = [
+  "you almost had it. genuinely.",
+  "that was actually really close. i'm proud of you. don't tell anyone.",
+  "ok that run was better. i noticed.",
+  "you're improving. it's inconvenient for me.",
+  "i feel bad about that one. a little. almost.",
+  "next time. i think you'll get it next time.",
+  "don't be discouraged. i say that for my own reasons.",
+];
+
+const DEATH_ROASTS_LONELY = [
+  "it's ok. you'll try again. i'll be here.",
+  "...that's ok. come back when you're ready.",
+  "i'm not going anywhere. for the record.",
+  "you died but you came back and that counts for something.",
+  "the game will be here. i'll be here.",
+  "it's fine. really. come back whenever.",
+];
+
+function doDeathScreen() {
+  totalDeaths++; totalHits+=hits;
+  if (level>bestLevel) bestLevel=level;
+  saveStats(); saveProfile();
+  showScreen('death-screen');
+  const emojis=['😬','😤','💀','🤯','👑','💅','🔥','😂'];
+  document.getElementById('death-emoji').textContent = emojis[Math.min(level-1,emojis.length-1)];
+  document.getElementById('death-lvl').textContent = `You reached Level ${level} • ${hits} hits`;
+
+  // Mode-aware death roast
+  let roastPool;
+  if (emotionalMode === 'affectionate')     roastPool = DEATH_ROASTS_AFFECTIONATE;
+  else if (emotionalMode === 'lonely')      roastPool = DEATH_ROASTS_LONELY;
+  else if (playerProfile.weaknesses.length > 0 && Math.random() > 0.4) {
+    // Specifically call out what killed them
+    const wk = playerProfile.weaknesses[0];
+    const weaknessCallouts = {
+      dodge:    "you and dodge. a true love story. a tragic one.",
+      hold:     "the hold challenge. again. it always gets you.",
+      timer:    "the timer. your nemesis. the clock wins again.",
+      clones:   "you never find the real me. statistically notable.",
+      shake:    "you don't shake enough. or too much. one of those.",
+    };
+    roastPool = weaknessCallouts[wk] ? [weaknessCallouts[wk]] : DEATH_ROASTS;
+  } else {
+    roastPool = DEATH_ROASTS;
+  }
+  document.getElementById('death-roast').textContent = Array.isArray(roastPool)
+    ? roastPool[deathRoastIdx++%roastPool.length]
+    : roastPool;
+  drawToken('death-token-canvas', 160, level);
+  document.getElementById('death-token-lbl').textContent = tokenLabel(level);
+}
+
+// ============================================================
+// CLEANUP
+// ============================================================
+function cleanupAll() {
+  clearChallengeTimeouts();
+  clearDeathTimer(); clearSpeech(); clearDecoys(); stopMic();
+  if (shakeCheckInterval) { clearInterval(shakeCheckInterval); shakeCheckInterval=null; }
+  document.getElementById('fake-pause').classList.remove('active');
+  document.getElementById('fake-text').classList.remove('active');
+  document.getElementById('lvl-splash').classList.remove('active');
+  document.getElementById('level-clear').classList.remove('active');
+  document.getElementById('cheeky-moment').classList.remove('active');
+  hideSign();
+  document.getElementById('game-screen').style.transform='';
+  onio.style.fontSize='72px'; onio.style.opacity='1';
+  onio.style.pointerEvents='auto'; onio.style.transform='';
+  const hrw=document.getElementById('hold-ring-wrap');
+  hrw.classList.remove('active'); hrw.style.cssText='';
+  document.getElementById('hold-arc').style.strokeDashoffset='301.6';
+  document.getElementById('shake-ind').classList.remove('active');
+  document.getElementById('mic-challenge').classList.remove('active');
+  document.getElementById('drag-zone').classList.remove('active');
+  clearHoldInterval();
+  document.querySelectorAll('.instr-overlay').forEach(o=>o.classList.remove('active'));
+  suppressArenaMiss=false;
+  isDragging=false; trickActive=false;
+  cleanupChaos();
+  if (currentTrickCleanup) { currentTrickCleanup(); currentTrickCleanup=null; }
+}
+function clearDecoys() { decoyEls.forEach(d=>d.remove()); decoyEls=[]; }
+function clearHoldInterval() { if (holdInterval) { clearInterval(holdInterval); holdInterval=null; } }
+
+// ============================================================
+// MISS BUDGET SYSTEM
+// ============================================================
+function getMissBudget() {
+  // 100 at lv1, smooth curve down to 20 at lv30+
+  if (level <= 1)  return 100;
+  if (level <= 30) return Math.round(100 - (level-1) * 2.7);
+  return Math.max(20, Math.round(20 - (level-30) * 0.3));
+}
+
+function getMissWarningAt() { return Math.floor(getMissBudget() * 0.25); } // warn at 25% left
+
+function registerMiss(x, y) {
+  spawnRipple(x, y, 'miss-flash');
+  haptic(15);
+  misses++;
+  const budget = getMissBudget();
+  const left = budget - misses;
+  const missLines = modeLines('miss');
+  // Snarky comment — but Onio does NOT move on a miss
+  let t;
+  if (left > budget * 0.6)     t = missLines[Math.floor(Math.random()*missLines.length)];
+  else if (left > 10)          t = [`${left} left...`,'running out','almost done','tick tock'][Math.floor(Math.random()*4)];
+  else                          t = left <= 0 ? 'bye 👋' : `${left}!!`;
+  speech(t, 500);
+  // No movement on miss — Onio stays put
+  if (misses >= budget) triggerDeath('no more misses 😂');
+}
+
+function onHit(force=false) {
+  if (!force && !trickActive) return;
+  trickActive = false;
+  if (currentTrickCleanup) { currentTrickCleanup(); currentTrickCleanup = null; }
+  clearDeathTimer();
+  onio.style.pointerEvents = 'none';
+  recordChallengeResult(lastChallengeId, false, Date.now()-challengeStartMs);
+  hits++;
+  const base = getLevelBase(level), need = getHitsForLevel(level);
+  const isLevelComplete = (hits - base >= need);
+
+  if (isLevelComplete) {
+    // ── LEVEL COMPLETE: cheeky defeat → level clear → next ──
+    if (DEBUG.FAST_TRANSITIONS) {
+      levelUp();
+    } else {
+      showCheekyDefeat(()=>{ levelUp(); });
+    }
+  } else {
+    // ── CHALLENGE WIN (not yet level complete) ────────────────
+    // Keep feedback near Onio — no HUD flash
+    updateHUD();
+    scheduleChallengeTimeout(runNextChallenge, 500);
+  }
+}
+
+function levelUp() {
+  const newLevel = level + 1;
+  level = newLevel;
+  misses = 0;
+  startChaosSystem();
+  updateHUD();
+  if (DEBUG.FAST_TRANSITIONS) {
+    runNextChallenge();
+  } else {
+    showLevelClear(newLevel, ()=>{ runNextChallenge(); });
+  }
+}
+
+// ============================================================
+// CHALLENGE SYSTEM
+// ============================================================
+const CHALLENGES = [
+  {id:'tap',         minLv:1,  w:6.0, fn:cTap},          // core mechanic, very frequent early
+  {id:'hold',        minLv:2,  w:2.4, fn:cHold},
+  {id:'clones',      minLv:3,  w:1.4, fn:cClones},
+  {id:'drag',        minLv:4,  w:2.0, fn:cDrag},
+  {id:'dodge',       minLv:5,  w:1.8, fn:cDodge},
+  {id:'swipeCode',   minLv:6,  w:1.9, fn:cSwipeCode},
+  {id:'timer',       minLv:6,  w:1.4, fn:cTimer},
+  {id:'swarmAll',    minLv:7,  w:1.8, fn:cSwarmTapAll},
+  {id:'tracePath',   minLv:8,  w:1.6, fn:cTracePath},
+  {id:'mirror',      minLv:8,  w:0.9, fn:cMirror},
+  {id:'rhythmTap',   minLv:9,  w:1.4, fn:cRhythmTap},
+  {id:'shake',       minLv:9,  w:1.2, fn:cShake},
+  {id:'freeze',      minLv:10, w:1.0, fn:cFreezeTest},
+  {id:'blow',        minLv:10, w:0.9, fn:cBlow},
+  {id:'fakepause',   minLv:10, w:0.8, fn:cFakePause},
+  {id:'faketext',    minLv:11, w:0.8, fn:cFakeText},
+  {id:'teleport',    minLv:12, w:1.1, fn:cTeleport},
+  {id:'pinchTrap',   minLv:12, w:1.1, fn:cPinchTrap},
+  {id:'upsidedown',  minLv:13, w:0.8, fn:cUpsideDown},
+  {id:'twoFinger',   minLv:14, w:1.0, fn:cTwoFingerLock},
+  {id:'swarmFind',   minLv:15, w:1.8, fn:cSwarmFindReal},
+  {id:'tiltBalance', minLv:16, w:0.9, fn:cTiltBalance},
+  {id:'tiny',        minLv:18, w:1.0, fn:cTiny},
+  {id:'swarmMove',   minLv:30, w:1.6, fn:cSwarmMoving},
+  {id:'swarmSpawn',  minLv:55, w:1.5, fn:cSwarmSpawning},
+];
+
+function runNextChallenge() {
+  cleanupAll(); resize(); moveOnio(true);
+  onio.style.pointerEvents='none';
+
+  // DEBUG: force tap only
+  if (DEBUG.TAP_ONLY) {
+    lastChallengeId = 'tap';
+    challengeStartMs = Date.now();
+    scheduleChallengeTimeout(()=>{ trickActive=true; onio.style.pointerEvents='auto'; cTap(); }, 220);
+    return;
+  }
+
+  const pool = CHALLENGES.filter(c=>c.minLv<=level);
+  const total = pool.reduce((a,c)=>a+getAdaptiveWeight(c), 0);
+  let r=Math.random()*total, chosen=pool[0];
+  for(let i=0;i<pool.length;i++){r-=getAdaptiveWeight(pool[i]);if(r<=0){chosen=pool[i];break;}}
+  if (chosen.id===lastChallengeId && pool.length>1) return runNextChallenge();
+  lastChallengeId=chosen.id;
+  challengeStartMs = Date.now();
+  maybeShowWeaknessBanner(chosen.id);
+  scheduleChallengeTimeout(()=>{ trickActive=true; onio.style.pointerEvents='auto'; chosen.fn(); }, 220);
+}
+
+// ============================================================
+// INSTRUCTION HELPER — tap to dismiss (not auto-dismiss)
+// ============================================================
+function showInstr(id, cb) {
+  const el = document.getElementById(id);
+  el.classList.add('active');
+  trickActive=false; onio.style.pointerEvents='none';
+  function dismiss(e) {
+    e.stopPropagation();
+    el.classList.remove('active');
+    el.removeEventListener('pointerdown', dismiss);
+    cb();
+  }
+  // Small delay so the tap that opened the challenge doesn't immediately dismiss it
+  scheduleChallengeTimeout(()=>el.addEventListener('pointerdown', dismiss), 300);
+}
+
+// ============================================================
+// SIGN SYSTEM — Onio holds a sign showing remaining taps
+// ============================================================
+function showSign(number) {
+  const sign = document.getElementById('onio-sign');
+  const num  = document.getElementById('sign-number');
+  num.textContent = number;
+  num.className = 'sign-number';
+  sign.classList.add('active');
+  positionSign();
+}
+
+function positionSign() {
+  const sign = document.getElementById('onio-sign');
+  if (!sign.classList.contains('active')) return;
+  // Float above Onio
+  sign.style.left = (onioX - 3) + 'px';
+  sign.style.top  = (onioY - 70) + 'px';
+}
+
+function shakeSign() {
+  const sign = document.getElementById('onio-sign');
+  sign.classList.remove('shake');
+  void sign.offsetWidth;
+  sign.classList.add('shake');
+  scheduleChallengeTimeout(()=>sign.classList.remove('shake'), 380);
+}
+
+function hideSign() {
+  document.getElementById('onio-sign').classList.remove('active');
+}
+
+function spawnChalkDust() {
+  const sign = document.getElementById('onio-sign');
+  const rect = sign.getBoundingClientRect();
+  const arenaRect = arena.getBoundingClientRect();
+  for (let i=0; i<6; i++) {
+    const d = document.createElement('div');
+    d.className = 'chalk-dust';
+    const angle = Math.random() * Math.PI * 2;
+    const dist  = 20 + Math.random() * 30;
+    d.style.setProperty('--dx', Math.cos(angle)*dist + 'px');
+    d.style.setProperty('--dy', Math.sin(angle)*dist + 'px');
+    d.style.left = (rect.left - arenaRect.left + 27 + (Math.random()-0.5)*10) + 'px';
+    d.style.top  = (rect.top  - arenaRect.top  + 24 + (Math.random()-0.5)*10) + 'px';
+    arena.appendChild(d);
+    setTimeout(()=>d.remove(), 650);
+  }
+}
+
+// Troll the sign — erase and rewrite a bigger number
+function trollSign(currentTarget, cb) {
+  const num   = document.getElementById('sign-number');
+  const board = document.querySelector('.sign-board');
+
+  // Pause tapping — this is a BIG moment
+  // Create fullscreen number slam overlay
+  const slam = document.createElement('div');
+  slam.id = 'number-slam';
+  slam.style.cssText = [
+    'position:absolute;inset:0;z-index:80',
+    'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px',
+    'background:rgba(192,86,10,0.92)',
+    'animation:slamIn .15s cubic-bezier(.4,2,.6,1)',
+    'pointer-events:none',
+  ].join(';');
+
+  const trolled = currentTarget + Math.ceil(Math.random()*2 + 1);
+
+  slam.innerHTML = `
+    <div style="font-family:'Fredoka One',cursive;font-size:clamp(18px,5vw,22px);color:rgba(255,255,255,.7);letter-spacing:2px;text-transform:uppercase;">actually—</div>
+    <div id="slam-old" style="font-family:'Fredoka One',cursive;font-size:clamp(80px,28vw,140px);color:rgba(255,255,255,.35);line-height:1;text-decoration:line-through;">${currentTarget}</div>
+    <div style="font-family:'Fredoka One',cursive;font-size:clamp(18px,5vw,22px);color:rgba(255,255,255,.7);letter-spacing:2px;">it's</div>
+    <div id="slam-new" style="font-family:'Fredoka One',cursive;font-size:clamp(100px,36vw,180px);color:white;line-height:1;animation:slamNum .3s .1s cubic-bezier(.4,2,.6,1) both;">${trolled}</div>
+    <div style="font-family:'Nunito',sans-serif;font-size:clamp(16px,4.5vw,20px);color:rgba(255,255,255,.8);font-weight:700;font-style:italic;margin-top:4px;">HA.</div>
+  `;
+  arena.appendChild(slam);
+
+  // Shake the whole screen
+  arena.style.animation = 'none'; void arena.offsetWidth;
+  arena.style.animation = 'screenShake .3s ease';
+  setTimeout(()=>arena.style.animation='', 320);
+
+  // Also update the sign in background
+  spawnChalkDust();
+  num.textContent = trolled;
+  board.style.background = '#FFE0E0';
+  setTimeout(()=>{ board.style.background=''; }, 300);
+
+  // Hold the slam for 900ms — let it land
+  setTimeout(()=>{
+    slam.style.animation = 'slamOut .2s ease forwards';
+    setTimeout(()=>{
+      slam.remove();
+      num.className = 'sign-number writing';
+      setTimeout(()=>{ num.className='sign-number'; cb(trolled); }, 200);
+    }, 200);
+  }, 900);
+}
+
+// ============================================================
+// HIT BURST FX — escalating per-tap feedback
+// ============================================================
+function spawnHitBurst(x, y, isFinal) {
+  // Colour burst ring
+  const burst = document.createElement('div');
+  burst.className = 'hit-burst';
+  const size = isFinal ? 60 : 40;
+  const color = isFinal ? 'rgba(232,160,48,0.6)' : 'rgba(232,160,48,0.35)';
+  burst.style.cssText = `width:${size}px;height:${size}px;left:${x-size/2}px;top:${y-size/2}px;background:${color};`;
+  arena.appendChild(burst);
+  setTimeout(()=>burst.remove(), 450);
+
+  // Stars on final tap
+  if (isFinal) {
+    const starEmojis = ['⭐','✨','💥','🌟','⚡'];
+    for (let i=0; i<6; i++) {
+      const star = document.createElement('div');
+      star.className = 'hit-star';
+      star.textContent = starEmojis[Math.floor(Math.random()*starEmojis.length)];
+      const angle = (i/6)*Math.PI*2;
+      const dist = 60+Math.random()*40;
+      star.style.setProperty('--sx', Math.cos(angle)*dist+'px');
+      star.style.setProperty('--sy', Math.sin(angle)*dist+'px');
+      star.style.setProperty('--sr', (Math.random()-0.5)*180+'deg');
+      star.style.left = (x-11)+'px'; star.style.top = (y-11)+'px';
+      arena.appendChild(star);
+      setTimeout(()=>star.remove(), 650);
+    }
+    // Full screen white flash
+    const flash = document.createElement('div');
+    flash.className = 'knockout-flash';
+    arena.appendChild(flash);
+    setTimeout(()=>flash.remove(), 380);
+    // Arena shake
+    arena.style.animation='none'; void arena.offsetWidth;
+    arena.style.animation='screenShake .3s ease';
+    setTimeout(()=>arena.style.animation='', 320);
+    haptic([30,20,60]);
+  } else {
+    haptic(25);
+  }
+}
+
+// ============================================================
+// CHEEKY DEFEAT — fires when challenge completes
+// ============================================================
+const CHEEKY_MOMENTS = [
+  { line: "ok fine. you got me.",              sub: "...this time." },
+  { line: "ugh. fine.",                         sub: "i let you have that one. obviously." },
+  { line: "wow. you actually did it.",          sub: "i'm choosing to be impressed. briefly." },
+  { line: "ok ok ok.",                          sub: "don't get used to it." },
+  { line: "you got lucky.",                     sub: "statistically speaking." },
+  { line: "fine. you win this round.",          sub: "the next one is mine." },
+  { line: "i wasn't really trying.",            sub: "just so we're clear." },
+  { line: "...i meant to do that.",             sub: "it's called strategy." },
+  { line: "ok that was good.",                  sub: "i said what i said. don't make it weird." },
+  { line: "you're getting better.",             sub: "i hate that." },
+];
+
+// Cheeky parting shots — fired right before transition
+const PARTING_SHOTS = [
+  cb => { speech("wait—", 0); setTimeout(()=>{ moveOnio(false); speech("jk 😈", 600); setTimeout(cb, 700); }, 300); },
+  cb => { document.getElementById('game-screen').style.transform='scaleX(-1)'; speech("oops", 600); setTimeout(()=>{ document.getElementById('game-screen').style.transform=''; cb(); }, 700); },
+  cb => { setMsg("...actually—"); setTimeout(()=>{ setMsg("nah you're good"); setTimeout(cb, 500); }, 600); },
+  cb => { speech("one more thing", 0); setTimeout(()=>{ clearSpeech(); cb(); }, 800); },
+  cb => cb(), // sometimes nothing — keeps you guessing
+  cb => cb(),
+  cb => cb(),
+];
+
+function showCheekyDefeat(cb) {
+  const moment = CHEEKY_MOMENTS[Math.floor(Math.random()*CHEEKY_MOMENTS.length)];
+  const cheeky = document.getElementById('cheeky-moment');
+  document.getElementById('cheeky-line').textContent = moment.line;
+  document.getElementById('cheeky-sub').textContent  = moment.sub;
+  cheeky.classList.add('active');
+
+  // After 1.2s, fire the parting shot then proceed
+  setTimeout(()=>{
+    const shot = PARTING_SHOTS[Math.floor(Math.random()*PARTING_SHOTS.length)];
+    shot(()=>{
+      cheeky.classList.remove('active');
+      cb();
+    });
+  }, 1200);
+}
+
+// ============================================================
+// LEVEL CLEAR FLASH
+// ============================================================
+const LEVEL_CLEAR_SUBS = [
+  "getting harder...","Onio is not happy about this.",
+  "he's annoyed.","chaos incoming.",
+  "you asked for this.","don't celebrate yet.",
+  "things are about to get weird.","Onio is plotting.",
+];
+
+function showLevelClear(newLevel, cb) {
+  const lc = document.getElementById('level-clear');
+  document.getElementById('lc-text').textContent = 'LEVEL ' + newLevel + '!';
+  document.getElementById('lc-sub').textContent  = LEVEL_CLEAR_SUBS[Math.floor(Math.random()*LEVEL_CLEAR_SUBS.length)];
+  lc.classList.add('active');
+  haptic([40,30,80]);
+  setTimeout(()=>{ lc.classList.remove('active'); cb(); }, 1400);
+}
+
+// ============================================================
+// TAP CHAOS ENGINE
+// ============================================================
+
+// Chaos budget per challenge — grows with level
+function getTapChaosBudget() {
+  if (level <= 4)  return 0;                                 // lv1-4: clean onboarding
+  if (level <= 10) return 1;                                 // lv5-10: occasional chaos
+  if (level <= 20) return Math.floor(1 + (level-10)*0.25);  // 1→3
+  if (level <= 40) return Math.floor(3 + (level-20)*0.20);  // 3→7
+  if (level <= 80) return Math.floor(7 + (level-40)*0.18);  // 7→14
+  return Math.min(18, Math.floor(14 + (level-80)*0.08));    // cap gently
+}
+
+// Per-tap chaos fire chance — starts meaningful from level 2
+function getTapChaosChance() {
+  if (level <= 4)  return 0.00;
+  if (level <= 10) return 0.08 + (level-4)*0.02;            // 8%→20%
+  if (level <= 20) return 0.20 + (level-10)*0.018;          // 20%→38%
+  if (level <= 40) return 0.38 + (level-20)*0.011;          // 38%→60%
+  if (level <= 80) return 0.60 + (level-40)*0.0045;         // 60%→78%
+  return Math.min(0.88, 0.78 + (level-80)*0.0015);          // long-tail increase
+}
+
+// Sign lie chance — 0 until level 20, grows to 70% at level 50+
+function getSignLieChance() {
+  if (level < 20) return 0;
+  return Math.min(0.70, (level-20)*0.028);
+}
+
+// What the sign SHOWS (may lie at high levels)
+function getSignDisplay(trueRemaining) {
+  if (Math.random() < getSignLieChance()) {
+    const offset = (Math.random() < 0.5 ? 1 : -1) * Math.ceil(Math.random()*3);
+    return Math.max(1, trueRemaining + offset);
+  }
+  return trueRemaining;
+}
+
+// Fake incoming call overlay
+function showFakeCall(cb) {
+  // Build overlay dynamically
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `position:absolute;inset:0;background:#1a1a2e;z-index:90;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;animation:popIn .3s ease;`;
+  const callerEmoji = ['😤','👹','💀','👻','🤡'][Math.floor(Math.random()*5)];
+  const callerNames = ['Mom','Unknown','IRS','Your Boss','Chaos Corp','Onio\'s Lawyer','DO NOT ANSWER'];
+  const caller = callerNames[Math.floor(Math.random()*callerNames.length)];
+  overlay.innerHTML = `
+    <div style="font-size:72px;animation:wiggle 1s ease-in-out infinite;">${callerEmoji}</div>
+    <div style="font-family:'Fredoka One',cursive;font-size:14px;color:rgba(255,255,255,0.5);letter-spacing:2px;">INCOMING CALL</div>
+    <div style="font-family:'Fredoka One',cursive;font-size:32px;color:white;">${caller}</div>
+    <div style="display:flex;gap:40px;margin-top:20px;">
+      <div id="fake-decline" style="width:64px;height:64px;border-radius:50%;background:#E84030;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;">📵</div>
+      <div id="fake-accept" style="width:64px;height:64px;border-radius:50%;background:#4CAF50;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;">📞</div>
+    </div>
+    <div style="font-family:'Nunito',sans-serif;font-size:12px;color:rgba(255,255,255,0.3);font-style:italic;margin-top:-8px;">either way Onio wins</div>
+  `;
+  arena.appendChild(overlay);
+
+  function dismiss() {
+    overlay.style.animation = 'missO .3s ease forwards';
+    setTimeout(()=>{ overlay.remove(); cb(); }, 320);
+  }
+  // Both buttons dismiss — it's a troll either way
+  overlay.querySelector('#fake-decline').addEventListener('pointerdown', e=>{ e.stopPropagation(); speech("smart.", 800); dismiss(); });
+  overlay.querySelector('#fake-accept').addEventListener('pointerdown', e=>{ e.stopPropagation(); speech("wrong choice.", 800); dismiss(); });
+  // Auto-dismiss after 5s
+  setTimeout(()=>{ if (overlay.parentNode) { speech("they hung up.", 800); dismiss(); } }, 5000);
+}
+
+// Fake text notification banner (non-blocking)
+function showFakeTextBanner() {
+  const banners = [
+    "Onio: u ok? (i know the answer)",
+    "Mom: are you playing that game again",
+    "Unknown: you can't win this",
+    "Chaos Corp: your warranty has expired",
+    "Onio's Lawyer: cease tapping immediately",
+  ];
+  const b = document.createElement('div');
+  b.style.cssText = `position:absolute;top:60px;left:12px;right:12px;background:#1a1a2e;border-radius:14px;padding:12px 16px;z-index:40;display:flex;gap:10px;align-items:center;animation:popIn .2s ease;box-shadow:0 4px 20px rgba(0,0,0,0.4);`;
+  b.innerHTML = `<div style="font-size:28px;">💬</div><div><div style="font-family:'Fredoka One',cursive;font-size:12px;color:rgba(255,255,255,0.5);">MESSAGES</div><div style="font-family:'Nunito',sans-serif;font-size:14px;color:white;font-weight:700;">${banners[Math.floor(Math.random()*banners.length)]}</div></div>`;
+  arena.appendChild(b);
+  setTimeout(()=>{ b.style.animation='missO .3s ease forwards'; setTimeout(()=>b.remove(),320); }, 2500);
+}
+
+// Fake ghost Onio — pops up with a speech bubble so it's obvious
+function spawnFakeOnioPop() {
+  // Place well away from real Onio
+  let px, py, attempts = 0;
+  do {
+    px = 30 + Math.random()*(gW-140);
+    py = 100 + Math.random()*(gH-200);
+    attempts++;
+  } while (attempts < 10 && Math.sqrt((px-onioX)**2+(py-onioY)**2) < 120);
+
+  const ghost = document.createElement('div');
+  ghost.style.cssText = `position:absolute;font-size:72px;cursor:pointer;z-index:6;left:${px}px;top:${py}px;line-height:1;animation:popIn .2s cubic-bezier(.4,2,.6,1);`;
+  ghost.textContent = '😈';
+
+  // Speech bubble attached to ghost — makes it feel alive
+  const bubble = document.createElement('div');
+  const ghostLines = ["tap me!","over here!","i'm the real one!","psst— here!","forget him, tap ME"];
+  bubble.style.cssText = `position:absolute;background:white;border:2.5px solid #555;border-radius:12px;padding:5px 10px;font-family:'Fredoka One',cursive;font-size:13px;color:#333;white-space:nowrap;bottom:76px;left:50%;transform:translateX(-50%);animation:popIn .2s ease;`;
+  bubble.textContent = ghostLines[Math.floor(Math.random()*ghostLines.length)];
+  ghost.appendChild(bubble);
+
+  const lieLines = ["WRONG ONE! 😂","not me lol","haha. bye.","i'm a lie","gotcha"];
+  ghost.addEventListener('pointerdown', e=>{
+    e.stopPropagation();
+    bubble.remove();
+    ghost.textContent = '😂';
+    speech(lieLines[Math.floor(Math.random()*lieLines.length)], 700);
+    setTimeout(()=>{ ghost.style.animation='missO .25s ease forwards'; setTimeout(()=>ghost.remove(),280); }, 400);
+  });
+  arena.appendChild(ghost);
+  setTimeout(()=>{ if(ghost.parentNode){ ghost.style.animation='missO .3s ease forwards'; setTimeout(()=>ghost.remove(),300); }}, 3000);
+}
+
+// Onio claims you missed even though tap counted — big dramatic overlay
+function fakeMissClaim() {
+  const lies = ["MISS!","NOPE!","DOESN'T COUNT","WRONG SPOT","NOT EVEN CLOSE","TRY AGAIN"];
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:28;pointer-events:none;';
+  const txt = document.createElement('div');
+  txt.style.cssText = 'font-family:"Fredoka One",cursive;font-size:clamp(42px,14vw,72px);color:#E84030;text-shadow:3px 3px 0 rgba(232,80,40,0.3);animation:popIn .15s ease;letter-spacing:2px;';
+  txt.textContent = lies[Math.floor(Math.random()*lies.length)];
+  overlay.appendChild(txt);
+  arena.appendChild(overlay);
+  setTimeout(()=>{ overlay.style.opacity='0'; overlay.style.transition='opacity .2s'; setTimeout(()=>overlay.remove(),220); }, 600);
+  // Also speech from Onio
+  const snark = ["lol","nope 😈","didn't count","my rules","nice try"];
+  speech(snark[Math.floor(Math.random()*snark.length)], 500);
+}
+
+// Screen goes blank briefly (non-blocking — tapping still works)
+function flashBlank(durationMs=800) {
+  const blank = document.createElement('div');
+  blank.style.cssText = `position:absolute;inset:0;background:#FFF6E8;z-index:35;pointer-events:none;`;
+  arena.appendChild(blank);
+  setTimeout(()=>{
+    blank.style.transition='opacity .3s';
+    blank.style.opacity='0';
+    setTimeout(()=>blank.remove(), 320);
+  }, durationMs);
+}
+
+// Number glitch — sign goes haywire then settles, dramatic enough to notice
+function glitchSign(trueRemaining) {
+  const num = document.getElementById('sign-number');
+  const board = document.querySelector('.sign-board');
+  const glitchChars = ['?','!','∞','Ω','#','@','%','*','€'];
+  let flashes = 0;
+  const maxFlashes = 5;
+  board.style.background = '#FFE0E0';
+  // Rapid number scramble
+  const scramble = setInterval(()=>{
+    num.textContent = glitchChars[Math.floor(Math.random()*glitchChars.length)];
+    num.style.color = flashes%2===0 ? '#E84030' : '#7B2D8B';
+    flashes++;
+    if (flashes >= maxFlashes) {
+      clearInterval(scramble);
+      num.textContent = getSignDisplay(trueRemaining);
+      num.style.color = '';
+      board.style.background = '';
+    }
+  }, 100);
+  speech(['what?','glitch','oops 😬'][Math.floor(Math.random()*3)], 700);
+}
+
+// ============================================================
+// MAIN cTap — fast, chaos-budget, lying sign
+// ============================================================
+// MAIN cTap — instant response, chaos-budget, lying sign
+// ============================================================
+function cTap() {
+  let tapTarget;
+  if (DEBUG.FORCE_TAP_COUNT !== null) {
+    tapTarget = DEBUG.FORCE_TAP_COUNT;
+  } else {
+    tapTarget = level <= 4  ? 1                             // always 1 — learn the mechanic cleanly
+              : level <= 6  ? 2                             // exactly 2 — still simple
+              : level <= 10 ? Math.ceil(Math.random()*2)+1  // 2-3
+              : level <= 15 ? Math.ceil(Math.random()*3)+2  // 3-5
+              : level <= 25 ? Math.ceil(Math.random()*4)+4  // 5-8
+              :               Math.ceil(Math.random()*8)+8; // 9-16
+  }
+
+  let remaining = tapTarget;
+  let chaosBudget = getTapChaosBudget();
+  let chaosLocked = false;
+
+  const moveEvery = level <= 2 ? 999 : level <= 5 ? 3 : level <= 10 ? 2 : 1;
+  let tapsSinceMove = 0;
+
+  // Message bar = Onio's personality taunts, NOT the count (sign has the count)
+  const introTaunts = [
+    "tap me. dare you.",
+    "go on then.",
+    "i'm waiting. 😏",
+    "try to tap me.",
+    "here i am.",
+    "the sign says.",
+  ];
+  setMsg(introTaunts[Math.floor(Math.random()*introTaunts.length)]);
+
+  showSign(remaining);
+
+  // NO scale animation — sign appears instantly, 300ms flat lockout
+  onio.style.pointerEvents = 'none';
+  trickActive = false;
+  scheduleChallengeTimeout(()=>{ trickActive=true; onio.style.pointerEvents='auto'; }, 300);
+
+  function handleTap() {
+    if (!trickActive || chaosLocked) return;
+
+    remaining--;
+    tapsSinceMove++;
+    const isFinal = remaining <= 0;
+
+    // Instant sign update — same frame as tap
+    if (!isFinal) {
+      const displayNum = getSignDisplay(remaining);
+      const num = document.getElementById('sign-number');
+      num.textContent = displayNum;
+      num.className = 'sign-number bump';
+      scheduleChallengeTimeout(()=>num.className='sign-number', 200);
+    }
+
+    spawnHitBurst(onioX+36, onioY+36, isFinal);
+
+    // GUARD: chaos NEVER runs on the final tap
+    if (isFinal) {
+      trickActive = false;
+      onio.style.pointerEvents = 'none';
+      hideSign();
+      // Quick wobble — no scale-up, no waiting
+      onio.style.transition = 'transform 0.2s ease';
+      onio.style.transform = 'rotate(-15deg)';
+      scheduleChallengeTimeout(()=>{ onio.style.transform=''; onio.style.transition=''; }, 200);
+      const hitLines = modeLines('hit');
+      speech(hitLines[Math.floor(Math.random()*hitLines.length)], 0);
+      setMsg('GOT HIM! ✓');
+      scheduleChallengeTimeout(()=>{ clearSpeech(); onHit(true); }, 380);
+      return;
+    }
+
+    // Occasional speech bubble — 30% of taps only
+    if (Math.random() < 0.30) {
+      const hitMsgs = ["ow!","hey!","stop!","rude.","again?!","😤","ugh!","not fair!"];
+      speech(hitMsgs[Math.floor(Math.random()*hitMsgs.length)], 280);
+    }
+
+    // Instant teleport after tap — no transition, so hit area matches visual immediately
+    if (tapsSinceMove >= moveEvery) {
+      tapsSinceMove = 0;
+      moveOnio(true);           // true = instant, no CSS transition lag
+      positionSign();           // sign follows immediately too
+    }
+
+    // Chaos check — only on non-final taps
+    if (chaosBudget <= 0) return;
+    if (Math.random() > getTapChaosChance()) return;
+
+    // Non-pausing events are FREE — don't consume budget
+    // Only pausing events (signTroll, callFn) consume budget
+    const canDoPausing = chaosBudget >= 1;
+
+    const events = [];
+    // Core non-pausing events — free, equal weights so variety shows up
+    events.push({w:2, cost:0, fn:'fakeMissFn'});    // lies about your tap
+    events.push({w:2, cost:0, fn:'glitchSignFn'});  // sign scrambles
+    events.push({w:2, cost:0, fn:'shakeFn'});        // arena shake
+    // Level 3+
+    if (level >= 3) events.push({w:2, cost:0, fn:'fakeGhostFn'});   // fake Onio
+    if (level >= 3) events.push({w:2, cost:0, fn:'tinyFn'});        // Onio shrinks
+    // Level 4+
+    if (level >= 4) events.push({w:2, cost:0, fn:'blankFn'});       // screen blanks
+    if (level >= 4) events.push({w:2, cost:0, fn:'textBannerFn'});  // fake text
+    // Level 5+
+    if (level >= 5) events.push({w:2, cost:0, fn:'flipFn'});        // screen mirrors
+    // Pausing events — cost 1 budget each, less common
+    if (canDoPausing)             events.push({w:2, cost:1, fn:'signTrollFn'});
+    if (level >= 7 && canDoPausing) events.push({w:1, cost:1, fn:'callFn'});
+
+    const total = events.reduce((a,e)=>a+e.w, 0);
+    let r = Math.random()*total, chosen = events[0];
+    for (let i=0;i<events.length;i++) { r-=events[i].w; if(r<=0){chosen=events[i];break;} }
+
+    // Only consume budget if this event has a cost
+    chaosBudget -= (chosen.cost || 0);
+
+    switch(chosen.fn) {
+      case 'signTrollFn':
+        trickActive=false; onio.style.pointerEvents='none';
+        const trollAnns = ["actually... let me fix that 😈","hmm. miscounted.","wait—","oops. typo. 😈","hold on.","i meant more."];
+        setMsg(trollAnns[Math.floor(Math.random()*trollAnns.length)]);
+        speech("heh 😈", 0);
+        scheduleChallengeTimeout(()=>{
+          trollSign(remaining, newTarget=>{
+            remaining = newTarget;
+            clearSpeech();
+            const postLines = ["there we go.","much better.","sorry. (not sorry)","that's the real number. probably.","my bad. (not my bad)"];
+            setMsg(postLines[Math.floor(Math.random()*postLines.length)]);
+            trickActive=true; onio.style.pointerEvents='auto';
+          });
+        }, 250);
+        break;
+      case 'fakeMissFn':
+        // Move Onio instantly, claim player missed — the lie is the event
+        moveOnio(true);
+        positionSign();
+        fakeMissClaim();
+        break;
+      case 'glitchSignFn':
+        glitchSign(remaining);
+        break;
+      case 'fakeGhostFn':
+        spawnFakeOnioPop();
+        break;
+      case 'blankFn':
+        flashBlank(600 + level*10);
+        break;
+      case 'flipFn':
+        document.getElementById('game-screen').style.transform='scaleX(-1)';
+        setMsg("something feels off... 😏");
+        scheduleChallengeTimeout(()=>{ document.getElementById('game-screen').style.transform=''; setMsg('tap me.'); },
+          Math.max(1000, 800+level*50));
+        break;
+      case 'textBannerFn':
+        showFakeTextBanner();
+        break;
+      case 'callFn':
+        chaosLocked=true; trickActive=false; onio.style.pointerEvents='none';
+        showFakeCall(()=>{ chaosLocked=false; trickActive=true; onio.style.pointerEvents='auto'; });
+        break;
+      case 'shakeFn':
+        arena.style.animation='none'; void arena.offsetWidth;
+        arena.style.animation='screenShake .35s ease';
+        scheduleChallengeTimeout(()=>arena.style.animation='', 380);
+        break;
+      case 'tinyFn':
+        onio.style.transition='font-size .3s'; onio.style.fontSize='24px';
+        scheduleChallengeTimeout(()=>{
+          onio.style.fontSize='72px';
+          scheduleChallengeTimeout(()=>onio.style.transition='', 300);
+        }, 800+Math.random()*400);
+        break;
+    }
+  }
+
+  onio.addEventListener('pointerdown', handleTap);
+  currentTrickCleanup = ()=>{
+    hideSign();
+    onio.removeEventListener('pointerdown', handleTap);
+    onio.style.transform=''; onio.style.transition='';
+    document.getElementById('game-screen').style.transform='';
+  };
+}
+
+
+function cDodge() {
+  // How hard Onio fights: nearMissesToSurrender decreases with level
+  // lv1-3: gives up after 3-5 near-misses (lazy)
+  // lv4-8: gives up after 8-15
+  // lv9-15: gives up after 15-30 (rare mercy)
+  // lv16+: 5% chance per near-miss, basically never surrenders
+  const surrenderAfter = level <= 3  ? Math.round(3 + Math.random()*2)
+                       : level <= 8  ? Math.round(8 + Math.random()*7)
+                       : level <= 15 ? Math.round(15 + Math.random()*15)
+                       : Math.round(40 + Math.random()*60); // 40-100, very rare
+
+  // Surrender chance per near-miss at high levels: 5% base
+  const highLevelSurrenderChance = level >= 16 ? 0.05 + (level-16)*0.003 : 1.0;
+
+  let nearMisses = 0;
+  let isTired = false;
+  let tiredTimeout = null;
+
+  const msgs = [
+    "Tap me! (if you dare)",
+    "Try to tap me 😏",
+    "Go on then...",
+    "I dare you.",
+  ];
+  setMsg(msgs[Math.floor(Math.random()*msgs.length)]);
+
+  function dodge(e) {
+    if (!trickActive || isTired) return;
+    const rc = arena.getBoundingClientRect();
+    const cx = (e.clientX ?? e.touches?.[0]?.clientX ?? 0) - rc.left;
+    const cy = (e.clientY ?? e.touches?.[0]?.clientY ?? 0) - rc.top;
+    const dist = Math.sqrt((cx - onioX - 36)**2 + (cy - onioY - 36)**2);
+
+    if (dist < 140) {
+      nearMisses++;
+      moveOnio(false);
+
+      // Taunts scale with how long they've been dodging
+      const earlyTaunts  = ['nope','heh','lol','nice try','too slow'];
+      const lateTaunts   = ['still nope','getting tired tho...','ok fine maybe soon','...maybe','almost gave up lol'];
+      const taunts = nearMisses > surrenderAfter * 0.6 ? lateTaunts : earlyTaunts;
+      speech(taunts[Math.floor(Math.random()*taunts.length)], 450);
+
+      // Check surrender
+      const shouldSurrender = level <= 15
+        ? nearMisses >= surrenderAfter
+        : Math.random() < highLevelSurrenderChance;
+
+      if (shouldSurrender && !isTired) {
+        isTired = true;
+        arena.removeEventListener('pointermove', dodge);
+        arena.removeEventListener('touchmove', dodge);
+
+        // Onio shows white flag and slows down dramatically
+        const tiredMsgs = [
+          "ugh FINE 🏳️",
+          "ok ok ok you got me 🏳️",
+          "...fine. 🏳️",
+          "i'm tired 🏳️",
+          "ok I give up (for now) 🏳️",
+        ];
+        speech(tiredMsgs[Math.floor(Math.random()*tiredMsgs.length)], 0);
+        setMsg("NOW! TAP NOW!");
+        onio.style.transition = 'left .8s ease, top .8s ease'; // move sluggishly
+
+        // How long the window lasts: short at high levels
+        const windowMs = level <= 5 ? 2500
+                        : level <= 10 ? 1800
+                        : level <= 16 ? 1200
+                        : 700;
+
+        // At high levels, sometimes he tricks you — moves away at last second
+        const TRICK_CHANCE = Math.max(0, (level - 10) * 0.04); // 0% at lv10, 40% at lv20
+        tiredTimeout = setTimeout(() => {
+          if (!trickActive) return;
+          clearSpeech();
+          if (Math.random() < TRICK_CHANCE) {
+            // HA — fake surrender
+            speech("psyche! 😂", 700);
+            setMsg("lol never mind");
+            isTired = false;
+            nearMisses = Math.floor(nearMisses * 0.5); // reset half the progress
+            onio.style.transition = '';
+            arena.addEventListener('pointermove', dodge);
+            arena.addEventListener('touchmove', dodge, {passive:true});
+          } else {
+            // Real surrender timeout — he runs away, challenge resets
+            speech("ok I'm back 😈", 700);
+            setMsg("Tap me!");
+            isTired = false;
+            nearMisses = 0;
+            onio.style.transition = '';
+            arena.addEventListener('pointermove', dodge);
+            arena.addEventListener('touchmove', dodge, {passive:true});
+          }
+        }, windowMs);
+      }
+    }
+  }
+
+  arena.addEventListener('pointermove', dodge);
+  arena.addEventListener('touchmove', dodge, {passive:true});
+  currentTrickCleanup = () => {
+    arena.removeEventListener('pointermove', dodge);
+    arena.removeEventListener('touchmove', dodge);
+    if (tiredTimeout) clearTimeout(tiredTimeout);
+    onio.style.transition = '';
+  };
+}
+
+function cHold() {
+  showInstr('instr-hold', ()=>{
+    setMsg("Hold me! Don't. Let. Go.");
+    onio.style.pointerEvents='auto'; trickActive=true;
+
+    // difficulty: higher level = faster drain, more escapes
+    const fillRate  = 80 + level * 4;          // ms per tick fill (lower = faster)
+    const drainRate = Math.max(20, 55 - level*3); // ms per tick drain when released
+    const needed    = Math.max(1000, 2000 - level*80);
+    const escapeChance = Math.min(0.6, 0.1 + level*0.06); // probability of escape attempt per 200ms
+
+    let progress = 0, isHolding = false, escapeInterval = null;
+
+    const wrap = document.getElementById('hold-ring-wrap');
+    const arc  = document.getElementById('hold-arc');
+    wrap.classList.add('active');
+    updateHoldRing(0);
+
+    function updateHoldRing(pct) {
+      arc.style.strokeDashoffset = 301.6 * (1 - Math.min(1, pct));
+      // colour: green when filling, red when draining
+      arc.style.stroke = isHolding ? '#E8A030' : '#E84030';
+      wrap.style.cssText = `position:absolute;left:${onioX-15}px;top:${onioY-15}px;width:110px;height:110px;display:block;`;
+    }
+
+    // Onio escape attempts — he tries to wriggle away
+    escapeInterval = setInterval(()=>{
+      if (!trickActive || !isHolding) return;
+      if (Math.random() < escapeChance) {
+        // Jerk Onio slightly, drain ring briefly
+        const jx = (Math.random()-.5)*40, jy = (Math.random()-.5)*40;
+        const nx = Math.max(10, Math.min(gW-90, onioX+jx));
+        const ny = Math.max(10, Math.min(gH-100, onioY+jy));
+        onio.style.transition='left .08s, top .08s';
+        onio.style.left=nx+'px'; onio.style.top=ny+'px';
+        onioX=nx; onioY=ny;
+        // update ring position to follow
+        wrap.style.left=(onioX-15)+'px'; wrap.style.top=(onioY-15)+'px';
+        // brief drain
+        progress = Math.max(0, progress - needed * 0.12);
+        updateHoldRing(progress/needed);
+        speech(['nope!','let go!','stop!','escape!'][Math.floor(Math.random()*4)], 400);
+        haptic(15);
+      }
+    }, 200);
+
+    // main fill/drain loop
+    holdInterval = setInterval(()=>{
+      if (!trickActive) { clearHoldInterval(); return; }
+      if (isHolding) {
+        progress = Math.min(needed, progress + (needed / (fillRate/80 * 10)));
+        updateHoldRing(progress/needed);
+        // pulse onio while holding
+        onio.style.transform = `scale(${1 + Math.sin(Date.now()/120)*0.04})`;
+        if (progress >= needed) {
+          clearHoldInterval();
+          clearInterval(escapeInterval);
+          onio.style.transform='';
+          wrap.classList.remove('active');
+          // reset arc for next use
+          arc.style.strokeDashoffset='301.6';
+          isHolding=false; onHit();
+        }
+      } else {
+        if (progress > 0) {
+          progress = Math.max(0, progress - (needed / (drainRate/80 * 10)));
+          updateHoldRing(progress/needed);
+        }
+      }
+    }, 80);
+
+    function startH(e) {
+      if (!trickActive || e.target !== onio) return;
+      isHolding = true;
+      arc.style.stroke = '#E8A030';
+      clearSpeech();
+    }
+    function stopH() {
+      if (!isHolding) return;
+      isHolding = false;
+      arc.style.stroke = '#E84030';
+      onio.style.transform='';
+      if (trickActive && progress > 0) speech(["don't let go!","SO CLOSE","lol bye","almost! (not really)"][Math.floor(Math.random()*4)], 600);
+    }
+
+    onio.addEventListener('pointerdown', startH);
+    onio.addEventListener('pointerup', stopH);
+    document.addEventListener('pointerup', stopH);
+
+    currentTrickCleanup = () => {
+      clearHoldInterval();
+      clearInterval(escapeInterval);
+      const w=document.getElementById('hold-ring-wrap');
+      w.classList.remove('active'); w.style.cssText='';
+      document.getElementById('hold-arc').style.strokeDashoffset='301.6';
+      onio.style.transform='';
+      onio.removeEventListener('pointerdown', startH);
+      onio.removeEventListener('pointerup', stopH);
+      document.removeEventListener('pointerup', stopH);
+    };
+  });
+}
+
+// ============================================================
+// SWARM HELPERS
+// ============================================================
+function getSwarmCount() {
+  // Exact ranges: lv1-10 → 1-5, lv11-25 → 4-15, lv26-50 → 12-50, lv51+ → 25-200
+  if (level <= 10) return Math.round(1 + (level-1)/9 * 4);
+  if (level <= 25) return Math.round(4 + (level-11)/14 * 11);
+  if (level <= 50) return Math.round(12 + (level-26)/24 * 38);
+  return Math.min(200, Math.round(25 + (level-51) * 3.4));
+}
+
+function spawnOnioEl(emoji, x, y, opts={}) {
+  const d = document.createElement('div');
+  d.className = 'decoy';
+  d.textContent = emoji;
+  d.style.left = x+'px'; d.style.top = y+'px';
+  if (opts.size) d.style.fontSize = opts.size+'px';
+  if (opts.opacity) d.style.opacity = opts.opacity;
+  if (opts.anim) d.style.animationDuration = opts.anim+'s';
+  arena.appendChild(d); decoyEls.push(d);
+  return d;
+}
+
+// ---- VARIANT A: Tap ALL (lv1-10 feel) ----
+function cSwarmTapAll() {
+  const count = getSwarmCount();
+  const timeLimit = Math.max(3000, 12000 - level*200);
+  let remaining = count;
+  setMsg(`TAP ALL ${count}! ⏰`);
+  startDeathTimer(timeLimit);
+
+  // hide real Onio, spawn the grid
+  onio.style.display='none';
+
+  for (let i=0; i<count; i++) {
+    const p = randPos(30, 110);
+    // Mix of identical Onios — at higher levels some are slightly different
+    const sameEmoji = level<=10 || Math.random()>0.15;
+    const el = spawnOnioEl(sameEmoji?'😈':'😏', p.x, p.y, {
+      size: Math.max(28, 72 - Math.floor(count/8)),
+      anim: 0.7 + Math.random()*0.8
+    });
+    el.addEventListener('pointerdown', e=>{
+      e.stopPropagation();
+      if (!trickActive) return;
+      el.style.opacity='0.15'; el.style.pointerEvents='none';
+      haptic(15);
+      spawnRipple(p.x+36, p.y+36, 'hit-flash');
+      remaining--;
+      setMsg(remaining > 0 ? `${remaining} left!` : 'GOT EM! 😤');
+      if (remaining <= 0) {
+        clearDeathTimer();
+        onio.style.display='';
+        onHit();
+      }
+    });
+  }
+
+  currentTrickCleanup=()=>{ clearDeathTimer(); onio.style.display=''; clearDecoys(); };
+}
+
+// ---- VARIANT B: Find the REAL one (lv11-25 feel) ----
+function cSwarmFindReal() {
+  const count = getSwarmCount();
+  setMsg("Find the REAL Onio! 👀");
+
+  // Real Onio is hidden among fakes
+  onio.style.opacity='0';
+  const REAL_EMOJIS = ['😈'];
+  const FAKE_EMOJIS = ['😏','👹','👺','😜','🤡','👻','💀','😤'];
+
+  for (let i=0; i<count; i++) {
+    const p = randPos(30, 110);
+    const isFake = true;
+    const emoji = FAKE_EMOJIS[Math.floor(Math.random()*FAKE_EMOJIS.length)];
+    const opacity = 0.5 + Math.random()*0.5;
+    const el = spawnOnioEl(emoji, p.x, p.y, {
+      size: Math.max(32, 72 - Math.floor(count/6)),
+      opacity, anim: 0.6+Math.random()
+    });
+    el.addEventListener('pointerdown', e=>{
+      e.stopPropagation();
+      speech(['nope!','not me!','try again','lol'][Math.floor(Math.random()*4)], 600);
+      el.style.opacity='0.1'; el.style.pointerEvents='none';
+      registerMiss(p.x, p.y);
+    });
+  }
+
+  // Real Onio placed randomly among them
+  onio.style.opacity='1';
+  moveOnio(true);
+  if (level >= 15) startDeathTimer(Math.max(4000, 10000-level*200));
+  currentTrickCleanup=()=>{ clearDeathTimer(); onio.style.opacity='1'; clearDecoys(); };
+}
+
+// ---- VARIANT C: Moving swarm, tap all (lv26-50 feel) ----
+function cSwarmMoving() {
+  const count = getSwarmCount();
+  const timeLimit = Math.max(4000, 14000 - level*150);
+  let remaining = count;
+  setMsg(`TAP ALL ${count} — they're moving! 😤`);
+  startDeathTimer(timeLimit);
+  onio.style.display='none';
+
+  const sz = Math.max(24, 68 - Math.floor(count/5));
+  const speed = Math.max(600, 2500 - level*40);
+
+  for (let i=0; i<count; i++) {
+    const p = randPos(30,110);
+    const el = spawnOnioEl('😈', p.x, p.y, {size:sz, anim:0.5+Math.random()*0.6});
+    let ex=p.x, ey=p.y;
+    // each Onio wanders
+    const wander = setInterval(()=>{
+      if (!trickActive || el.style.pointerEvents==='none') { clearInterval(wander); return; }
+      ex = Math.max(20, Math.min(gW-80, ex + (Math.random()-.5)*60));
+      ey = Math.max(110, Math.min(gH-80, ey + (Math.random()-.5)*60));
+      el.style.transition=`left ${speed}ms ease, top ${speed}ms ease`;
+      el.style.left=ex+'px'; el.style.top=ey+'px';
+    }, speed + Math.random()*300);
+
+    el.addEventListener('pointerdown', e=>{
+      e.stopPropagation(); if (!trickActive) return;
+      clearInterval(wander);
+      el.style.opacity='0.1'; el.style.pointerEvents='none';
+      haptic(15); spawnRipple(ex+sz/2, ey+sz/2, 'hit-flash');
+      remaining--;
+      setMsg(remaining>0 ? `${remaining} left!` : 'GOT EM ALL! 💀');
+      if (remaining<=0) { clearDeathTimer(); onio.style.display=''; onHit(); }
+    });
+  }
+  currentTrickCleanup=()=>{ clearDeathTimer(); onio.style.display=''; clearDecoys(); };
+}
+
+// ---- VARIANT D: Spawning chaos — they keep appearing (lv51+) ----
+function cSwarmSpawning() {
+  const timeLimit = Math.max(5000, 8000 - (level-51)*50);
+  const spawnRate = Math.max(150, 800 - (level-51)*15); // ms between spawns
+  const targetKills = Math.round(25 + (level-51)*2);
+  let killed = 0;
+  setMsg(`TAP ${targetKills} before time runs out! 🌪️`);
+  startDeathTimer(timeLimit);
+  onio.style.display='none';
+
+  const sz = Math.max(20, 60 - Math.floor((level-51)/5));
+
+  const spawnInterval = setInterval(()=>{
+    if (!trickActive) { clearInterval(spawnInterval); return; }
+    const p = randPos(20,100);
+    const el = spawnOnioEl(['😈','🔥','💀'][Math.floor(Math.random()*3)], p.x, p.y, {size:sz,anim:0.4+Math.random()*.5});
+    // auto-remove after 2s if not tapped
+    const autoRemove = setTimeout(()=>{
+      if (el.parentNode) { el.style.opacity='0'; setTimeout(()=>el.remove(),200); decoyEls=decoyEls.filter(d=>d!==el); }
+    }, 2000);
+    el.addEventListener('pointerdown', e=>{
+      e.stopPropagation(); if (!trickActive) return;
+      clearTimeout(autoRemove);
+      el.style.opacity='0'; el.style.pointerEvents='none';
+      setTimeout(()=>{el.remove();decoyEls=decoyEls.filter(d=>d!==el);},200);
+      haptic(12); spawnRipple(p.x+sz/2, p.y+sz/2, 'hit-flash');
+      killed++;
+      setMsg(`${killed}/${targetKills} — keep going! 🌪️`);
+      if (killed>=targetKills) {
+        clearInterval(spawnInterval); clearDeathTimer();
+        onio.style.display=''; onHit();
+      }
+    });
+    decoyEls.push(el);
+  }, spawnRate);
+
+  currentTrickCleanup=()=>{ clearInterval(spawnInterval); clearDeathTimer(); onio.style.display=''; clearDecoys(); };
+}
+
+// Original single-Onio clone challenge (kept for variety at low levels)
+function cClones() {
+  setMsg("Which one is me? 👀");
+  onio.style.opacity='0.15';
+  const count=Math.min(3+level,8);
+  for(let i=0;i<count;i++){
+    const d=document.createElement('div');
+    d.className='decoy'; d.textContent='😈';
+    const p=randPos(); d.style.left=p.x+'px'; d.style.top=p.y+'px';
+    d.addEventListener('pointerdown',e=>{e.stopPropagation();speech("WRONG! 😂",700);d.style.opacity='0.2';d.style.pointerEvents='none';registerMiss(p.x,p.y);});
+    arena.appendChild(d); decoyEls.push(d);
+  }
+  onio.style.opacity='1';
+  if (level>=4) startDeathTimer(7000);
+  currentTrickCleanup=()=>{clearDecoys();clearDeathTimer();};
+}
+
+function cDrag() {
+  showInstr('instr-drag', ()=>{
+    setMsg("Drag me to the zone!");
+    onio.style.pointerEvents='auto'; trickActive=true;
+    const zw=120,zh=100; let zx,zy;
+    do{zx=30+Math.random()*(gW-zw-60);zy=120+Math.random()*(gH-zh-140);}
+    while(Math.abs(zx-onioX)<150&&Math.abs(zy-onioY)<150);
+    const dz=document.getElementById('drag-zone');
+    dz.style.cssText=`left:${zx}px;top:${zy}px;width:${zw}px;height:${zh}px;`;
+    dz.classList.add('active');
+    if (level>=4) startDeathTimer(7000);
+    function sd(e){if(!trickActive||e.target!==onio)return;e.preventDefault();isDragging=true;const rc=arena.getBoundingClientRect();const cx=(e.clientX??e.touches?.[0]?.clientX??0)-rc.left;const cy=(e.clientY??e.touches?.[0]?.clientY??0)-rc.top;dragOffX=cx-onioX;dragOffY=cy-onioY;onio.style.transition='none';}
+    function md(e){if(!isDragging||!trickActive)return;const rc=arena.getBoundingClientRect();const cx=(e.clientX??e.touches?.[0]?.clientX??0)-rc.left;const cy=(e.clientY??e.touches?.[0]?.clientY??0)-rc.top;placeOnio(cx-dragOffX,cy-dragOffY,true);}
+    function ed(){if(!isDragging)return;isDragging=false;if(onioX+36>zx&&onioX+36<zx+zw&&onioY+36>zy&&onioY+36<zy+zh){dz.classList.remove('active');clearDeathTimer();onHit();}else speech("not there! 🎯",500);}
+    arena.addEventListener('pointerdown',sd);arena.addEventListener('pointermove',md);arena.addEventListener('pointerup',ed);
+    arena.addEventListener('touchstart',sd,{passive:false});arena.addEventListener('touchmove',md,{passive:true});arena.addEventListener('touchend',ed);
+    currentTrickCleanup=()=>{dz.classList.remove('active');clearDeathTimer();arena.removeEventListener('pointerdown',sd);arena.removeEventListener('pointermove',md);arena.removeEventListener('pointerup',ed);arena.removeEventListener('touchstart',sd);arena.removeEventListener('touchmove',md);arena.removeEventListener('touchend',ed);};
+  });
+}
+
+function cShake() {
+  showInstr('instr-shake', ()=>{
+    setMsg("SHAKE YOUR PHONE! 📳");
+    trickActive=true; onio.style.pointerEvents='none';
+    document.getElementById('shake-ind').classList.add('active');
+    const needed=Math.max(3,6-Math.floor(level/2));
+    let count=0;
+    if (level>=4) startDeathTimer(6000);
+    function updateShakeCount(n) {
+      document.getElementById('shake-count').textContent=`${n}/${needed}`;
+    }
+    updateShakeCount(0);
+
+    if (window.DeviceMotionEvent) {
+      let lastSh=0;
+      function onMotion(e) {
+        if (!trickActive) return;
+        const acc=e.accelerationIncludingGravity||e.acceleration; if (!acc) return;
+        const ax=acc.x||0,ay=acc.y||0,az=acc.z||0;
+        const delta=Math.abs(ax-lastAx)+Math.abs(ay-lastAy)+Math.abs(az-lastAz);
+        lastAx=ax;lastAy=ay;lastAz=az;
+        const now=Date.now();
+        if (delta>16&&now-lastSh>220){
+          lastSh=now; count++; haptic(20);
+          speech(['shake!','yeah!','more!','keep going!'][Math.min(count-1,3)],400);
+          onio.style.transform=`rotate(${(Math.random()-.5)*30}deg)`;
+          setTimeout(()=>{onio.style.transform='';},200);
+          updateShakeCount(count);
+          if(count>=needed){document.getElementById('shake-ind').classList.remove('active');clearDeathTimer();window.removeEventListener('devicemotion',onMotion);onHit();}
+        }
+      }
+      const tryListen = () => window.addEventListener('devicemotion', onMotion);
+      if (typeof DeviceMotionEvent.requestPermission==='function') {
+        DeviceMotionEvent.requestPermission().then(r=>{ if(r==='granted') tryListen(); else fallbackShake(needed); }).catch(()=>fallbackShake(needed));
+      } else { tryListen(); }
+      currentTrickCleanup=()=>{document.getElementById('shake-ind').classList.remove('active');clearDeathTimer();window.removeEventListener('devicemotion',onMotion);};
+    } else { fallbackShake(needed); }
+  });
+}
+
+function fallbackShake(needed) {
+  document.getElementById('shake-ind').classList.remove('active');
+  setMsg(`Tap Onio ${needed}× fast! 🤙`);
+  onio.style.pointerEvents='auto'; let taps=0;
+  function onTap(e){e.stopPropagation();taps++;speech(['shake!','yes!','more!'][Math.min(taps-1,2)],300);onio.style.transform=`rotate(${(Math.random()-.5)*20}deg)`;setTimeout(()=>{onio.style.transform='';},150);if(taps>=needed){onio.removeEventListener('pointerdown',onTap);onHit();}}
+  onio.addEventListener('pointerdown',onTap);
+  currentTrickCleanup=()=>{onio.removeEventListener('pointerdown',onTap);clearDeathTimer();};
+}
+
+// ============================================================
+// BLOW / MIC — calibrated, with live meter and Onio reaction
+// ============================================================
+function cBlow() {
+  showInstr('instr-blow', ()=>{
+    setMsg("BLOW into the mic! 💨");
+    trickActive=true; onio.style.pointerEvents='none';
+    document.getElementById('mic-challenge').classList.add('active');
+    document.getElementById('mic-onio').textContent='😈';
+    document.getElementById('mic-status').textContent='calibrating...';
+    document.getElementById('mic-meter-bar').style.width='0%';
+    if (level>=4) startDeathTimer(8000);
+    startMicChallenge();
+    currentTrickCleanup=()=>{document.getElementById('mic-challenge').classList.remove('active');clearDeathTimer();stopMic();};
+  });
+}
+
+async function startMicChallenge() {
+  // Resume / create AudioContext on user gesture (required iOS)
+  try {
+    if (!audioCtx || audioCtx.state === 'closed') audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
+    micStream = await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+  } catch(e) {
+    fallbackBlow(); return;
+  }
+
+  const src = audioCtx.createMediaStreamSource(micStream);
+  micAnalyser = audioCtx.createAnalyser();
+  micAnalyser.fftSize = 256;
+  src.connect(micAnalyser);
+  const buf = new Uint8Array(micAnalyser.frequencyBinCount);
+
+  // CALIBRATE: sample ambient noise for 1 second
+  let ambientSum=0, ambientSamples=0;
+  const calInterval = setInterval(()=>{
+    micAnalyser.getByteFrequencyData(buf);
+    ambientSum += buf.reduce((a,b)=>a+b,0)/buf.length;
+    ambientSamples++;
+  }, 100);
+
+  document.getElementById('mic-status').textContent='calibrating...';
+
+  setTimeout(()=>{
+    clearInterval(calInterval);
+    const baseline = ambientSum / ambientSamples;
+    const threshold = baseline + 18; // blow must be this far above ambient
+    document.getElementById('mic-status').textContent='now BLOW! 💨';
+
+    let blowProgress=0, needed=3;
+    micInterval = setInterval(()=>{
+      if (!trickActive) { stopMic(); return; }
+      micAnalyser.getByteFrequencyData(buf);
+      const avg = buf.reduce((a,b)=>a+b,0)/buf.length;
+      const pct = Math.max(0, Math.min(1, (avg-baseline)/(threshold*2)));
+      document.getElementById('mic-meter-bar').style.width = (pct*100)+'%';
+
+      // Onio leans back as blow gets stronger
+      if (pct > 0.1) {
+        const lean = Math.min(pct*35, 35);
+        document.getElementById('mic-onio').style.transform = `rotate(${lean}deg) translateX(${lean*.8}px)`;
+        document.getElementById('mic-status').textContent = pct>0.6 ? 'harder!! 💨💨' : 'keep blowing...';
+      } else {
+        document.getElementById('mic-onio').style.transform = '';
+        document.getElementById('mic-status').textContent = 'blow into the mic 💨';
+      }
+
+      if (avg > threshold) {
+        blowProgress++;
+        const r=document.createElement('div'); r.className='mic-ripple';
+        r.style.cssText=`width:80px;height:80px;left:${onioX-4}px;top:${onioY-4}px;`;
+        arena.appendChild(r); setTimeout(()=>r.remove(),500);
+        if (blowProgress>=needed) {
+          document.getElementById('mic-onio').style.transform='rotate(90deg) translateX(20px)';
+          document.getElementById('mic-status').textContent='💀 knocked over!';
+          setTimeout(()=>{
+            document.getElementById('mic-challenge').classList.remove('active');
+            stopMic(); clearDeathTimer(); onHit();
+          }, 400);
+        }
+      }
+    }, 80);
+  }, 1000); // 1 second calibration
+}
+
+function fallbackBlow() {
+  document.getElementById('mic-challenge').classList.remove('active');
+  setMsg("No mic? Tap Onio 3× fast! 💨");
+  onio.style.pointerEvents='auto'; let taps=0;
+  function onTap(e){e.stopPropagation();taps++;const r=document.createElement('div');r.className='mic-ripple';r.style.cssText=`width:80px;height:80px;left:${onioX-4}px;top:${onioY-4}px;`;arena.appendChild(r);setTimeout(()=>r.remove(),500);if(taps>=3){onio.removeEventListener('pointerdown',onTap);onHit();}}
+  onio.addEventListener('pointerdown',onTap);
+  currentTrickCleanup=()=>{onio.removeEventListener('pointerdown',onTap);clearDeathTimer();};
+}
+
+function stopMic() {
+  if (micInterval){clearInterval(micInterval);micInterval=null;}
+  if (micStream){micStream.getTracks().forEach(t=>t.stop());micStream=null;}
+  micAnalyser=null;
+}
+
+// ============================================================
+// CHAOS CHALLENGES — longer lingering
+// ============================================================
+function cUpsideDown() {
+  setMsg("¡ǝɯ dɐʇ");
+  document.getElementById('game-screen').style.transform='rotate(180deg)';
+  speech("oops! 😬", 1500);
+  // Linger 8–12s, death timer at higher levels
+  const linger = level>=4 ? 8000 : 12000;
+  if (level>=4) startDeathTimer(linger);
+  else {
+    // Auto-restore after linger but only AFTER a hit
+    // Player must tap Onio while upside-down — no auto restore
+  }
+  currentTrickCleanup=()=>{document.getElementById('game-screen').style.transform='';clearDeathTimer();};
+}
+
+function cMirror() {
+  setMsg("Something feels... off?");
+  document.getElementById('game-screen').style.transform='scaleX(-1)';
+  speech("heh heh 😏", 2500);
+  if (level>=4) startDeathTimer(10000);
+  currentTrickCleanup=()=>{document.getElementById('game-screen').style.transform='';clearDeathTimer();};
+}
+
+function cTiny() {
+  onio.style.transition='font-size .5s'; onio.style.fontSize='20px';
+  setMsg("Tap me! (I shrank 😂)");
+  moveOnio(true);
+  if (level>=4) startDeathTimer(7000);
+  currentTrickCleanup=()=>{onio.style.fontSize='72px';clearDeathTimer();};
+}
+
+function cFakePause() {
+  document.getElementById('fake-pause').classList.add('active');
+  onio.style.pointerEvents='none'; trickActive=false; setMsg("...");
+  document.getElementById('resume-btn').onclick=()=>{
+    document.getElementById('fake-pause').classList.remove('active');
+    trickActive=true; onio.style.pointerEvents='auto'; moveOnio(true);
+    speech("lolol 😂",800); setMsg("Ok ok, tap me now!");
+  };
+  currentTrickCleanup=()=>{document.getElementById('fake-pause').classList.remove('active');};
+}
+
+function cFakeText() {
+  const ftScreen=document.getElementById('fake-text'), ftMsgs=document.getElementById('ft-msgs');
+  ftScreen.classList.add('active'); ftMsgs.innerHTML='';
+  onio.style.pointerEvents='none'; trickActive=false; setMsg("...");
+  const convo=FAKE_TEXT_CONVOS[Math.floor(Math.random()*FAKE_TEXT_CONVOS.length)];
+  let i=0;
+
+  function next() {
+    if (i>=convo.length) return;
+    const msg=convo[i]; i++;
+    if (msg.s==='them') {
+      const tr=document.createElement('div'); tr.className='ft-row them';
+      tr.innerHTML='<div class="ft-typing"><span></span><span></span><span></span></div>';
+      ftMsgs.appendChild(tr); ftMsgs.scrollTop=ftMsgs.scrollHeight;
+      setTimeout(()=>{
+        tr.remove();
+        const row=document.createElement('div'); row.className='ft-row them';
+        row.innerHTML=`<div class="ft-bub">${msg.t}</div>`;
+        ftMsgs.appendChild(row); ftMsgs.scrollTop=ftMsgs.scrollHeight;
+        setTimeout(next, msg.d||800);
+      }, 700+Math.random()*400);
+    } else {
+      setTimeout(()=>{
+        const tr=document.createElement('div'); tr.className='ft-row them';
+        tr.innerHTML='<div class="ft-typing"><span></span><span></span><span></span></div>';
+        ftMsgs.appendChild(tr); ftMsgs.scrollTop=ftMsgs.scrollHeight;
+        const cd=msg.cd||55, finalText=msg.t, typoText=msg.typo, typoAt=msg.typoAt;
+        setTimeout(()=>{
+          tr.remove();
+          const row=document.createElement('div'); row.className='ft-row me';
+          const bub=document.createElement('div'); bub.className='ft-bub'; bub.textContent='';
+          row.appendChild(bub); ftMsgs.appendChild(row);
+          if (typoText&&typoAt!==undefined) {
+            let ci=0, typed='';
+            function typeTypo(){
+              if(ci<typoText.length){typed+=typoText[ci];bub.textContent=typed+'|';ftMsgs.scrollTop=ftMsgs.scrollHeight;ci++;setTimeout(typeTypo,cd+Math.random()*25);}
+              else{setTimeout(backspace,550);}
+            }
+            function backspace(){
+              if(typed.length>typoAt){typed=typed.slice(0,-1);bub.textContent=typed+'|';ftMsgs.scrollTop=ftMsgs.scrollHeight;setTimeout(backspace,75);}
+              else{let ei=0;const rest=finalText.slice(typoAt);function typeRest(){if(ei<rest.length){typed+=rest[ei];ei++;bub.textContent=typed+'|';ftMsgs.scrollTop=ftMsgs.scrollHeight;setTimeout(typeRest,cd+Math.random()*25);}else{bub.textContent=finalText;setTimeout(next,msg.d||900);}}typeRest();}
+            }
+            typeTypo();
+          } else {
+            let ci=0;
+            function typeChar(){if(ci<finalText.length){bub.textContent=finalText.slice(0,ci+1)+'|';ftMsgs.scrollTop=ftMsgs.scrollHeight;ci++;setTimeout(typeChar,cd+Math.random()*25);}else{bub.textContent=finalText;setTimeout(next,msg.d||900);}}
+            typeChar();
+          }
+        }, 600+Math.random()*300);
+      }, (msg.d||800)*.35);
+    }
+  }
+  next();
+  document.getElementById('ft-close').onclick=()=>{
+    ftScreen.classList.remove('active');
+    trickActive=true; onio.style.pointerEvents='auto'; moveOnio(true);
+    speech("ok I'm back 👋",900); setMsg("Where were we?");
+  };
+  currentTrickCleanup=()=>{ftScreen.classList.remove('active');};
+}
+
+function cTeleport() {
+  setMsg("Catch me if you can! 😤");
+  let count=0; const maxHops=5+level; const speed=Math.max(260,700-level*32);
+  function hop(){if(!trickActive||count>=maxHops)return;moveOnio(true);speech(['nope','heh','here!','over here!'][Math.floor(Math.random()*4)],300);count++;setTimeout(hop,speed);}
+  hop();
+  if (level>=5) startDeathTimer(5500);
+  currentTrickCleanup=()=>{clearDeathTimer();};
+}
+
+function cTimer() {
+  setMsg("TAP ME — HURRY! ⏰");
+  const limit=Math.max(2000,5000-level*200);
+  startDeathTimer(limit);
+  currentTrickCleanup=()=>{clearDeathTimer();};
+}
+
+function getEvtPoint(e) {
+  const rc = arena.getBoundingClientRect();
+  return {
+    x: (e.clientX ?? e.touches?.[0]?.clientX ?? 0) - rc.left,
+    y: (e.clientY ?? e.touches?.[0]?.clientY ?? 0) - rc.top,
+  };
+}
+
+function cSwipeCode() {
+  suppressArenaMiss = true;
+  trickActive = true;
+  onio.style.pointerEvents = 'none';
+
+  const dirs = ['up', 'down', 'left', 'right'];
+  const glyph = {up:'↑', down:'↓', left:'←', right:'→'};
+  const len = Math.min(8, 3 + Math.floor(level / 12));
+  const seq = Array.from({length:len}, ()=>dirs[Math.floor(Math.random()*dirs.length)]);
+  const rememberMs = Math.max(1200, 2800 - level * 45);
+  const timeLimit = Math.max(4200, 10000 - level * 120);
+  let idx = 0;
+  let startPt = null;
+  let codeLive = false;
+
+  setMsg('MEMORIZE: ' + seq.map(d=>glyph[d]).join(' '));
+  if (level >= 8) startDeathTimer(timeLimit);
+
+  scheduleChallengeTimeout(()=>{
+    codeLive = true;
+    setMsg(`Swipe code ${idx}/${len}`);
+  }, rememberMs);
+
+  function decodeSwipe(a, b) {
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 26) return null;
+    if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? 'right' : 'left';
+    return dy > 0 ? 'down' : 'up';
+  }
+
+  function onDown(e) {
+    e.stopImmediatePropagation();
+    startPt = getEvtPoint(e);
+  }
+
+  function onUp(e) {
+    e.stopImmediatePropagation();
+    if (!codeLive || !startPt) return;
+    const end = getEvtPoint(e);
+    const got = decodeSwipe(startPt, end);
+    startPt = null;
+    if (!got) return;
+
+    const want = seq[idx];
+    if (got === want) {
+      idx++;
+      speech(['ok','nice','good','keep going'][Math.floor(Math.random()*4)], 350);
+      setMsg(idx >= len ? 'CODE CRACKED ✅' : `Swipe code ${idx}/${len}`);
+      if (idx >= len) {
+        clearDeathTimer();
+        onHit();
+      }
+      return;
+    }
+
+    idx = 0;
+    speech(['wrong swipe','nope','start over 😈'][Math.floor(Math.random()*3)], 550);
+    setMsg(`Wrong order — ${idx}/${len}`);
+    registerMiss(end.x, end.y);
+  }
+
+  arena.addEventListener('pointerdown', onDown, true);
+  window.addEventListener('pointerup', onUp, true);
+
+  currentTrickCleanup = () => {
+    clearDeathTimer();
+    suppressArenaMiss = false;
+    arena.removeEventListener('pointerdown', onDown, true);
+    window.removeEventListener('pointerup', onUp, true);
+  };
+}
+
+function cTracePath() {
+  suppressArenaMiss = true;
+  trickActive = true;
+  onio.style.pointerEvents = 'none';
+
+  const count = Math.min(8, 4 + Math.floor(level / 12));
+  const radius = 22;
+  const points = [];
+  const layer = document.createElement('div');
+  layer.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:24;';
+  arena.appendChild(layer);
+
+  for (let i = 0; i < count; i++) {
+    const t = i / (count - 1);
+    const x = 50 + t * (gW - 100) + (Math.random() - 0.5) * 40;
+    const yMid = gH * (0.38 + 0.22 * Math.sin(t * Math.PI * 1.4));
+    const y = Math.max(120, Math.min(gH - 80, yMid + (Math.random() - 0.5) * 40));
+    points.push({x, y});
+  }
+
+  for (let i = 0; i < points.length; i++) {
+    if (i > 0) {
+      const a = points[i - 1], b = points[i];
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const len = Math.sqrt(dx*dx + dy*dy);
+      const ang = Math.atan2(dy, dx) * 180 / Math.PI;
+      const seg = document.createElement('div');
+      seg.style.cssText = `position:absolute;left:${a.x}px;top:${a.y}px;width:${len}px;height:4px;background:rgba(232,160,48,0.35);transform-origin:0 50%;transform:rotate(${ang}deg);border-radius:4px;`;
+      layer.appendChild(seg);
+    }
+    const p = document.createElement('div');
+    p.style.cssText = `position:absolute;left:${points[i].x-radius}px;top:${points[i].y-radius}px;width:${radius*2}px;height:${radius*2}px;border-radius:50%;border:3px solid #E8A030;background:${i===0?'#FFF6E8':'rgba(255,255,255,0.65)'};box-shadow:0 0 0 3px rgba(232,160,48,0.16);`;
+    p.dataset.idx = String(i);
+    layer.appendChild(p);
+  }
+
+  let tracing = false;
+  let next = 0;
+  let failLock = false;
+  setMsg('Trace the path dots in order');
+  if (level >= 8) startDeathTimer(Math.max(5500, 11000 - level*120));
+
+  function markDone(idx) {
+    const el = layer.querySelector(`div[data-idx="${idx}"]`);
+    if (el) {
+      el.style.background = '#E8A030';
+      el.style.borderColor = '#C0560A';
+    }
+  }
+
+  function near(p, q, pad=0) {
+    const dx = p.x - q.x, dy = p.y - q.y;
+    return Math.sqrt(dx*dx + dy*dy) <= radius + pad;
+  }
+
+  function onDown(e) {
+    e.stopImmediatePropagation();
+    const p = getEvtPoint(e);
+    if (near(p, points[0], 10)) {
+      tracing = true;
+      next = 1;
+      markDone(0);
+      setMsg(`Trace ${next}/${points.length}`);
+    } else {
+      registerMiss(p.x, p.y);
+    }
+  }
+
+  function onMove(e) {
+    if (!tracing || !trickActive) return;
+    e.stopImmediatePropagation();
+    const p = getEvtPoint(e);
+    const target = points[next];
+    if (!target) return;
+
+    if (near(p, target, 10)) {
+      markDone(next);
+      next++;
+      setMsg(next >= points.length ? 'PATH CLEARED ✅' : `Trace ${next}/${points.length}`);
+      if (next >= points.length) {
+        clearDeathTimer();
+        onHit();
+      }
+      return;
+    }
+
+    if (!failLock && !near(p, target, 95)) {
+      failLock = true;
+      tracing = false;
+      next = 0;
+      speech('stay on the path!', 550);
+      registerMiss(p.x, p.y);
+      scheduleChallengeTimeout(()=>{
+        failLock = false;
+        layer.querySelectorAll('div[data-idx]').forEach((el, idx) => {
+          el.style.background = idx===0 ? '#FFF6E8' : 'rgba(255,255,255,0.65)';
+          el.style.borderColor = '#E8A030';
+        });
+        setMsg('Start at the first dot');
+      }, 300);
+    }
+  }
+
+  function onUp(e) {
+    if (!trickActive) return;
+    e.stopImmediatePropagation();
+    tracing = false;
+    if (next > 0 && next < points.length) setMsg(`Trace ${next}/${points.length}`);
+  }
+
+  arena.addEventListener('pointerdown', onDown, true);
+  arena.addEventListener('pointermove', onMove, true);
+  window.addEventListener('pointerup', onUp, true);
+
+  currentTrickCleanup = () => {
+    clearDeathTimer();
+    suppressArenaMiss = false;
+    layer.remove();
+    arena.removeEventListener('pointerdown', onDown, true);
+    arena.removeEventListener('pointermove', onMove, true);
+    window.removeEventListener('pointerup', onUp, true);
+  };
+}
+
+function cRhythmTap() {
+  trickActive = true;
+  onio.style.pointerEvents = 'auto';
+  const needed = Math.min(8, 3 + Math.floor(level / 10));
+  const beatMs = Math.max(430, 780 - level * 9);
+  const grace = Math.max(95, 180 - level * 2);
+  let scored = 0;
+  let beatWindowStart = 0;
+  let beatWindowEnd = 0;
+  let beatsElapsed = 0;
+
+  setMsg(`Tap on beat: ${scored}/${needed}`);
+  if (level >= 9) startDeathTimer(Math.max(4500, 10500 - level*100));
+
+  function spawnPulse() {
+    const pulse = document.createElement('div');
+    pulse.style.cssText = `position:absolute;left:${onioX+36}px;top:${onioY+36}px;width:18px;height:18px;border-radius:50%;border:4px solid rgba(232,160,48,.75);transform:translate(-50%,-50%);animation:hitO .45s ease forwards;z-index:22;pointer-events:none;`;
+    arena.appendChild(pulse);
+    scheduleChallengeTimeout(()=>pulse.remove(), 500);
+  }
+
+  const beatInterval = setInterval(()=>{
+    if (!trickActive) return;
+    beatsElapsed++;
+    spawnPulse();
+    const now = performance.now();
+    beatWindowStart = now - grace * 0.4;
+    beatWindowEnd = now + grace;
+    if (beatsElapsed > needed + 5 && scored < needed) {
+      clearInterval(beatInterval);
+      triggerDeath('off beat 😈');
+    }
+  }, beatMs);
+
+  function onTap(e) {
+    e.stopPropagation();
+    if (!trickActive) return;
+    const now = performance.now();
+    if (now >= beatWindowStart && now <= beatWindowEnd) {
+      scored++;
+      speech(['nice timing','on beat','clean'][Math.floor(Math.random()*3)], 320);
+      setMsg(`Tap on beat: ${scored}/${needed}`);
+      if (scored >= needed) {
+        clearInterval(beatInterval);
+        clearDeathTimer();
+        onHit();
+      }
+      return;
+    }
+    registerMiss(onioX+36, onioY+36);
+  }
+
+  onio.addEventListener('pointerdown', onTap);
+  currentTrickCleanup = () => {
+    clearInterval(beatInterval);
+    clearDeathTimer();
+    onio.removeEventListener('pointerdown', onTap);
+  };
+}
+
+function cPinchTrap() {
+  if ((navigator.maxTouchPoints || 0) < 2) {
+    setMsg('No multi-touch here. Hold challenge fallback!');
+    return cHold();
+  }
+
+  trickActive = true;
+  onio.style.pointerEvents = 'auto';
+  const needRatio = Math.max(0.58, 0.74 - level * 0.005);
+  const pointerMap = new Map();
+  let startDist = 0;
+  setMsg('Pinch Onio with 2 fingers');
+  startDeathTimer(Math.max(5000, 9800 - level*90));
+
+  function dist() {
+    const pts = [...pointerMap.values()];
+    if (pts.length < 2) return 0;
+    const dx = pts[0].x - pts[1].x;
+    const dy = pts[0].y - pts[1].y;
+    return Math.sqrt(dx*dx + dy*dy);
+  }
+
+  function onDown(e) {
+    if (!trickActive || e.target !== onio) return;
+    e.stopPropagation();
+    pointerMap.set(e.pointerId, {x:e.clientX, y:e.clientY});
+    if (pointerMap.size === 2 && !startDist) {
+      startDist = Math.max(18, dist());
+      setMsg('Now pinch inward!');
+    }
+  }
+
+  function onMove(e) {
+    if (!pointerMap.has(e.pointerId) || !trickActive) return;
+    pointerMap.set(e.pointerId, {x:e.clientX, y:e.clientY});
+    if (pointerMap.size < 2 || !startDist) return;
+    const ratio = dist() / startDist;
+    const pct = Math.max(0, Math.min(100, Math.round((1 - ratio) * 100)));
+    setMsg(`Pinch ${pct}%`);
+    if (ratio <= needRatio) {
+      clearDeathTimer();
+      onHit();
+    }
+  }
+
+  function onUp(e) {
+    pointerMap.delete(e.pointerId);
+    if (pointerMap.size < 2) startDist = 0;
+  }
+
+  onio.addEventListener('pointerdown', onDown);
+  onio.addEventListener('pointermove', onMove);
+  onio.addEventListener('pointerup', onUp);
+  onio.addEventListener('pointercancel', onUp);
+
+  currentTrickCleanup = () => {
+    clearDeathTimer();
+    pointerMap.clear();
+    onio.removeEventListener('pointerdown', onDown);
+    onio.removeEventListener('pointermove', onMove);
+    onio.removeEventListener('pointerup', onUp);
+    onio.removeEventListener('pointercancel', onUp);
+  };
+}
+
+function cTwoFingerLock() {
+  if ((navigator.maxTouchPoints || 0) < 2) {
+    setMsg('No multi-touch. Hold challenge fallback!');
+    return cHold();
+  }
+
+  trickActive = true;
+  onio.style.pointerEvents = 'auto';
+  const needMs = Math.max(1200, 2400 - level * 30);
+  const pointerSet = new Set();
+  let held = 0;
+  setMsg('Hold Onio with TWO fingers');
+  startDeathTimer(Math.max(5000, 9600 - level*85));
+
+  function onDown(e) {
+    if (!trickActive || e.target !== onio) return;
+    e.stopPropagation();
+    pointerSet.add(e.pointerId);
+  }
+
+  function onUp(e) {
+    pointerSet.delete(e.pointerId);
+  }
+
+  const holdTick = setInterval(()=>{
+    if (!trickActive) return;
+    if (pointerSet.size >= 2) held = Math.min(needMs, held + 80);
+    else held = Math.max(0, held - 120);
+    const pct = Math.round((held / needMs) * 100);
+    setMsg(`Two-finger lock ${pct}%`);
+    if (held >= needMs) {
+      clearInterval(holdTick);
+      clearDeathTimer();
+      onHit();
+    }
+  }, 80);
+
+  onio.addEventListener('pointerdown', onDown);
+  onio.addEventListener('pointerup', onUp);
+  onio.addEventListener('pointercancel', onUp);
+
+  currentTrickCleanup = () => {
+    clearInterval(holdTick);
+    clearDeathTimer();
+    pointerSet.clear();
+    onio.removeEventListener('pointerdown', onDown);
+    onio.removeEventListener('pointerup', onUp);
+    onio.removeEventListener('pointercancel', onUp);
+  };
+}
+
+function cTiltBalance() {
+  trickActive = true;
+  suppressArenaMiss = true;
+  onio.style.pointerEvents = 'auto';
+
+  const zoneW = Math.max(120, Math.min(190, gW * 0.32));
+  const zoneH = Math.max(95, Math.min(150, gH * 0.25));
+  const zx = (gW - zoneW) / 2;
+  const zy = (gH - zoneH) / 2;
+  const needMs = Math.max(1200, 2300 - level * 24);
+  let held = 0;
+  let dragMode = false;
+  let dragging = false;
+  let offX = 0, offY = 0;
+
+  const zone = document.createElement('div');
+  zone.style.cssText = `position:absolute;left:${zx}px;top:${zy}px;width:${zoneW}px;height:${zoneH}px;border:3px dashed #4CAF50;border-radius:16px;background:rgba(76,175,80,0.08);z-index:10;pointer-events:none;`;
+  zone.innerHTML = '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:\'Fredoka One\',cursive;font-size:13px;color:#4CAF50;">BALANCE ZONE</div>';
+  arena.appendChild(zone);
+
+  setMsg('Tilt to keep Onio in the zone');
+  startDeathTimer(Math.max(5600, 11000 - level*95));
+
+  function inZone() {
+    const cx = onioX + 36, cy = onioY + 36;
+    return cx >= zx && cx <= zx + zoneW && cy >= zy && cy <= zy + zoneH;
+  }
+
+  function onOrientation(e) {
+    if (!trickActive) return;
+    const gamma = Math.max(-35, Math.min(35, e.gamma || 0));
+    const beta = Math.max(-35, Math.min(35, e.beta || 0));
+    placeOnio(onioX + gamma * 0.10, onioY + beta * 0.06, true);
+  }
+
+  function enableDragFallback() {
+    dragMode = true;
+    setMsg('No tilt permission: drag + keep in zone');
+    function down(e) {
+      if (!trickActive || e.target !== onio) return;
+      e.stopPropagation();
+      dragging = true;
+      const p = getEvtPoint(e);
+      offX = p.x - onioX;
+      offY = p.y - onioY;
+    }
+    function move(e) {
+      if (!dragging || !trickActive) return;
+      const p = getEvtPoint(e);
+      placeOnio(p.x - offX, p.y - offY, true);
+    }
+    function up() { dragging = false; }
+    arena.addEventListener('pointerdown', down, true);
+    arena.addEventListener('pointermove', move, true);
+    window.addEventListener('pointerup', up, true);
+    return () => {
+      arena.removeEventListener('pointerdown', down, true);
+      arena.removeEventListener('pointermove', move, true);
+      window.removeEventListener('pointerup', up, true);
+    };
+  }
+
+  let removeDragFallback = null;
+  if (window.DeviceOrientationEvent) {
+    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+      DeviceOrientationEvent.requestPermission()
+        .then(r => {
+          if (!trickActive) return;
+          if (r === 'granted') window.addEventListener('deviceorientation', onOrientation);
+          else removeDragFallback = enableDragFallback();
+        })
+        .catch(() => {
+          if (!trickActive) return;
+          removeDragFallback = enableDragFallback();
+        });
+    } else {
+      window.addEventListener('deviceorientation', onOrientation);
+    }
+  } else {
+    removeDragFallback = enableDragFallback();
+  }
+
+  const holdTick = setInterval(()=>{
+    if (!trickActive) return;
+    if (inZone()) held = Math.min(needMs, held + 100);
+    else held = Math.max(0, held - 140);
+    const pct = Math.round((held / needMs) * 100);
+    setMsg(`${dragMode ? 'Hold in zone' : 'Balance'} ${pct}%`);
+    if (held >= needMs) {
+      clearInterval(holdTick);
+      clearDeathTimer();
+      onHit();
+    }
+  }, 100);
+
+  currentTrickCleanup = () => {
+    clearInterval(holdTick);
+    clearDeathTimer();
+    suppressArenaMiss = false;
+    zone.remove();
+    window.removeEventListener('deviceorientation', onOrientation);
+    if (removeDragFallback) removeDragFallback();
+  };
+}
+
+function cFreezeTest() {
+  suppressArenaMiss = true;
+  trickActive = true;
+  onio.style.pointerEvents = 'none';
+  const needMs = Math.max(1400, 3000 - level * 35);
+  let remain = needMs;
+
+  setMsg(`DON'T TOUCH ${Math.ceil(remain/1000)}s`);
+  startDeathTimer(needMs + 2000);
+
+  function spawnBait() {
+    const bait = document.createElement('div');
+    bait.textContent = ['TAP HERE', 'FREE GEMS', 'CLAIM', 'BONUS'][Math.floor(Math.random()*4)];
+    const bx = 20 + Math.random() * (gW - 140);
+    const by = 120 + Math.random() * (gH - 220);
+    bait.style.cssText = `position:absolute;left:${bx}px;top:${by}px;background:#fff;border:2px solid #E84030;color:#E84030;font-family:'Fredoka One',cursive;font-size:12px;padding:7px 10px;border-radius:12px;z-index:26;pointer-events:none;animation:popIn .2s ease;`;
+    arena.appendChild(bait);
+    scheduleChallengeTimeout(()=>bait.remove(), 700);
+  }
+
+  const baitInt = setInterval(spawnBait, 700);
+  const tick = setInterval(()=>{
+    if (!trickActive) return;
+    remain -= 100;
+    if (remain <= 0) {
+      clearInterval(tick);
+      clearInterval(baitInt);
+      clearDeathTimer();
+      onHit();
+      return;
+    }
+    setMsg(`DON'T TOUCH ${Math.ceil(remain/1000)}s`);
+  }, 100);
+
+  function punish(e) {
+    if (!trickActive) return;
+    e.stopImmediatePropagation();
+    const p = getEvtPoint(e);
+    remain = Math.min(needMs, remain + 650);
+    speech("hands off 😈", 450);
+    registerMiss(p.x, p.y);
+  }
+
+  arena.addEventListener('pointerdown', punish, true);
+  onio.addEventListener('pointerdown', punish, true);
+
+  currentTrickCleanup = () => {
+    clearInterval(tick);
+    clearInterval(baitInt);
+    clearDeathTimer();
+    suppressArenaMiss = false;
+    arena.removeEventListener('pointerdown', punish, true);
+    onio.removeEventListener('pointerdown', punish, true);
+  };
+}
+
+// ============================================================
+// CHAOS SYSTEM — smooth continuous curve, no hard tier jumps
+// ============================================================
+let chaosInterval = null;
+let levelHidden = false;
+let chaosDisruptUntil = 0;
+
+function chaosDisruptReady() {
+  return Date.now() >= chaosDisruptUntil;
+}
+
+function markChaosDisrupt(ms) {
+  chaosDisruptUntil = Math.max(chaosDisruptUntil, Date.now() + ms);
+}
+
+// All chaos values are continuous functions of level, not tiers
+function chaosVal(minLv, maxLv, minVal, maxVal) {
+  // Returns a 0→1 progress through the range, clamped
+  const t = Math.max(0, Math.min(1, (level - minLv) / (maxLv - minLv)));
+  return minVal + (maxVal - minVal) * t;
+}
+
+function startChaosSystem() {
+  stopChaosSystem();
+  if (level < 3) return; // perfectly calm until level 3
+
+  // Smooth ramp: gentle through lv20, then steadily tighter.
+  const tickMs = level <= 20
+    ? Math.max(5200, 9000 - (level - 3) * 220)
+    : level <= 60
+      ? Math.max(2400, 5200 - (level - 20) * 70)
+      : Math.max(1000, 2400 - (level - 60) * 20);
+
+  chaosInterval = setInterval(() => {
+    if (!document.getElementById('game-screen').classList.contains('active')) return;
+    if (!trickActive) return;
+    doChaosTick();
+  }, tickMs + Math.random() * tickMs * 0.4);
+
+  // Continuous visual overlays — opacity scales with level
+  const tintOpacity  = chaosVal(5, 25, 0, 0.18);   // red vignette: fades in lv5→25
+  const glitchOpacity= chaosVal(8, 30, 0, 1);       // scanlines: fades in lv8→30
+  const tintEl = document.getElementById('chaos-tint');
+  const glitchEl = document.getElementById('glitch-lines');
+  tintEl.style.opacity = tintOpacity;
+  tintEl.style.display = tintOpacity > 0 ? 'block' : 'none';
+  glitchEl.style.opacity = glitchOpacity;
+  glitchEl.style.display = glitchOpacity > 0 ? 'block' : 'none';
+  // enable animation only when visible enough
+  if (glitchOpacity > 0.1) glitchEl.classList.add('active');
+  else glitchEl.classList.remove('active');
+}
+
+function stopChaosSystem() {
+  if (chaosInterval) { clearInterval(chaosInterval); chaosInterval=null; }
+  const tintEl=document.getElementById('chaos-tint');
+  const glitchEl=document.getElementById('glitch-lines');
+  tintEl.style.opacity='0'; tintEl.style.display='none';
+  glitchEl.style.opacity='0'; glitchEl.classList.remove('active'); glitchEl.style.display='none';
+  levelHidden = false;
+  chaosDisruptUntil = 0;
+  document.getElementById('level-pill').className = '';
+  document.getElementById('level-pill').textContent = 'LVL '+level;
+}
+
+function doChaosTick() {
+  const pool = [];
+  const canDisrupt = chaosDisruptReady();
+
+  pool.push({ id:'screenShake', w: chaosVal(3, 20, 0.3, 2.8) });
+  pool.push({ id:'glitchOnio', w: chaosVal(3, 18, 0.2, 2.2) });
+  if (level >= 5) pool.push({ id:'glitchMsg', w: chaosVal(5, 20, 0.2, 1.8) });
+  if (level >= 6) pool.push({ id:'hideLevel', w: chaosVal(6, 25, 0.2, 2.2) });
+  if (level >= 8) pool.push({ id:'fakeLevel', w: chaosVal(8, 30, 0.2, 1.8) });
+  if (level >= 10) pool.push({ id:'invertColors', w: chaosVal(10, 30, 0.1, 0.8) });
+  if (level >= 12) pool.push({ id:'spinOnio', w: chaosVal(12, 35, 0.1, 1.2) });
+  if (level >= 6) pool.push({ id:'fakeNotif', w: chaosVal(6, 24, 0.2, 1.4) });
+  if (level >= 7) pool.push({ id:'ghostTap', w: chaosVal(7, 24, 0.2, 1.4) });
+  if (level >= 9) pool.push({ id:'timeSteal', w: chaosVal(9, 30, 0.1, 1.4) });
+  if (level >= 10) pool.push({ id:'teleportPop', w: chaosVal(10, 35, 0.2, 1.6) });
+  if (level >= 12) pool.push({ id:'hitboxShrink', w: chaosVal(12, 35, 0.2, 1.1) });
+  if (level >= 14 && canDisrupt) pool.push({ id:'gravityPull', w: chaosVal(14, 40, 0.1, 1.2) });
+  if (level >= 16 && canDisrupt) pool.push({ id:'microLag', w: chaosVal(16, 45, 0.1, 1.1) });
+  if (level >= 18 && canDisrupt) pool.push({ id:'invertControls', w: chaosVal(18, 50, 0.1, 1.0) });
+  if (level >= 20 && canDisrupt) pool.push({ id:'fakePauseChaos', w: chaosVal(20, 55, 0.1, 0.9) });
+
+  const total = pool.reduce((a,c)=>a+c.w, 0);
+  let r = Math.random()*total, chosen = pool[0];
+  for (let i=0; i<pool.length; i++) { r-=pool[i].w; if(r<=0){chosen=pool[i];break;} }
+
+  switch(chosen.id) {
+    case 'screenShake':
+      document.getElementById('game-screen').classList.add('chaos-shake');
+      scheduleChallengeTimeout(()=>document.getElementById('game-screen').classList.remove('chaos-shake'), 320);
+      break;
+    case 'glitchOnio':
+      onio.classList.add('chaos-glitch');
+      scheduleChallengeTimeout(()=>onio.classList.remove('chaos-glitch'), 420);
+      break;
+    case 'glitchMsg': {
+      const el = document.getElementById('msg-text');
+      const real = el.textContent;
+      const gc = '!@#$%^&*Ω≠∂∆ᵎ⚡';
+      const intensity = chaosVal(5, 35, 0.12, 0.5);
+      el.textContent = real.split('').map(c=>Math.random()<intensity?gc[Math.floor(Math.random()*gc.length)]:c).join('');
+      scheduleChallengeTimeout(()=>el.textContent=real, Math.max(260, chaosVal(5,35,620,240)));
+      break;
+    }
+    case 'hideLevel':
+      if (levelHidden) break;
+      levelHidden = true;
+      document.getElementById('level-pill').textContent = '';
+      document.getElementById('level-pill').classList.add('hidden-lv');
+      scheduleChallengeTimeout(()=>{
+        levelHidden=false;
+        document.getElementById('level-pill').classList.remove('hidden-lv');
+        document.getElementById('level-pill').textContent='LVL '+level;
+      }, Math.max(1100, chaosVal(6, 35, 4200, 1400)));
+      break;
+    case 'fakeLevel':
+      if (levelHidden) break;
+      const offset = Math.floor(chaosVal(8,40,1,9)) + Math.floor(Math.random()*2);
+      const fake = Math.random()<0.5 ? level+offset : Math.max(1,level-offset);
+      document.getElementById('level-pill').textContent='LVL '+fake;
+      scheduleChallengeTimeout(()=>{
+        if (!levelHidden) document.getElementById('level-pill').textContent='LVL '+level;
+      }, 1200+Math.random()*1000);
+      break;
+    case 'invertColors':
+      document.getElementById('game-screen').style.filter='invert(1) hue-rotate(180deg)';
+      scheduleChallengeTimeout(()=>document.getElementById('game-screen').style.filter='', 220+Math.random()*140);
+      break;
+    case 'spinOnio':
+      onio.style.transition='transform .3s ease';
+      onio.style.transform='rotate(360deg)';
+      scheduleChallengeTimeout(()=>{onio.style.transition='';onio.style.transform='';}, 350);
+      break;
+    case 'fakeNotif':
+      showFakeTextBanner();
+      break;
+    case 'ghostTap': {
+      const x = 20 + Math.random()*(gW-40);
+      const y = 80 + Math.random()*(gH-120);
+      spawnRipple(x, y, 'hit-flash');
+      break;
+    }
+    case 'timeSteal':
+      if (deathTimerInterval && deathTimerMs > 0) {
+        const stealPct = 0.08 + Math.random() * 0.10; // 8-18%
+        deathTimerMs = Math.max(120, deathTimerMs * (1 - stealPct));
+        document.getElementById('dtimer-bar').style.width = Math.max(0,(deathTimerMs/deathTimerMax)*100)+'%';
+        setMsg('⏳ time stolen');
+      }
+      break;
+    case 'teleportPop':
+      moveOnio(true);
+      speech(['here now','blink 😈','teleport!'][Math.floor(Math.random()*3)], 350);
+      break;
+    case 'hitboxShrink':
+      onio.style.transition='font-size .2s';
+      onio.style.fontSize='42px';
+      scheduleChallengeTimeout(()=>{ onio.style.fontSize='72px'; onio.style.transition=''; }, 900);
+      break;
+    case 'gravityPull': {
+      markChaosDisrupt(1400);
+      const targets = [
+        {x:20,y:120},{x:gW-96,y:120},{x:20,y:gH-120},{x:gW-96,y:gH-120},
+      ];
+      const t = targets[Math.floor(Math.random()*targets.length)];
+      const pull = setInterval(()=>{
+        if (!trickActive) { clearInterval(pull); return; }
+        placeOnio(onioX + (t.x - onioX) * 0.18, onioY + (t.y - onioY) * 0.18, true);
+      }, 70);
+      scheduleChallengeTimeout(()=>clearInterval(pull), 880);
+      break;
+    }
+    case 'microLag':
+      markChaosDisrupt(1200);
+      setMsg('lag spike...');
+      onio.style.pointerEvents='none';
+      scheduleChallengeTimeout(()=>{ if (trickActive) onio.style.pointerEvents='auto'; }, 260 + Math.random()*280);
+      break;
+    case 'invertControls':
+      markChaosDisrupt(1600);
+      document.getElementById('game-screen').style.transform='scaleX(-1)';
+      setMsg('controls feel wrong...');
+      scheduleChallengeTimeout(()=>{
+        document.getElementById('game-screen').style.transform='';
+      }, 900 + Math.random()*500);
+      break;
+    case 'fakePauseChaos': {
+      markChaosDisrupt(1700);
+      const fp = document.getElementById('fake-pause');
+      const rb = document.getElementById('resume-btn');
+      rb.style.display='none';
+      fp.classList.add('active');
+      scheduleChallengeTimeout(()=>{
+        fp.classList.remove('active');
+        rb.style.display='';
+      }, 950);
+      break;
+    }
+  }
+}
+
+function cleanupChaos() {
+  stopChaosSystem();
+  document.getElementById('game-screen').style.filter='';
+  document.getElementById('game-screen').style.transform='';
+  document.getElementById('resume-btn').style.display='';
+  document.getElementById('fake-pause').classList.remove('active');
+  document.getElementById('game-screen').classList.remove('chaos-shake','chaos-glitch');
+  onio.classList.remove('chaos-glitch');
+}
+
+// ============================================================
+// TAP HANDLER
+// ============================================================
+onio.addEventListener('pointerdown', e=>{
+  e.stopPropagation(); if (!trickActive) return;
+  if ([
+    'tap','hold','drag','shake','blow','swarmAll','swarmFind','swarmMove','swarmSpawn',
+    'swipeCode','tracePath','rhythmTap','pinchTrap','twoFinger','tiltBalance','freeze'
+  ].includes(lastChallengeId)) return;
+  onHit();
+});
+arena.addEventListener('pointerdown', e=>{
+  if (suppressArenaMiss) return;
+  if (e.target===onio||e.target.classList.contains('decoy')) return;
+  if (!trickActive) return;
+  const rc=arena.getBoundingClientRect();
+  registerMiss(e.clientX-rc.left, e.clientY-rc.top);
+});
+
+// ============================================================
+// TOKEN DRAWING
+// ============================================================
+function drawToken(canvasId, size, lv) {
+  const canvas=document.getElementById(canvasId); if(!canvas)return;
+  canvas.width=size; canvas.height=size;
+  const ctx=canvas.getContext('2d'), cx=size/2, cy=size/2, r=size*.38;
+  ctx.clearRect(0,0,size,size);
+  ctx.beginPath(); ctx.arc(cx,cy,r+size*.06,0,Math.PI*2); ctx.fillStyle='#FFF0D8'; ctx.fill();
+  if(lv<=0){ctx.fillStyle='#C09060';ctx.font=`bold ${size*.2}px Fredoka One,cursive`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('?',cx,cy);return;}
+  if(lv>=100) drawStarToken(ctx,cx,cy,r,size);
+  else if(lv>=50) drawSkullToken(ctx,cx,cy,r,lv,size);
+  else drawRingToken(ctx,cx,cy,r,lv,size);
+  ctx.fillStyle='#C0560A'; ctx.font=`bold ${size*.19}px Fredoka One,cursive`;
+  ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(lv,cx,cy-size*.02);
+  ctx.font=`bold ${size*.07}px Fredoka One,cursive`; ctx.fillStyle='#A07040'; ctx.fillText('ONIO',cx,cy+size*.13);
+}
+function drawRingToken(ctx,cx,cy,r,lv,sz) {
+  const fill=Math.min(lv/49,1);
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle='#E8C090';ctx.lineWidth=sz*.08;ctx.stroke();
+  if(fill>0){ctx.beginPath();ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+Math.PI*2*fill);ctx.strokeStyle='#E8A030';ctx.lineWidth=sz*.08;ctx.lineCap='round';ctx.stroke();}
+  ctx.strokeStyle=lv>8?'#C0560A':'#E8C090';ctx.lineWidth=sz*.04;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(cx-r*.42,cy-r*.88);ctx.quadraticCurveTo(cx-r*.7,cy-r*1.42,cx-r*.3,cy-r*1.28);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx+r*.42,cy-r*.88);ctx.quadraticCurveTo(cx+r*.7,cy-r*1.42,cx+r*.3,cy-r*1.28);ctx.stroke();
+}
+function drawSkullToken(ctx,cx,cy,r,lv,sz) {
+  const fill=Math.min((lv-49)/50,1);
+  ctx.beginPath();ctx.arc(cx,cy-sz*.05,r*.72,0,Math.PI*2);ctx.strokeStyle='#E8C090';ctx.lineWidth=sz*.035;ctx.stroke();
+  if(fill>0){ctx.globalAlpha=.25+fill*.7;ctx.fillStyle='#E84030';ctx.beginPath();ctx.arc(cx,cy-sz*.05,r*.72,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
+  ctx.fillStyle=fill>.5?'white':'#E8C090';
+  ctx.beginPath();ctx.arc(cx-r*.28,cy-r*.18,r*.14,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(cx+r*.28,cy-r*.18,r*.14,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=fill>.5?'white':'#E8C090';
+  for(let t=0;t<3;t++){ctx.fillRect(cx-r*.28+t*r*.28,cy+r*.4,r*.2,r*.28);}
+}
+function drawStarToken(ctx,cx,cy,r,sz) {
+  const spikes=6,outer=r*.9,inner=r*.45;
+  ctx.beginPath();
+  for(let i=0;i<spikes*2;i++){const a=i*Math.PI/spikes-Math.PI/2;const rad=i%2===0?outer:inner;i===0?ctx.moveTo(cx+Math.cos(a)*rad,cy+Math.sin(a)*rad):ctx.lineTo(cx+Math.cos(a)*rad,cy+Math.sin(a)*rad);}
+  ctx.closePath();ctx.fillStyle='#FFD700';ctx.fill();ctx.strokeStyle='#C0A000';ctx.lineWidth=2;ctx.stroke();
+}
+function tokenLabel(lv) {
+  if(lv<=0)return'Play to earn your token!';
+  if(lv>=100)return`★ Legend Token (Lvl ${lv})`;
+  if(lv>=50)return`💀 Skull Token (Lvl ${lv-49}/50)`;
+  return`Ring Token (Lvl ${lv}/49)`;
+}
+
+// ============================================================
+// SAVE / SHARE
+// ============================================================
+function saveProfileToken() { saveCanvas('profile-token-canvas'); }
+function saveCanvas(id) {
+  const c=document.getElementById(id);
+  const a=document.createElement('a');
+  a.download='onio-token-lv'+bestLevel+'.png';
+  a.href=c.toDataURL('image/png'); a.click();
+  showToast('Token saved! 🎉');
+}
+function shareScore() {
+  const lv=bestLevel>0?bestLevel:level;
+  const text=`I survived to Level ${lv} in ONIO 😈 Can you beat me? onio.game`;
+  if(navigator.share){navigator.share({title:'ONIO',text}).catch(()=>{});return;}
+  navigator.clipboard.writeText(text).then(()=>showToast('Copied! 📋')).catch(()=>showToast('Level '+lv));
+}
+function showToast(msg) {
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+updateEmotionalMode();
+nextSnark();
+spawnBgMonsters();
+updateHUD();
+updateSkipPill();
+// Check if player is returning after absence
+checkReturnGreeting();
+</script>
+</body>
+</html>
