@@ -9,61 +9,173 @@
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;}
-html,body{width:100%;height:100%;overflow:hidden;background:#1a0a00;touch-action:none;-webkit-touch-callout:none;}
+:root{
+  --cream:#FFF6E8;
+  --cream-deep:#F4DFC0;
+  --orange-1:#FFB65A;
+  --orange-2:#E99628;
+  --orange-3:#C0560A;
+  --orange-4:#8A3F09;
+  --violet-1:#8E37A2;
+  --violet-2:#62236F;
+  --ink:#3B2A1D;
+  --onio-sprite-url:none;
+  --home-screen-bg:linear-gradient(180deg,#FFF9EE 0%,#FFF1DA 52%,#FFE9CA 100%);
+  --home-pattern:
+    radial-gradient(circle at 20% 22%,rgba(128,76,35,.08) 0 2px,transparent 2px 100%),
+    radial-gradient(circle at 79% 74%,rgba(128,76,35,.08) 0 2px,transparent 2px 100%),
+    repeating-linear-gradient(45deg,rgba(130,79,37,.06) 0 1px,transparent 1px 22px);
+  --home-glow:
+    radial-gradient(circle at 16% 10%,rgba(255,190,110,.44) 0%,transparent 33%),
+    radial-gradient(circle at 84% 86%,rgba(255,126,76,.26) 0%,transparent 40%),
+    linear-gradient(180deg,transparent 0%,rgba(80,35,0,.12) 100%);
+  --home-stage-bg:linear-gradient(180deg,rgba(255,251,243,.95) 0%,rgba(255,242,215,.92) 100%);
+  --home-stage-border:#5D2D0D;
+  --home-stage-shadow:rgba(72,36,10,.22);
+  --home-logo-fill:linear-gradient(180deg,#FFFEEA 0%,#FFEDD2 100%);
+  --home-logo-outline:#4E250A;
+  --home-logo-shadow:rgba(60,28,8,.28);
+  --home-snark-bg:rgba(255,255,255,.96);
+  --home-snark-border:#E8C070;
+  --home-snark-text:#7A3F10;
+  --home-sub-text:#8A5932;
+}
+html,body{
+  width:100%;height:100%;overflow:hidden;
+  background:radial-gradient(circle at 50% -25%,#4A240D 0%,#1E0D03 56%,#120600 100%);
+  touch-action:none;-webkit-touch-callout:none;
+}
 
 /* ===== SCREENS ===== */
 .screen{position:absolute;inset:0;display:none;overflow:hidden;}
 .screen.active{display:flex;flex-direction:column;}
 
 /* ===== HOME ===== */
-#home-screen{background:#FFF6E8;align-items:center;justify-content:center;}
+#home-screen{
+  background:var(--home-screen-bg);
+  align-items:center;justify-content:center;
+  padding:calc(env(safe-area-inset-top,0px) + 10px) 16px calc(env(safe-area-inset-bottom,0px) + 12px);
+}
 #home-screen::before{content:'';position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(ellipse at 10% 10%,rgba(232,160,48,.13) 0%,transparent 55%),
-             radial-gradient(ellipse at 90% 90%,rgba(232,80,40,.09) 0%,transparent 55%),
-             radial-gradient(ellipse at 80% 10%,rgba(160,48,180,.06) 0%,transparent 40%);}
-.bg-monster{position:absolute;opacity:.11;pointer-events:none;animation:bgFloat linear infinite;}
+  background:var(--home-pattern);
+  opacity:.72;
+}
+#home-screen::after{content:'';position:absolute;inset:0;pointer-events:none;opacity:.85;background:var(--home-glow);}
+.home-stage{
+  position:relative;z-index:5;
+  width:min(100%,460px);
+  border-radius:30px;
+  border:4px solid var(--home-stage-border);
+  background:var(--home-stage-bg);
+  box-shadow:0 18px 42px var(--home-stage-shadow),inset 0 1px 0 rgba(255,255,255,.7);
+  display:flex;flex-direction:column;align-items:center;
+  padding:26px 18px 16px;
+  overflow:hidden;
+}
+.home-stage::before{
+  content:'';
+  position:absolute;inset:10px;
+  border-radius:22px;
+  border:2px dashed rgba(84,43,16,.25);
+  pointer-events:none;
+}
+.home-stage::after{
+  content:'';
+  position:absolute;left:-28%;right:-28%;top:-22%;height:46%;
+  background:radial-gradient(ellipse at center,rgba(255,255,255,.5) 0%,transparent 66%);
+  pointer-events:none;
+}
+.home-ornaments{
+  position:absolute;inset:0;pointer-events:none;z-index:2;
+}
+.home-dot{
+  position:absolute;border-radius:999px;display:flex;align-items:center;justify-content:center;
+  font-family:'Fredoka One',cursive;font-size:clamp(12px,2.9vw,18px);
+  color:#43220B;border:2px solid rgba(76,38,12,.58);
+  box-shadow:0 6px 16px rgba(85,40,10,.2);
+  background:linear-gradient(180deg,#FFB85B 0%,#F07E22 100%);
+  animation:bgFloat linear infinite;
+  opacity:.95;
+}
+.home-dot.alt{background:linear-gradient(180deg,#7FE2F0 0%,#4EA2D8 100%);color:#1E3554;}
+.home-dot.pink{background:linear-gradient(180deg,#FF9BCC 0%,#E05C98 100%);color:#4B1833;}
+.bg-monster{
+  position:absolute;opacity:.11;pointer-events:none;animation:bgFloat linear infinite;
+}
 @keyframes bgFloat{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-16px) rotate(8deg)}}
-.home-monster{font-size:clamp(80px,22vw,118px);animation:wiggle 1s ease-in-out infinite;display:block;position:relative;z-index:1;margin-bottom:-4px;}
+.home-monster{
+  font-size:clamp(88px,25vw,128px);
+  animation:wiggle 1s ease-in-out infinite;
+  display:block;position:relative;z-index:7;margin-bottom:-8px;
+  filter:drop-shadow(0 12px 10px rgba(102,44,11,.2));
+}
 @keyframes wiggle{0%,100%{transform:rotate(-8deg) scale(1)}50%{transform:rotate(8deg) scale(1.06)}}
-.home-logo{font-family:'Fredoka One',cursive;font-size:clamp(66px,19vw,104px);color:#C0560A;
-  text-shadow:4px 4px 0 #FF8C30,8px 8px 0 rgba(192,86,10,.22);letter-spacing:5px;line-height:1;
-  animation:logoBob 2s ease-in-out infinite;position:relative;z-index:1;}
+.home-logo{
+  font-family:'Fredoka One',cursive;font-size:clamp(72px,20vw,108px);
+  color:transparent;
+  background:var(--home-logo-fill);
+  -webkit-background-clip:text;background-clip:text;
+  text-shadow:0 0 0 var(--home-logo-outline),4px 4px 0 var(--home-logo-outline),9px 9px 0 var(--home-logo-shadow),0 0 28px rgba(255,171,94,.28);
+  letter-spacing:4px;line-height:1;
+  -webkit-text-stroke:2px var(--home-logo-outline);
+  animation:logoBob 2s ease-in-out infinite;position:relative;z-index:7;
+}
 @keyframes logoBob{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-7px) rotate(1deg)}}
 .home-sub{font-family:'Nunito',sans-serif;font-size:clamp(12px,3.2vw,16px);color:#A07040;font-weight:700;
-  letter-spacing:2.5px;text-transform:uppercase;margin-top:5px;z-index:1;}
+  letter-spacing:2.5px;text-transform:uppercase;margin-top:5px;z-index:7;color:var(--home-sub-text);}
 #snark-bubble{font-family:'Nunito',sans-serif;font-size:clamp(12px,3.2vw,15px);color:#C0560A;
-  background:rgba(255,255,255,.9);border:2px solid #E8C070;border-radius:20px;padding:8px 18px;
-  margin-top:14px;z-index:1;text-align:center;max-width:86vw;font-weight:700;
+  background:var(--home-snark-bg);border:2px solid var(--home-snark-border);border-radius:20px;padding:8px 18px;
+  margin-top:14px;z-index:7;text-align:center;max-width:86vw;font-weight:700;
   min-height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;
-  animation:snarkFade .4s ease;}
+  animation:snarkFade .4s ease;color:var(--home-snark-text);
+  box-shadow:0 5px 14px rgba(84,36,8,.12);}
 @keyframes snarkFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 #snark-bubble:active{transform:scale(.97);}
-.home-btn-row{display:flex;gap:12px;margin-top:26px;z-index:1;}
+.home-btn-row{display:flex;gap:12px;margin-top:20px;z-index:7;width:100%;}
 
 /* ===== BUTTONS ===== */
-.big-btn{background:#E8A030;color:white;border:none;font-family:'Fredoka One',cursive;
+.big-btn{background:linear-gradient(180deg,var(--orange-1) 0%,var(--orange-2) 100%);color:white;border:2px solid #A95E16;font-family:'Fredoka One',cursive;
   font-size:clamp(20px,5.5vw,26px);padding:14px 40px;border-radius:50px;cursor:pointer;
-  box-shadow:0 6px 0 #B07020,0 10px 20px rgba(232,160,48,.28);letter-spacing:2px;
-  animation:btnpulse 2s ease-in-out infinite;transition:transform .1s,box-shadow .1s;}
-.big-btn.secondary{background:#FFF0D8;color:#C0560A;box-shadow:0 6px 0 #E8C070;
+  box-shadow:0 6px 0 #B07020,0 12px 24px rgba(232,140,30,.34),inset 0 1px 0 rgba(255,255,255,.35);letter-spacing:2px;
+  animation:btnpulse 2s ease-in-out infinite;transition:transform .1s,box-shadow .1s;position:relative;overflow:hidden;text-shadow:0 1px 0 rgba(80,35,0,.22);}
+.big-btn::before{content:'';position:absolute;left:12%;right:12%;top:2px;height:38%;pointer-events:none;border-radius:999px;
+  background:linear-gradient(180deg,rgba(255,255,255,.42),rgba(255,255,255,0));}
+.big-btn.secondary{background:linear-gradient(180deg,#FFF9EE 0%,#FFE9C7 100%);color:#C0560A;box-shadow:0 6px 0 #E8C070,inset 0 1px 0 rgba(255,255,255,.7);
   font-size:clamp(17px,4.5vw,21px);padding:14px 24px;animation:none;}
-.big-btn.purple{background:#7B2D8B;box-shadow:0 6px 0 #4A1A5A;animation:none;}
+.big-btn.purple{background:linear-gradient(180deg,#9542AA 0%,#6D2880 100%);border-color:#4A1A5A;box-shadow:0 6px 0 #4A1A5A,0 10px 20px rgba(86,28,106,.34);animation:none;}
 @keyframes btnpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
 .big-btn:active{transform:translateY(4px)!important;box-shadow:0 2px 0 #B07020!important;animation:none;}
 .big-btn.secondary:active{box-shadow:0 2px 0 #E8C070!important;}
 .big-btn.purple:active{box-shadow:0 2px 0 #4A1A5A!important;}
+.play-cta{
+  flex:1;
+  position:relative;
+  padding:15px 24px 15px 58px;
+  min-height:58px;
+  border-radius:999px;
+}
+.play-cta::after{
+  content:'▶';
+  position:absolute;left:18px;top:50%;transform:translateY(-52%);
+  width:30px;height:30px;border-radius:999px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;line-height:1;color:#D1690B;
+  background:linear-gradient(180deg,#FFF8EA 0%,#FFE4B8 100%);
+  box-shadow:0 2px 0 rgba(186,107,27,.45), inset 0 1px 0 rgba(255,255,255,.85);
+}
+.home-btn-row .big-btn.secondary{flex:1;}
 
 /* ===== PROFILE ===== */
-#profile-screen{background:#FFF6E8;}
+#profile-screen{background:linear-gradient(180deg,#FFF9EF 0%,#FFF0D9 100%);}
 .panel-header{padding:20px 20px 16px;display:flex;align-items:center;gap:14px;flex-shrink:0;}
-.panel-header.orange{background:#C0560A;}
-.panel-header.purple{background:#7B2D8B;}
+.panel-header.orange{background:linear-gradient(180deg,#D46A17 0%,#B94D06 100%);}
+.panel-header.purple{background:linear-gradient(180deg,#8F3CA4 0%,#6B257E 100%);}
 .panel-back{font-size:22px;cursor:pointer;color:white;font-family:'Fredoka One',cursive;
   background:rgba(255,255,255,.18);border:none;padding:6px 12px;border-radius:12px;}
 .panel-title{font-family:'Fredoka One',cursive;font-size:26px;color:white;letter-spacing:1px;}
 .panel-body{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:14px;}
-.card{background:white;border-radius:18px;border:1.5px solid #F0D8A0;padding:16px 16px 13px;
-  box-shadow:0 3px 14px rgba(192,86,10,.07);}
+.card{background:linear-gradient(180deg,#FFFFFF 0%,#FFF9EE 100%);border-radius:18px;border:2px solid #F0D8A0;padding:16px 16px 13px;
+  box-shadow:0 8px 24px rgba(192,86,10,.11);}
 .card-title{font-family:'Fredoka One',cursive;font-size:13px;color:#A07040;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;}
 #profile-token-canvas{display:block;margin:0 auto 8px;border-radius:50%;}
 .stat-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid #F5E8CC;}
@@ -82,13 +194,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#1a0a00;touch-action
 .share-btn.secondary{background:#FFF0D8;color:#C0560A;box-shadow:0 4px 0 #E8C070;}
 
 /* ===== STORE ===== */
-#store-screen{background:#FFF6E8;}
+#store-screen{background:linear-gradient(180deg,#FFF9EF 0%,#FFEFD7 100%);}
 .store-snark{background:#7B2D8B;color:white;font-family:'Nunito',sans-serif;font-weight:700;
   font-size:clamp(12px,3.2vw,14px);padding:9px 18px;text-align:center;flex-shrink:0;letter-spacing:.3px;}
 .store-section{font-family:'Fredoka One',cursive;font-size:13px;color:#A07040;letter-spacing:1.5px;text-transform:uppercase;padding:0 2px;}
-.store-item{background:white;border-radius:18px;border:1.5px solid #F0D8A0;padding:15px 14px;
+.store-item{background:linear-gradient(180deg,#FFFFFF 0%,#FFF9EE 100%);border-radius:18px;border:2px solid #F0D8A0;padding:15px 14px;
   display:flex;align-items:center;gap:12px;cursor:pointer;position:relative;
-  box-shadow:0 3px 14px rgba(0,0,0,.05);transition:transform .1s,box-shadow .1s;overflow:hidden;}
+  box-shadow:0 10px 24px rgba(0,0,0,.07);transition:transform .1s,box-shadow .1s;overflow:hidden;}
 .store-item:active{transform:scale(.98);box-shadow:0 1px 6px rgba(0,0,0,.08);}
 .store-item.featured{border-color:#7B2D8B;border-width:2px;}
 .store-badge{position:absolute;top:0;right:0;background:#7B2D8B;color:white;
@@ -104,14 +216,23 @@ html,body{width:100%;height:100%;overflow:hidden;background:#1a0a00;touch-action
 .store-stock.owned{color:#7B2D8B;}
 
 /* ===== GAME ===== */
-#game-screen{background:#FFF6E8;}
+#game-screen{
+  background:
+    radial-gradient(circle at 14% 10%,rgba(255,193,120,.38) 0%,transparent 32%),
+    radial-gradient(circle at 84% 88%,rgba(145,86,212,.2) 0%,transparent 42%),
+    linear-gradient(180deg,#FFF8EA 0%,#FFEED3 52%,#FFE2BA 100%);
+}
 #game-screen::before{content:'';position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(circle at 20% 20%,rgba(232,160,48,.07) 0%,transparent 50%),
-             radial-gradient(circle at 80% 80%,rgba(232,80,40,.05) 0%,transparent 50%);}
-#dtimer-wrap{position:absolute;top:0;left:0;right:0;height:8px;z-index:11;background:rgba(0,0,0,.12);display:none;box-shadow:0 2px 8px rgba(0,0,0,.14);}
+  background:
+    radial-gradient(circle at 20% 20%,rgba(232,160,48,.12) 0%,transparent 52%),
+    radial-gradient(circle at 80% 80%,rgba(232,80,40,.08) 0%,transparent 52%),
+    repeating-linear-gradient(42deg,rgba(116,66,28,.05) 0 1px,transparent 1px 22px);}
+#game-screen::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.28;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.24) 0 2px,transparent 2px 16px);}
+#dtimer-wrap{display:none!important;}
 #dtimer-bar{height:100%;background:linear-gradient(90deg,#4CAF50,#FFEB3B,#F44336);width:100%;transition:width .1s linear;}
 #dtimer-chip{
-  display:none;position:absolute;top:84px;left:50%;transform:translateX(-50%);
+  display:none;position:absolute;top:calc(env(safe-area-inset-top,0px) + 84px);left:50%;transform:translateX(-50%);
   z-index:44;pointer-events:none;background:rgba(255,255,255,.97);border:2px solid #E8C070;border-radius:16px;
   font-family:'Fredoka One',cursive;font-size:16px;color:#C0560A;letter-spacing:.5px;
   padding:4px 12px;box-shadow:0 6px 18px rgba(192,86,10,.2);min-width:84px;text-align:center;
@@ -119,24 +240,48 @@ html,body{width:100%;height:100%;overflow:hidden;background:#1a0a00;touch-action
 #dtimer-chip.warn{border-color:#FFB300;color:#B56A00;}
 #dtimer-chip.urgent{border-color:#E84030;color:#C62828;animation:timerPulse .35s ease-in-out infinite alternate;}
 @keyframes timerPulse{from{transform:translateX(-50%) scale(1)}to{transform:translateX(-50%) scale(1.05)}}
-#hud{width:100%;padding:14px 16px 6px;display:flex;justify-content:space-between;align-items:center;z-index:10;pointer-events:none;flex-shrink:0;}
-#level-pill{font-family:'Fredoka One',cursive;font-size:16px;color:white;background:#C0560A;padding:4px 14px;border-radius:20px;letter-spacing:1px;}
-#skip-pill{display:none;font-family:'Fredoka One',cursive;font-size:13px;color:white;background:#7B2D8B;padding:3px 10px;border-radius:14px;}
-#game-controls{position:absolute;top:10px;right:10px;z-index:45;display:flex;gap:8px;pointer-events:auto;flex-wrap:wrap;justify-content:flex-end;max-width:62vw;}
-.gc-btn{background:rgba(255,255,255,.92);border:2px solid #E8C070;color:#C0560A;font-family:'Fredoka One',cursive;
-  font-size:14px;padding:6px 10px;border-radius:12px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08);}
+#hud{width:100%;padding:calc(env(safe-area-inset-top,0px) + 14px) 16px 6px;display:flex;justify-content:space-between;align-items:center;z-index:10;pointer-events:none;flex-shrink:0;}
+#level-pill{font-family:'Fredoka One',cursive;font-size:16px;color:white;background:linear-gradient(180deg,#D76E1A 0%,#B64A06 100%);padding:4px 14px;border-radius:20px;letter-spacing:1px;
+  box-shadow:0 3px 0 rgba(106,40,3,.45),0 6px 14px rgba(192,86,10,.28),inset 0 1px 0 rgba(255,255,255,.35);}
+#skip-pill{display:none;font-family:'Fredoka One',cursive;font-size:13px;color:white;background:linear-gradient(180deg,#9A48B2 0%,#722A89 100%);padding:3px 10px;border-radius:14px;box-shadow:0 3px 0 rgba(66,22,85,.45),0 6px 12px rgba(85,29,107,.24);}
+#game-controls{position:absolute;top:calc(env(safe-area-inset-top,0px) + 10px);right:10px;z-index:45;display:flex;gap:8px;pointer-events:auto;flex-wrap:wrap;justify-content:flex-end;max-width:62vw;}
+.gc-btn{background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(255,242,219,.96));border:2px solid #E8C070;color:#C0560A;font-family:'Fredoka One',cursive;
+  font-size:14px;padding:6px 10px;border-radius:12px;cursor:pointer;box-shadow:0 3px 0 rgba(176,112,32,.35),0 6px 14px rgba(0,0,0,.1);}
 .gc-btn:active{transform:translateY(1px);}
 #msg-bar{width:100%;text-align:center;padding:0 16px;z-index:10;pointer-events:none;flex-shrink:0;margin-top:2px;}
 #msg-text{font-family:'Fredoka One',cursive;font-size:clamp(17px,5.2vw,24px);color:#C0560A;
-  background:rgba(255,255,255,.92);padding:6px 20px;border-radius:25px;border:2.5px solid #E8C070;
-  box-shadow:0 3px 12px rgba(192,86,10,.1);display:inline-block;}
+  background:linear-gradient(180deg,rgba(255,255,255,.97),rgba(255,245,224,.98));padding:6px 20px;border-radius:25px;border:2.5px solid #E8C070;
+  box-shadow:0 6px 16px rgba(192,86,10,.16);display:inline-block;}
 #arena{flex:1;width:100%;position:relative;overflow:hidden;z-index:1;}
+#arena::before{
+  content:'';
+  position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.22;
+  background:
+    radial-gradient(circle at 8% 22%,rgba(255,255,255,.35) 0 1px,transparent 1px 100%),
+    radial-gradient(circle at 91% 77%,rgba(255,255,255,.33) 0 1px,transparent 1px 100%),
+    repeating-linear-gradient(135deg,rgba(113,65,30,.08) 0 1px,transparent 1px 24px);
+}
+#arena::after{
+  content:'';
+  position:absolute;inset:0;pointer-events:none;z-index:1;
+  background:linear-gradient(180deg,transparent 0%,rgba(56,25,8,.08) 100%);
+}
 
 /* Onio */
 #onio{position:absolute;font-size:72px;cursor:pointer;z-index:5;line-height:1;
   transition:left .18s cubic-bezier(.4,2,.6,1),top .18s cubic-bezier(.4,2,.6,1);transform-origin:center bottom;
-  -webkit-touch-callout:none;touch-action:none;}
+  -webkit-touch-callout:none;touch-action:none;filter:drop-shadow(0 8px 10px rgba(128,48,5,.22));}
 .decoy{position:absolute;font-size:72px;cursor:pointer;z-index:4;line-height:1;animation:decoyFloat .9s ease-in-out infinite alternate;}
+#onio.monster-sprite,.decoy.monster-sprite,.home-monster.monster-sprite,
+#mic-onio.monster-sprite,.pm-onio.monster-sprite,.cheeky-onio.monster-sprite,
+.rg-emoji.monster-sprite,#death-emoji.monster-sprite{
+  color:transparent!important;
+  width:1em;height:1em;display:inline-block;line-height:1;
+  background-image:var(--onio-sprite-url);
+  background-repeat:no-repeat;
+  background-position:center;
+  background-size:contain;
+}
 @keyframes decoyFloat{from{transform:translateY(0)}to{transform:translateY(-7px)}}
 
 /* speech */
@@ -238,7 +383,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#1a0a00;touch-action
 @keyframes hitO{from{transform:scale(0);opacity:1}to{transform:scale(2.5);opacity:0}}
 
 /* ===== DEATH SCREEN ===== */
-#death-screen{background:#FFF6E8;align-items:center;justify-content:flex-start;overflow-y:auto;}
+#death-screen{background:linear-gradient(180deg,#FFF9EF 0%,#FFEED4 100%);align-items:center;justify-content:flex-start;overflow-y:auto;}
 #death-screen::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 35%,rgba(192,86,10,.08) 0%,transparent 60%);pointer-events:none;}
 .death-inner{display:flex;flex-direction:column;align-items:center;gap:13px;padding:26px 22px 34px;width:100%;position:relative;z-index:1;}
 .death-emoji{font-size:clamp(52px,16vw,78px);animation:deathWob 1s ease-in-out infinite;}
@@ -257,7 +402,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#1a0a00;touch-action
 /* ===== PURCHASE MODAL ===== */
 #pm-modal{display:none;position:fixed;inset:0;z-index:300;align-items:center;justify-content:center;background:rgba(0,0,0,.62);}
 #pm-modal.active{display:flex;}
-.pm-box{background:white;border-radius:24px;padding:26px 24px 20px;max-width:88vw;width:340px;text-align:center;
+.pm-box{background:linear-gradient(180deg,#FFFFFF 0%,#FFF6EA 100%);border:2px solid #F0D8A0;border-radius:24px;padding:26px 24px 20px;max-width:88vw;width:340px;text-align:center;
   box-shadow:0 16px 48px rgba(0,0,0,.25);animation:splashPop .3s cubic-bezier(.4,2,.6,1);}
 .pm-onio{font-size:50px;margin-bottom:4px;animation:wiggle 1s ease-in-out infinite;}
 .pm-title{font-family:'Fredoka One',cursive;font-size:24px;color:#333;margin-bottom:3px;}
@@ -274,7 +419,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#1a0a00;touch-action
 /* skip banner */
 #skip-banner{display:none;position:absolute;inset:0;z-index:80;align-items:center;justify-content:center;background:rgba(123,45,139,.88);}
 #skip-banner.active{display:flex;}
-.skip-box{background:white;border-radius:22px;padding:26px 30px;text-align:center;max-width:85vw;}
+.skip-box{background:linear-gradient(180deg,#FFFFFF 0%,#F8F0FB 100%);border:2px solid #DDD0E8;border-radius:22px;padding:26px 30px;text-align:center;max-width:85vw;}
 .skip-lvl{font-family:'Fredoka One',cursive;font-size:28px;color:#7B2D8B;margin-bottom:5px;}
 .skip-snark{font-family:'Nunito',sans-serif;font-size:13px;color:#999;font-style:italic;}
 
@@ -339,21 +484,28 @@ html,body{width:100%;height:100%;overflow:hidden;background:#1a0a00;touch-action
 
 /* ===== EMOTIONAL MODES ===== */
 /* playful = default orange, affectionate = warm pink, lonely = cool blue-grey */
-body.mode-affectionate #home-screen { background: #FFF0F4; }
-body.mode-affectionate #home-screen::before {
-  background: radial-gradient(ellipse at 50% 30%,rgba(255,180,200,.2) 0%,transparent 60%),
-              radial-gradient(ellipse at 80% 80%,rgba(255,120,160,.08) 0%,transparent 50%);
+body.mode-affectionate{
+  --home-snark-border:#F2A4C7;
+  --home-snark-text:#A93C73;
+  --home-sub-text:#9C4A73;
 }
-body.mode-affectionate .home-logo { color: #C0308A; text-shadow: 4px 4px 0 #FF80B0, 8px 8px 0 rgba(192,48,138,.2); }
-body.mode-affectionate #snark-bubble { border-color: #F0A0C0; color: #A0306A; }
+body.mode-affectionate .home-stage{box-shadow:0 18px 42px rgba(148,44,92,.26),inset 0 1px 0 rgba(255,255,255,.7);}
+body.mode-affectionate .home-logo{
+  --home-logo-fill:linear-gradient(180deg,#FFF4F9 0%,#FFD0E2 100%);
+  --home-logo-outline:#8A2E63;
+}
 
-body.mode-lonely #home-screen { background: #F0F2F8; }
-body.mode-lonely #home-screen::before {
-  background: radial-gradient(ellipse at 50% 50%,rgba(100,120,200,.1) 0%,transparent 60%);
+body.mode-lonely{
+  --home-snark-border:#A8B9DA;
+  --home-snark-text:#3D5D9A;
+  --home-sub-text:#4C648F;
 }
-body.mode-lonely .home-logo { color: #4060A0; text-shadow: 4px 4px 0 #8090C0, 8px 8px 0 rgba(64,96,160,.2); }
+body.mode-lonely .home-stage{box-shadow:0 18px 42px rgba(54,77,131,.24),inset 0 1px 0 rgba(255,255,255,.7);}
+body.mode-lonely .home-logo{
+  --home-logo-fill:linear-gradient(180deg,#F5F9FF 0%,#D4DFFC 100%);
+  --home-logo-outline:#385C95;
+}
 body.mode-lonely .home-monster { animation: lonelyWiggle 3s ease-in-out infinite !important; }
-body.mode-lonely #snark-bubble { border-color: #A0B0D0; color: #4060A0; }
 @keyframes lonelyWiggle { 0%,100%{transform:rotate(-3deg) scale(1)} 50%{transform:rotate(3deg) scale(1.01)} }
 
 /* mood pill on home screen */
@@ -534,7 +686,13 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
 .cc-sub{font-family:'Nunito',sans-serif;font-size:clamp(13px,3.8vw,16px);color:#A07040;font-weight:700;margin-top:6px;line-height:1.3;}
 
 @media (max-width:560px){
-  #dtimer-chip{top:118px;font-size:14px;padding:4px 10px;min-width:74px;}
+  #dtimer-chip{top:calc(env(safe-area-inset-top,0px) + 118px);font-size:14px;padding:4px 10px;min-width:74px;}
+  #home-screen{padding-left:10px;padding-right:10px;}
+  .home-stage{border-width:3px;border-radius:24px;padding:18px 12px 12px;}
+  .home-logo{font-size:clamp(62px,19vw,86px);letter-spacing:2px;}
+  .home-btn-row{gap:8px;}
+  .play-cta{padding-left:52px;}
+  .home-dot{display:none;}
 }
 </style>
 </head>
@@ -542,6 +700,12 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
 
 <!-- HOME -->
 <div id="home-screen" class="screen active">
+  <div class="home-ornaments" aria-hidden="true">
+    <span class="home-dot" style="left:8%;top:10%;width:48px;height:48px;animation-duration:5s;">😈</span>
+    <span class="home-dot alt" style="right:6%;top:14%;width:44px;height:44px;animation-duration:4.4s;">👾</span>
+    <span class="home-dot pink" style="left:10%;bottom:14%;width:42px;height:42px;animation-duration:5.8s;">✨</span>
+    <span class="home-dot alt" style="right:9%;bottom:12%;width:46px;height:46px;animation-duration:4.8s;">🎮</span>
+  </div>
   <div id="mood-indicator"></div>
   <div id="return-greeting">
     <div class="rg-emoji">😈</div>
@@ -549,15 +713,17 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
     <div class="rg-sub" id="rg-sub">i wasn't waiting or anything.</div>
     <button class="big-btn" onclick="dismissReturnGreeting()" style="margin-top:8px;">let's go 😤</button>
   </div>
-  <span class="home-monster">😈</span>
-  <div class="home-logo">ONIO</div>
-  <div class="home-sub">the little menace</div>
-  <div id="snark-bubble" onclick="nextSnark()">Loading sass...</div>
-  <div class="home-btn-row">
-    <button class="big-btn" onclick="startGame()">PLAY</button>
-    <button class="big-btn secondary" onclick="showScreen('profile-screen')">👤 ME</button>
+  <div class="home-stage">
+    <span id="home-monster-face" class="home-monster">😈</span>
+    <div class="home-logo">ONIO</div>
+    <div class="home-sub">the little menace</div>
+    <div id="snark-bubble" onclick="nextSnark()">Loading sass...</div>
+    <div class="home-btn-row">
+      <button class="big-btn play-cta" onclick="startGame()">PLAY</button>
+      <button class="big-btn secondary" onclick="showScreen('profile-screen')">👤 ME</button>
+    </div>
+    <button class="big-btn secondary" onclick="showScreen('store-screen')" style="margin-top:10px;z-index:7;font-size:clamp(16px,4.5vw,19px);padding:11px 30px;min-width:min(92%,250px);">🛒 STORE</button>
   </div>
-  <button class="big-btn secondary" onclick="showScreen('store-screen')" style="margin-top:11px;z-index:1;font-size:clamp(16px,4.5vw,19px);padding:11px 30px;">🛒 STORE</button>
 </div>
 
 <!-- PROFILE -->
@@ -574,9 +740,9 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
     </div>
     <div class="card">
       <div class="card-title">Lifetime Stats</div>
-      <div class="stat-row"><span class="stat-label">Best Level</span><span class="stat-value" id="stat-best">—</span></div>
+      <div class="stat-row"><span class="stat-label">Best Depth</span><span class="stat-value" id="stat-best">—</span></div>
       <div class="stat-row"><span class="stat-label">Total Runs</span><span class="stat-value" id="stat-runs">0</span></div>
-      <div class="stat-row"><span class="stat-label">Total Hits</span><span class="stat-value" id="stat-hits">0</span></div>
+      <div class="stat-row"><span class="stat-label">Total Clears</span><span class="stat-value" id="stat-hits">0</span></div>
       <div class="stat-row"><span class="stat-label">Deaths</span><span class="stat-value" id="stat-deaths">0</span></div>
     </div>
     <div class="card">
@@ -604,7 +770,7 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
       <div class="store-icon">🎲</div>
       <div class="store-info">
         <div class="store-name">Lucky Skip</div>
-        <div class="store-desc">Start 3–7 levels ahead next game.<br><span class="store-note">Onio picks the number. Randomly.</span></div>
+        <div class="store-desc">Start 5–12 depth ahead next game.<br><span class="store-note">Onio picks the number. Randomly.</span></div>
       </div>
       <div class="store-price-col"><div class="store-price">$0.99</div><div class="store-stock" id="stk-skip1">× 0</div></div>
     </div>
@@ -612,7 +778,7 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
       <div class="store-icon">🚀</div>
       <div class="store-info">
         <div class="store-name">Big Skip</div>
-        <div class="store-desc">Start 8–15 levels ahead next game.<br><span class="store-note">More chaos, sooner. Your call.</span></div>
+        <div class="store-desc">Start 12–24 depth ahead next game.<br><span class="store-note">More chaos, sooner. Your call.</span></div>
       </div>
       <div class="store-price-col"><div class="store-price">$1.99</div><div class="store-stock" id="stk-skip2">× 0</div></div>
     </div>
@@ -621,7 +787,7 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
       <div class="store-icon">🌪️</div>
       <div class="store-info">
         <div class="store-name">Chaos Bundle</div>
-        <div class="store-desc">3× Lucky + 1× Big Skip.<br><span class="store-note">4 uses. Onio is annoyed you got this.</span></div>
+        <div class="store-desc">3× Lucky + 1× Big Skip.<br><span class="store-note">4 depth skips. Onio is annoyed you got this.</span></div>
       </div>
       <div class="store-price-col"><div class="store-price">$2.99</div><div class="store-stock" id="stk-skip3">× 0</div></div>
     </div>
@@ -643,7 +809,7 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
   <div id="dtimer-wrap"><div id="dtimer-bar"></div></div>
   <div id="dtimer-chip">0.0s</div>
   <div id="hud">
-    <div id="level-pill">LVL 1</div>
+    <div id="level-pill">DEPTH 0</div>
     <div id="skip-pill">⚡ 0</div>
   </div>
   <div id="game-controls">
@@ -684,25 +850,25 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
       <div class="instr-icon">☝️</div>
       <div class="instr-title">HOLD IT!</div>
       <div class="instr-sub">Press and hold Onio until the ring fills completely</div>
-      <div class="instr-tap-hint">starting...</div>
+      <div class="instr-tap-hint">tap to start</div>
     </div>
     <div class="instr-overlay" id="instr-drag">
       <div class="instr-icon">👆</div>
       <div class="instr-title">DRAG ME!</div>
       <div class="instr-sub">Drag Onio into the glowing drop zone</div>
-      <div class="instr-tap-hint">starting...</div>
+      <div class="instr-tap-hint">tap to start</div>
     </div>
     <div class="instr-overlay" id="instr-shake">
       <div class="instr-icon">📱</div>
       <div class="instr-title">SHAKE IT!</div>
       <div class="instr-sub">Shake your phone hard to bonk Onio</div>
-      <div class="instr-tap-hint">starting...</div>
+      <div class="instr-tap-hint">tap to start</div>
     </div>
     <div class="instr-overlay" id="instr-blow">
       <div class="instr-icon">💨</div>
       <div class="instr-title">BLOW!</div>
       <div class="instr-sub">Blow into your mic — watch the meter fill up</div>
-      <div class="instr-tap-hint">starting...</div>
+      <div class="instr-tap-hint">tap to start</div>
     </div>
 
     <!-- hold ring -->
@@ -767,7 +933,7 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
     <div id="skip-banner">
       <div class="skip-box">
         <div style="font-size:52px;margin-bottom:8px;">🎲</div>
-        <div class="skip-lvl" id="skip-lvl-text">Starting at Level 5!</div>
+        <div class="skip-lvl" id="skip-lvl-text">Starting at Depth 8!</div>
         <div class="skip-snark" id="skip-snark-text">you paid for this, by the way</div>
         <button class="big-btn purple" style="margin-top:18px;font-size:20px;padding:13px 36px;" onclick="dismissSkipBanner()">LET'S GO 😤</button>
       </div>
@@ -784,7 +950,7 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
   <div class="death-inner">
     <div class="death-emoji" id="death-emoji">💀</div>
     <div class="death-title">ONIO WINS</div>
-    <div class="death-lvl" id="death-lvl">You reached Level 4</div>
+    <div class="death-lvl" id="death-lvl">You reached Depth 4</div>
     <div class="death-roast" id="death-roast"></div>
     <canvas id="death-token-canvas" width="160" height="160"></canvas>
     <div class="token-lbl" id="death-token-lbl"></div>
@@ -827,6 +993,69 @@ const DEBUG = {
   SHOW_HIT_COUNT:  true,  // always keep remaining count visible in message bar
   FAST_TRANSITIONS:false, // true = skip cheeky defeat + level clear animations
 };
+
+// ============================================================
+// ART + THEME CONFIG
+// ============================================================
+// Drop your files into the project and set these URLs, e.g. "./assets/onio.png"
+const ART_PACK = {
+  onioSpriteUrl: '',
+  homeBackgroundUrl: '',
+  homePatternUrl: '',
+  gameBackgroundUrl: '',
+};
+
+const HOME_THEMES = [
+  {
+    id:'paper-doodle',
+    screenBg:'linear-gradient(180deg,#FFF8EC 0%,#FFF0D9 55%,#FFE7C4 100%)',
+    pattern:'radial-gradient(circle at 15% 18%,rgba(124,74,34,.08) 0 2px,transparent 2px 100%),radial-gradient(circle at 80% 72%,rgba(124,74,34,.08) 0 2px,transparent 2px 100%),repeating-linear-gradient(43deg,rgba(132,79,37,.05) 0 1px,transparent 1px 22px)',
+    glow:'radial-gradient(circle at 14% 10%,rgba(255,192,117,.42) 0%,transparent 36%),radial-gradient(circle at 84% 88%,rgba(255,128,76,.21) 0%,transparent 40%),linear-gradient(180deg,transparent 0%,rgba(86,35,0,.1) 100%)',
+    stageBg:'linear-gradient(180deg,rgba(255,251,243,.95) 0%,rgba(255,241,214,.92) 100%)',
+    stageBorder:'#5D2D0D',
+    stageShadow:'rgba(72,36,10,.22)',
+    logoFill:'linear-gradient(180deg,#FFFEEA 0%,#FFEED5 100%)',
+    logoOutline:'#4E250A',
+    logoShadow:'rgba(60,28,8,.26)',
+    snarkBg:'rgba(255,255,255,.96)',
+    snarkBorder:'#E8C070',
+    snarkText:'#7A3F10',
+    subText:'#8A5932',
+  },
+  {
+    id:'candy-neon',
+    screenBg:'linear-gradient(180deg,#FCF6FF 0%,#F3EEFF 45%,#FCEFF8 100%)',
+    pattern:'radial-gradient(circle at 20% 20%,rgba(112,83,178,.12) 0 2px,transparent 2px 100%),radial-gradient(circle at 79% 74%,rgba(255,101,153,.12) 0 2px,transparent 2px 100%),repeating-linear-gradient(135deg,rgba(127,91,182,.06) 0 2px,transparent 2px 26px)',
+    glow:'radial-gradient(circle at 10% 5%,rgba(139,210,255,.42) 0%,transparent 35%),radial-gradient(circle at 87% 86%,rgba(255,132,189,.36) 0%,transparent 42%),linear-gradient(180deg,transparent 0%,rgba(70,45,105,.12) 100%)',
+    stageBg:'linear-gradient(180deg,rgba(253,252,255,.96) 0%,rgba(248,240,255,.93) 100%)',
+    stageBorder:'#51348C',
+    stageShadow:'rgba(66,45,132,.22)',
+    logoFill:'linear-gradient(180deg,#FFFDE9 0%,#FFD6FF 100%)',
+    logoOutline:'#4E2E89',
+    logoShadow:'rgba(63,40,104,.3)',
+    snarkBg:'rgba(255,255,255,.96)',
+    snarkBorder:'#C3A2ED',
+    snarkText:'#5D388F',
+    subText:'#7353A3',
+  },
+  {
+    id:'blue-mushroom',
+    screenBg:'linear-gradient(180deg,#EEF8FF 0%,#E4F1FF 42%,#EEDFFF 100%)',
+    pattern:'radial-gradient(circle at 16% 25%,rgba(69,94,150,.1) 0 2px,transparent 2px 100%),radial-gradient(circle at 80% 70%,rgba(120,72,154,.11) 0 2px,transparent 2px 100%),repeating-linear-gradient(30deg,rgba(69,94,150,.07) 0 2px,transparent 2px 20px)',
+    glow:'radial-gradient(circle at 13% 10%,rgba(92,187,255,.35) 0%,transparent 33%),radial-gradient(circle at 86% 87%,rgba(214,121,255,.33) 0%,transparent 41%),linear-gradient(180deg,transparent 0%,rgba(46,59,92,.15) 100%)',
+    stageBg:'linear-gradient(180deg,rgba(249,253,255,.95) 0%,rgba(232,241,255,.92) 100%)',
+    stageBorder:'#264F8E',
+    stageShadow:'rgba(30,63,117,.24)',
+    logoFill:'linear-gradient(180deg,#FFFFFF 0%,#D8EBFF 100%)',
+    logoOutline:'#1F4B82',
+    logoShadow:'rgba(24,54,96,.3)',
+    snarkBg:'rgba(255,255,255,.95)',
+    snarkBorder:'#89B8F4',
+    snarkText:'#305A91',
+    subText:'#3B5E8E',
+  },
+];
+let homeThemeIdx = Math.floor(Math.random() * HOME_THEMES.length);
 
 // ============================================================
 // CONTENT
@@ -873,7 +1102,7 @@ const PROFILE_ROASTS = [
   "somewhere out there, someone is doing better. probably a dog.",
   "bold of you to keep a record of this.",
   "not zero runs. that's something. a small something.",
-  "your total hits are a number that exists. that's the best i can say.",
+  "your total clears are a number that exists. that's the best i can say.",
   "i'm not roasting you. the numbers are doing it for me.",
 ].sort(() => Math.random()-.5);
 
@@ -928,7 +1157,7 @@ const PURCHASE_SNARKS = {
 const SKIP_BANNER_SNARKS = [
   "you paid for this, by the way","real commitment to losing later instead of now",
   "enjoy the head start. it won't matter.",
-  "skipping levels you haven't even failed yet. bold.",
+  "skipping depth you haven't even failed yet. bold.",
   "shortcut brought to you by questionable financial decisions",
   "Onio approved this. Onio also finds it hilarious.",
 ];
@@ -1242,7 +1471,15 @@ let sfxCtx = null;
 let sfxEnabled = localStorage.getItem('onio_sfx') !== '0';
 let sfxMasterGain = null;
 let sfxBlockedWarned = false;
-let sfxNoiseBuffer = null;
+const DEPTHS_PER_TIER = 4;
+
+function depthToTier(depth) {
+  return 1 + Math.floor(Math.max(0, depth) / DEPTHS_PER_TIER);
+}
+
+function syncDifficultyTier() {
+  level = depthToTier(hits);
+}
 
 function scheduleChallengeTimeout(fn, delayMs) {
   const timeoutId = setTimeout(() => {
@@ -1280,6 +1517,85 @@ const onio = document.getElementById('onio');
 const arena = document.getElementById('arena');
 document.addEventListener('pointerdown', () => { ensureSfxContext(); }, { passive:true });
 
+function setRootVar(name, value) {
+  document.documentElement.style.setProperty(name, value);
+}
+
+function applyHomeTheme(theme) {
+  if (!theme) return;
+  setRootVar('--home-screen-bg', theme.screenBg);
+  setRootVar('--home-pattern', theme.pattern);
+  setRootVar('--home-glow', theme.glow);
+  setRootVar('--home-stage-bg', theme.stageBg);
+  setRootVar('--home-stage-border', theme.stageBorder);
+  setRootVar('--home-stage-shadow', theme.stageShadow);
+  setRootVar('--home-logo-fill', theme.logoFill);
+  setRootVar('--home-logo-outline', theme.logoOutline);
+  setRootVar('--home-logo-shadow', theme.logoShadow);
+  setRootVar('--home-snark-bg', theme.snarkBg);
+  setRootVar('--home-snark-border', theme.snarkBorder);
+  setRootVar('--home-snark-text', theme.snarkText);
+  setRootVar('--home-sub-text', theme.subText);
+}
+
+function pickNextHomeTheme() {
+  if (!HOME_THEMES.length) return;
+  let nextIdx = Math.floor(Math.random() * HOME_THEMES.length);
+  if (HOME_THEMES.length > 1 && nextIdx === homeThemeIdx) {
+    nextIdx = (nextIdx + 1) % HOME_THEMES.length;
+  }
+  homeThemeIdx = nextIdx;
+  applyHomeTheme(HOME_THEMES[homeThemeIdx]);
+}
+
+function applySpriteToElement(el) {
+  if (!el) return;
+  if (ART_PACK.onioSpriteUrl) el.classList.add('monster-sprite');
+  else el.classList.remove('monster-sprite');
+}
+
+function applyArtPack() {
+  if (ART_PACK.onioSpriteUrl) {
+    setRootVar('--onio-sprite-url', `url("${ART_PACK.onioSpriteUrl}")`);
+  } else {
+    setRootVar('--onio-sprite-url', 'none');
+  }
+
+  [
+    document.getElementById('onio'),
+    document.getElementById('home-monster-face'),
+    document.getElementById('mic-onio'),
+    document.getElementById('death-emoji'),
+    document.querySelector('.pm-onio'),
+    document.querySelector('.cheeky-onio'),
+    document.querySelector('.rg-emoji'),
+  ].forEach(applySpriteToElement);
+
+  // Optional home background overrides for your own assets.
+  if (ART_PACK.homeBackgroundUrl) {
+    const bg = `linear-gradient(180deg,rgba(255,250,240,.72) 0%,rgba(255,246,225,.78) 100%),url("${ART_PACK.homeBackgroundUrl}") center/cover no-repeat`;
+    setRootVar('--home-screen-bg', bg);
+  }
+  if (ART_PACK.homePatternUrl) {
+    const pattern = `url("${ART_PACK.homePatternUrl}") center/cover no-repeat`;
+    setRootVar('--home-pattern', pattern);
+  }
+
+  const gameScreen = document.getElementById('game-screen');
+  if (gameScreen) {
+    if (ART_PACK.gameBackgroundUrl) {
+      gameScreen.style.background = `linear-gradient(180deg,rgba(255,248,230,.78) 0%,rgba(255,232,202,.82) 100%),url("${ART_PACK.gameBackgroundUrl}") center/cover no-repeat`;
+    } else {
+      gameScreen.style.background = '';
+    }
+  }
+}
+
+function refreshHomeVisuals() {
+  pickNextHomeTheme();
+  applyArtPack();
+}
+
 // ============================================================
 // SCREEN / NAVIGATION
 // ============================================================
@@ -1292,6 +1608,7 @@ function showScreen(id) {
   }
   if (id === 'home-screen') {
     updateEmotionalMode();
+    refreshHomeVisuals();
     nextSnark();
     spawnBgMonsters();
   }
@@ -1361,52 +1678,61 @@ function sfxReady() {
   return !!(sfxEnabled && sfxCtx && sfxCtx.state === 'running');
 }
 
-function getSfxNoiseBuffer() {
-  if (!sfxCtx) return null;
-  if (sfxNoiseBuffer && sfxNoiseBuffer.sampleRate === sfxCtx.sampleRate) return sfxNoiseBuffer;
-  const len = Math.floor(sfxCtx.sampleRate * 0.9);
-  const buf = sfxCtx.createBuffer(1, len, sfxCtx.sampleRate);
-  const data = buf.getChannelData(0);
-  for (let i=0; i<len; i++) data[i] = (Math.random()*2 - 1) * 0.8;
-  sfxNoiseBuffer = buf;
-  return sfxNoiseBuffer;
-}
-
 function mumbleTalk(duration=0.34, intensity=1) {
   if (!sfxReady()) return;
   const ctx = sfxCtx;
-  const noise = getSfxNoiseBuffer();
-  if (!noise) return;
-  const now = ctx.currentTime + 0.005;
-  const syllables = 3 + Math.floor(Math.random()*3);
-  const step = Math.max(0.06, duration / syllables);
+  const out = sfxMasterGain || ctx.destination;
+  const now = ctx.currentTime + 0.004;
+  const syllables = 2 + Math.floor(Math.random()*2); // 2-3
+  const step = Math.max(0.1, duration / syllables);
 
   for (let i=0; i<syllables; i++) {
     const t = now + i*step + Math.random()*0.01;
-    const len = Math.min(0.10, step*0.85 + Math.random()*0.02);
-    const src = ctx.createBufferSource();
-    const bp = ctx.createBiquadFilter();
-    const lp = ctx.createBiquadFilter();
+    const len = Math.min(0.17, step*0.92 + Math.random()*0.02);
+    const base = 95 + Math.random()*55;
+
+    const main = ctx.createOscillator();
+    const sub = ctx.createOscillator();
+    const wob = ctx.createOscillator();
+    const wobGain = ctx.createGain();
+    const formant = ctx.createBiquadFilter();
+    const low = ctx.createBiquadFilter();
     const g = ctx.createGain();
 
-    src.buffer = noise;
-    src.playbackRate.value = 0.85 + Math.random()*0.5;
-    bp.type = 'bandpass';
-    bp.frequency.setValueAtTime(700 + Math.random()*900, t);
-    bp.Q.value = 1.1 + Math.random()*2.2;
-    lp.type = 'lowpass';
-    lp.frequency.setValueAtTime(1900 + Math.random()*1200, t);
+    main.type = 'triangle';
+    sub.type = 'sine';
+    main.frequency.setValueAtTime(base, t);
+    main.frequency.exponentialRampToValueAtTime(base * (1.05 + Math.random()*0.14), t + len);
+    sub.frequency.setValueAtTime(base * 0.52, t);
+
+    wob.type = 'sine';
+    wob.frequency.setValueAtTime(4.5 + Math.random()*2.5, t);
+    wobGain.gain.setValueAtTime(4 + Math.random()*4, t);
+    wob.connect(wobGain);
+    wobGain.connect(main.frequency);
+
+    formant.type = 'bandpass';
+    formant.frequency.setValueAtTime(320 + Math.random()*190, t);
+    formant.Q.value = 1.25;
+    low.type = 'lowpass';
+    low.frequency.setValueAtTime(980 + Math.random()*260, t);
 
     g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(0.20*intensity, t+0.012);
+    g.gain.exponentialRampToValueAtTime(0.12*intensity, t+0.018);
     g.gain.exponentialRampToValueAtTime(0.0001, t+len);
 
-    src.connect(bp);
-    bp.connect(lp);
-    lp.connect(g);
-    g.connect(sfxMasterGain || ctx.destination);
-    src.start(t, Math.random()*0.2, len);
-    src.stop(t + len + 0.02);
+    main.connect(formant);
+    sub.connect(formant);
+    formant.connect(low);
+    low.connect(g);
+    g.connect(out);
+
+    main.start(t);
+    sub.start(t);
+    wob.start(t);
+    main.stop(t + len + 0.03);
+    sub.stop(t + len + 0.03);
+    wob.stop(t + len + 0.03);
   }
 }
 
@@ -1441,7 +1767,7 @@ function sfx(kind) {
         playTone(620, 0.05, 'triangle', 0.10);
         break;
       case 'mumble':
-        mumbleTalk(0.36, 1.0);
+        mumbleTalk(0.34, 1.05);
         break;
       default:
         break;
@@ -1504,12 +1830,33 @@ setInterval(() => { if (document.getElementById('home-screen').classList.contain
 function spawnBgMonsters() {
   const h = document.getElementById('home-screen');
   h.querySelectorAll('.bg-monster').forEach(m => m.remove());
-  const emojis = ['😈','👹','👺','😜','🤪','😂','💀','🔥','👻','😤'];
-  for (let i=0; i<14; i++) {
+  const emojis = ['😈','👾','👹','🎮','⭐','💥','👻','🤖','✨','🛸'];
+  const chipPalettes = [
+    'linear-gradient(180deg,#FFB85B 0%,#F07E22 100%)',
+    'linear-gradient(180deg,#83E7F5 0%,#4AAAD6 100%)',
+    'linear-gradient(180deg,#FFC5E1 0%,#E774AF 100%)',
+    'linear-gradient(180deg,#B9F5A4 0%,#5BCF73 100%)',
+  ];
+  for (let i=0; i<13; i++) {
     const m = document.createElement('div');
-    m.className = 'bg-monster';
+    m.className = 'bg-monster home-dot';
+    const useAlt = i%3===1;
+    const usePink = i%3===2;
+    if (useAlt) m.classList.add('alt');
+    if (usePink) m.classList.add('pink');
     m.textContent = emojis[Math.floor(Math.random()*emojis.length)];
-    m.style.cssText = `left:${Math.random()*90}%;top:${Math.random()*90}%;font-size:${18+Math.random()*22}px;animation-duration:${2.5+Math.random()*3}s;animation-delay:${Math.random()*2}s;`;
+    const size = 24 + Math.random()*26;
+    m.style.cssText = [
+      `left:${Math.random()*92}%`,
+      `top:${Math.random()*88}%`,
+      `width:${size}px`,
+      `height:${size}px`,
+      `font-size:${Math.max(12, size*0.42)}px`,
+      `animation-duration:${3 + Math.random()*3}s`,
+      `animation-delay:${Math.random()*1.7}s`,
+      `background:${chipPalettes[Math.floor(Math.random()*chipPalettes.length)]}`,
+      `opacity:${0.86 + Math.random()*0.12}`,
+    ].join(';');
     h.appendChild(m);
   }
 }
@@ -1563,9 +1910,9 @@ function attemptPurchase(itemId) {
   document.getElementById('pm-snark').textContent = '"' + snarks[Math.floor(Math.random()*snarks.length)] + '"';
   document.getElementById('pm-item').textContent = item.name + ' — ' + item.price;
   const descs = {
-    skip1:'Adds 1 Lucky Skip. Start 3–7 levels ahead on your next game.',
-    skip2:'Adds 1 Big Skip. Start 8–15 levels ahead — more chaos sooner.',
-    skip3:'3× Lucky + 1× Big. Four chaotic head starts.',
+    skip1:'Adds 1 Lucky Skip. Start 5–12 depth ahead on your next game.',
+    skip2:'Adds 1 Big Skip. Start 12–24 depth ahead — more chaos sooner.',
+    skip3:'3× Lucky + 1× Big. Four chaotic depth boosts.',
     donate:'Pure donation. Onio gets a coffee. You get nothing. He\'s fine with this.',
   };
   document.getElementById('pm-desc').textContent = descs[itemId];
@@ -1606,6 +1953,7 @@ function startGame() {
   saveProfile(); saveStats();
   showScreen('game-screen');
   level=1; hits=0; misses=0;
+  syncDifficultyTier();
   if (inventory.lucky > 0 || inventory.big > 0) {
     showSkipPrompt();
   } else {
@@ -1618,8 +1966,8 @@ function showSkipPrompt() {
   document.getElementById('pm-item').textContent =
     (inventory.lucky>0 ? `🎲 Lucky ×${inventory.lucky}  ` : '') +
     (inventory.big>0   ? `🚀 Big ×${inventory.big}` : '');
-  document.getElementById('pm-desc').textContent = 'Use your best skip to start ahead, or just start from Level 1.';
-  document.getElementById('pm-cancel').textContent = 'start from 1';
+  document.getElementById('pm-desc').textContent = 'Use your best skip to start ahead in depth, or start from Depth 0.';
+  document.getElementById('pm-cancel').textContent = 'start from 0';
   document.getElementById('pm-confirm').textContent = 'use skip 🎲';
   document.getElementById('pm-cancel').onclick = () => { closePM(); finishGameStart(); };
   document.getElementById('pm-confirm').onclick = () => { closePM(); activateSkip(); };
@@ -1628,12 +1976,13 @@ function showSkipPrompt() {
 
 function activateSkip() {
   let amt;
-  if (inventory.big > 0) { amt = 8+Math.floor(Math.random()*8); inventory.big--; }
-  else                    { amt = 3+Math.floor(Math.random()*5); inventory.lucky--; }
+  if (inventory.big > 0) { amt = 12+Math.floor(Math.random()*13); inventory.big--; }
+  else                    { amt = 5+Math.floor(Math.random()*8); inventory.lucky--; }
   saveStats();
   updateSkipPill();
-  level = 1 + amt; hits = getLevelBase(level);
-  document.getElementById('skip-lvl-text').textContent = `Starting at Level ${level} 🔥`;
+  hits = amt;
+  syncDifficultyTier();
+  document.getElementById('skip-lvl-text').textContent = `Starting at Depth ${hits} 🔥`;
   document.getElementById('skip-snark-text').textContent = SKIP_BANNER_SNARKS[Math.floor(Math.random()*SKIP_BANNER_SNARKS.length)];
   document.getElementById('skip-banner').classList.add('active');
 }
@@ -1678,14 +2027,11 @@ function moveOnio(instant) { const p=randPos(); placeOnio(p.x, p.y, instant); }
 // HUD
 // ============================================================
 function setMsg(t) { document.getElementById('msg-text').textContent = t; }
-function getLevelProgress() {
-  const base = getLevelBase(level);
-  const need = getHitsForLevel(level);
-  const done = Math.max(0, Math.min(need, hits - base));
-  return { done, need };
-}
 function updateHUD() {
-  if (!levelHidden) document.getElementById('level-pill').textContent = `LVL ${level}`;
+  if (!levelHidden) {
+    const pb = Math.max(bestLevel, hits);
+    document.getElementById('level-pill').textContent = `DEPTH ${hits} • PB ${pb}`;
+  }
   // No score pill, no progress bar — clean HUD
 }
 function showChallengeClear(flowId=activeChallengeFlowId) {
@@ -1696,7 +2042,7 @@ function showChallengeClear(flowId=activeChallengeFlowId) {
     'THAT ONE WAS MINE.',
   ];
   const subs = [
-    'oh got me... maybe you finish this level. not.',
+    'oh got me... maybe you finish this run. not.',
     'enjoy that tiny victory.',
     'next one will hurt more.',
     'don\'t celebrate yet.',
@@ -1715,13 +2061,15 @@ function showChallengeClear(flowId=activeChallengeFlowId) {
 function hideChallengeClear() {
   document.getElementById('challenge-clear').classList.remove('active');
 }
-function getLevelBase(lv) { let b=0; for(let i=1;i<lv;i++) b+=getHitsForLevel(i); return b; }
-function getHitsForLevel(lv) { return Math.max(2, Math.min(6, Math.floor(2+lv*0.6))); }
 function updateSkipPill() {
   const n = inventory.lucky+inventory.big;
   const p = document.getElementById('skip-pill');
   p.style.display = n>0 ? 'block' : 'none';
   p.textContent = '⚡ '+n;
+}
+
+function challengeLimit(baseMs, minMs=2600) {
+  return Math.max(minMs, Math.round(baseMs - level * 90));
 }
 
 // ============================================================
@@ -1740,6 +2088,26 @@ function speech(text, dur) {
 }
 function clearSpeech() { if (speechEl) { speechEl.remove(); speechEl=null; } }
 
+function speechAt(x, y, text, dur=620, extraClass='') {
+  const b = document.createElement('div');
+  b.className = 'speech swarm-chat' + (extraClass ? ' '+extraClass : '');
+  b.textContent = text;
+  b.style.left = Math.max(6, Math.min(x, gW-165)) + 'px';
+  b.style.top  = Math.max(8, Math.min(y, gH-46)) + 'px';
+  arena.appendChild(b);
+  setTimeout(()=>b.remove(), dur);
+  return b;
+}
+
+function speechOnElement(el, text, dur=620) {
+  if (!el || !el.isConnected) return;
+  const rr = el.getBoundingClientRect();
+  const ar = arena.getBoundingClientRect();
+  const x = rr.left - ar.left + rr.width * 0.25;
+  const y = rr.top - ar.top - 20;
+  speechAt(x, y, text, dur);
+}
+
 // ============================================================
 // FX
 // ============================================================
@@ -1755,10 +2123,8 @@ function haptic(ms=30) { if (navigator.vibrate) navigator.vibrate(ms); }
 // DEATH TIMER
 // ============================================================
 function updateDeathTimerUI() {
-  const bar = document.getElementById('dtimer-bar');
   const chip = document.getElementById('dtimer-chip');
   const pct = deathTimerMax > 0 ? Math.max(0, deathTimerMs / deathTimerMax) : 0;
-  bar.style.width = (pct*100)+'%';
   chip.textContent = (Math.max(0, deathTimerMs) / 1000).toFixed(1) + 's';
   chip.classList.remove('warn','urgent');
   if (pct <= 0.15) chip.classList.add('urgent');
@@ -1768,9 +2134,7 @@ function updateDeathTimerUI() {
 function startDeathTimer(ms) {
   clearDeathTimer();
   deathTimerMax=ms; deathTimerMs=ms;
-  const wrap=document.getElementById('dtimer-wrap');
   const chip=document.getElementById('dtimer-chip');
-  wrap.style.display='block';
   chip.style.display='block';
   updateDeathTimerUI();
   deathTimerInterval = setInterval(()=>{
@@ -1781,12 +2145,10 @@ function startDeathTimer(ms) {
 }
 function clearDeathTimer() {
   if (deathTimerInterval) { clearInterval(deathTimerInterval); deathTimerInterval=null; }
-  document.getElementById('dtimer-wrap').style.display='none';
   const chip = document.getElementById('dtimer-chip');
   chip.style.display='none';
   chip.classList.remove('warn','urgent');
   chip.textContent='0.0s';
-  document.getElementById('dtimer-bar').style.width='100%';
 }
 
 // ============================================================
@@ -1829,13 +2191,14 @@ const DEATH_ROASTS_LONELY = [
 ];
 
 function doDeathScreen() {
-  totalDeaths++; totalHits+=hits;
-  if (level>bestLevel) bestLevel=level;
+  totalDeaths++;
+  totalHits += hits;
+  if (hits > bestLevel) bestLevel = hits;
   saveStats(); saveProfile();
   showScreen('death-screen');
   const emojis=['😬','😤','💀','🤯','👑','💅','🔥','😂'];
   document.getElementById('death-emoji').textContent = emojis[Math.min(level-1,emojis.length-1)];
-  document.getElementById('death-lvl').textContent = `You reached Level ${level} • ${hits} hits`;
+  document.getElementById('death-lvl').textContent = `You reached Depth ${hits} • Tier ${level}`;
 
   // Mode-aware death roast
   let roastPool;
@@ -1858,8 +2221,8 @@ function doDeathScreen() {
   document.getElementById('death-roast').textContent = Array.isArray(roastPool)
     ? roastPool[deathRoastIdx++%roastPool.length]
     : roastPool;
-  drawToken('death-token-canvas', 160, level);
-  document.getElementById('death-token-lbl').textContent = tokenLabel(level);
+  drawToken('death-token-canvas', 160, hits);
+  document.getElementById('death-token-lbl').textContent = tokenLabel(hits);
 }
 
 // ============================================================
@@ -1890,6 +2253,10 @@ function cleanupAll() {
   arena.querySelectorAll('.freeze-bait').forEach(el => el.remove());
   arena.querySelectorAll('.chaos-call-overlay').forEach(el => el.remove());
   arena.querySelectorAll('.chaos-text-banner').forEach(el => el.remove());
+  arena.querySelectorAll('.chaos-system-banner').forEach(el => el.remove());
+  arena.querySelectorAll('.chaos-dark').forEach(el => el.remove());
+  arena.querySelectorAll('.chaos-dead-pixels').forEach(el => el.remove());
+  arena.querySelectorAll('.swarm-chat').forEach(el => el.remove());
   clearHoldInterval();
   if (holdEscapeInterval) { clearInterval(holdEscapeInterval); holdEscapeInterval=null; }
   if (holdStartHandler) {
@@ -1956,13 +2323,14 @@ function onHit(force=false, sourceFlowId=null) {
   clearDeathTimer();
   onio.style.pointerEvents = 'none';
   if (lastChallengeId) recordChallengeResult(lastChallengeId, false, Date.now()-challengeStartMs);
+  const prevLevel = level;
   hits++;
-  const base = getLevelBase(level), need = getHitsForLevel(level);
-  const isLevelComplete = (hits - base >= need);
+  syncDifficultyTier();
+  const didTierUp = level > prevLevel;
   const flowId = sourceFlowId ?? activeChallengeFlowId;
 
-  if (isLevelComplete) {
-    // ── LEVEL COMPLETE: cheeky defeat → level clear → next ──
+  if (didTierUp) {
+    // Tier up (internally level-based difficulty), while user-facing progress stays depth-based.
     hideChallengeClear();
     if (DEBUG.FAST_TRANSITIONS) {
       levelUp(flowId);
@@ -1970,9 +2338,9 @@ function onHit(force=false, sourceFlowId=null) {
       showCheekyDefeat(()=>{ levelUp(flowId); }, flowId);
     }
   } else {
-    // ── CHALLENGE WIN (not yet level complete) ────────────────
+    // Standard minigame clear
     showChallengeClear(flowId);
-    setMsg('fine. next.');
+    setMsg('minigame clear.');
     updateHUD();
     scheduleChallengeTimeout(() => {
       if (!isFlowCurrent(flowId)) return;
@@ -1983,15 +2351,13 @@ function onHit(force=false, sourceFlowId=null) {
 
 function levelUp(sourceFlowId=null) {
   if (sourceFlowId !== null && sourceFlowId !== activeChallengeFlowId) return;
-  const newLevel = level + 1;
-  level = newLevel;
   misses = 0;
   startChaosSystem();
   updateHUD();
   if (DEBUG.FAST_TRANSITIONS) {
     runNextChallenge();
   } else {
-    showLevelClear(newLevel, ()=>{ runNextChallenge(); }, sourceFlowId ?? activeChallengeFlowId);
+    showLevelClear(level, ()=>{ runNextChallenge(); }, sourceFlowId ?? activeChallengeFlowId);
   }
 }
 
@@ -2076,8 +2442,8 @@ function showInstr(id, cb) {
     if (!isFlowCurrent(flowId)) return;
     cb();
   }
-  scheduleChallengeTimeout(()=>el.addEventListener('pointerdown', dismiss), 120);
-  scheduleChallengeTimeout(()=>dismiss(), 1450);
+  scheduleChallengeTimeout(()=>el.addEventListener('pointerdown', dismiss), 160);
+  scheduleChallengeTimeout(()=>dismiss(), 2300);
 }
 
 // ============================================================
@@ -2318,7 +2684,7 @@ const LEVEL_CLEAR_SUBS = [
 
 function showLevelClear(newLevel, cb, flowId=activeChallengeFlowId) {
   const lc = document.getElementById('level-clear');
-  document.getElementById('lc-text').textContent = 'LEVEL ' + newLevel + '!';
+  document.getElementById('lc-text').textContent = 'TIER ' + newLevel + '!';
   document.getElementById('lc-sub').textContent  = LEVEL_CLEAR_SUBS[Math.floor(Math.random()*LEVEL_CLEAR_SUBS.length)];
   lc.classList.add('active');
   sfx('mumble');
@@ -2420,6 +2786,64 @@ function showFakeTextBanner() {
   setTimeout(()=>{ b.style.animation='missO .3s ease forwards'; setTimeout(()=>b.remove(),320); }, 2500);
 }
 
+function showSystemBanner(icon, title, text, tone='default', stayMs=2200) {
+  const b = document.createElement('div');
+  b.className = 'chaos-system-banner';
+  const bg = tone === 'danger'
+    ? 'linear-gradient(180deg,#2A1717 0%,#1E0E0E 100%)'
+    : tone === 'cool'
+      ? 'linear-gradient(180deg,#152335 0%,#0F1A28 100%)'
+      : 'linear-gradient(180deg,#1a1a2e 0%,#141425 100%)';
+  b.style.cssText = [
+    'position:absolute',
+    'top:56px',
+    'left:10px',
+    'right:10px',
+    `background:${bg}`,
+    'border-radius:14px',
+    'padding:11px 14px',
+    'z-index:41',
+    'display:flex',
+    'align-items:center',
+    'gap:10px',
+    'box-shadow:0 10px 24px rgba(0,0,0,.35)',
+    'animation:popIn .18s ease',
+  ].join(';');
+  b.innerHTML = `<div style="font-size:24px;">${icon}</div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-family:'Fredoka One',cursive;font-size:12px;letter-spacing:.8px;color:rgba(255,255,255,.72);text-transform:uppercase;">${title}</div>
+      <div style="font-family:'Nunito',sans-serif;font-size:14px;color:white;font-weight:800;line-height:1.3;">${text}</div>
+    </div>`;
+  arena.appendChild(b);
+  setTimeout(()=>{ b.style.animation='missO .24s ease forwards'; setTimeout(()=>b.remove(),260); }, stayMs);
+}
+
+function showDarkScreen(ms=950) {
+  const d = document.createElement('div');
+  d.className = 'chaos-dark';
+  d.style.cssText = 'position:absolute;inset:0;background:rgba(0,0,0,.86);z-index:34;pointer-events:none;animation:popIn .12s ease;';
+  arena.appendChild(d);
+  setTimeout(()=>{
+    d.style.transition = 'opacity .26s ease';
+    d.style.opacity = '0';
+    setTimeout(()=>d.remove(), 280);
+  }, ms);
+}
+
+function showDeadPixels(ms=1400) {
+  const wrap = document.createElement('div');
+  wrap.className = 'chaos-dead-pixels';
+  wrap.style.cssText = 'position:absolute;inset:0;z-index:34;pointer-events:none;';
+  const n = 8 + Math.floor(Math.random()*8);
+  for (let i=0; i<n; i++) {
+    const p = document.createElement('div');
+    p.style.cssText = `position:absolute;left:${Math.random()*95}%;top:${Math.random()*95}%;width:${3+Math.random()*8}px;height:${2+Math.random()*7}px;background:${Math.random()<0.7?'#000':'#4A4A4A'};opacity:${0.45+Math.random()*0.55};`;
+    wrap.appendChild(p);
+  }
+  arena.appendChild(wrap);
+  setTimeout(()=>wrap.remove(), ms);
+}
+
 // Fake ghost Onio — pops up with a speech bubble so it's obvious
 function spawnFakeOnioPop() {
   // Place well away from real Onio
@@ -2433,6 +2857,7 @@ function spawnFakeOnioPop() {
   const ghost = document.createElement('div');
   ghost.style.cssText = `position:absolute;font-size:72px;cursor:pointer;z-index:6;left:${px}px;top:${py}px;line-height:1;animation:popIn .2s cubic-bezier(.4,2,.6,1);`;
   ghost.textContent = '😈';
+  applySpriteToElement(ghost);
 
   // Speech bubble attached to ghost — makes it feel alive
   const bubble = document.createElement('div');
@@ -2445,6 +2870,7 @@ function spawnFakeOnioPop() {
   ghost.addEventListener('pointerdown', e=>{
     e.stopPropagation();
     bubble.remove();
+    ghost.classList.remove('monster-sprite');
     ghost.textContent = '😂';
     speech(lieLines[Math.floor(Math.random()*lieLines.length)], 700);
     setTimeout(()=>{ ghost.style.animation='missO .25s ease forwards'; setTimeout(()=>ghost.remove(),280); }, 400);
@@ -2576,6 +3002,7 @@ function cTap() {
   setMsg(introTaunts[Math.floor(Math.random()*introTaunts.length)]);
 
   showSign(remaining);
+  startDeathTimer(challengeLimit(17000, 5200));
 
   // NO scale animation — sign appears instantly, 300ms flat lockout
   onio.style.pointerEvents = 'none';
@@ -2766,6 +3193,7 @@ function cDodge() {
     "I dare you.",
   ];
   setMsg(msgs[Math.floor(Math.random()*msgs.length)]);
+  startDeathTimer(challengeLimit(12500, 4200));
 
   function dodge(e) {
     if (!trickActive || isTired) return;
@@ -2848,6 +3276,7 @@ function cDodge() {
     arena.removeEventListener('touchmove', dodge);
     if (tiredTimeout) clearTimeout(tiredTimeout);
     onio.style.transition = '';
+    clearDeathTimer();
   };
 }
 
@@ -2906,20 +3335,27 @@ function cHold() {
     escapeInterval = setInterval(()=>{
       if (gamePaused || !trickActive || !isHolding) return;
       if (Math.random() < escapeChance) {
-        // Jerk Onio slightly, drain ring briefly
-        const jx = (Math.random()-.5)*40, jy = (Math.random()-.5)*40;
-        const nx = Math.max(10, Math.min(gW-90, onioX+jx));
-        const ny = Math.max(10, Math.min(gH-100, onioY+jy));
-        onio.style.transition='left .08s, top .08s';
-        onio.style.left=nx+'px'; onio.style.top=ny+'px';
-        onioX=nx; onioY=ny;
+        const teleportNow = level >= 9 && Math.random() < Math.min(0.35, 0.08 + level*0.012);
+        if (teleportNow) {
+          moveOnio(true);
+          speech('teleport 😈', 550);
+          haptic([18,22,18]);
+          progress = Math.max(0, progress - needed * (0.24 + Math.min(0.18, level*0.004)));
+        } else {
+          // Jerk Onio slightly, drain ring briefly
+          const jx = (Math.random()-.5)*40, jy = (Math.random()-.5)*40;
+          const nx = Math.max(10, Math.min(gW-90, onioX+jx));
+          const ny = Math.max(10, Math.min(gH-100, onioY+jy));
+          onio.style.transition='left .08s, top .08s';
+          onio.style.left=nx+'px'; onio.style.top=ny+'px';
+          onioX=nx; onioY=ny;
+          speech(['nope!','let go!','stop!','escape!'][Math.floor(Math.random()*4)], 400);
+          haptic(15);
+          progress = Math.max(0, progress - needed * (0.11 + Math.min(0.11, level*0.0035)));
+        }
         // update ring position to follow
         wrap.style.left=(onioX-15)+'px'; wrap.style.top=(onioY-15)+'px';
-        // brief drain
-        progress = Math.max(0, progress - needed * (0.11 + Math.min(0.11, level*0.0035)));
         updateHoldRing(progress/needed);
-        speech(['nope!','let go!','stop!','escape!'][Math.floor(Math.random()*4)], 400);
-        haptic(15);
       }
     }, 200);
     holdEscapeInterval = escapeInterval;
@@ -3041,6 +3477,7 @@ function spawnOnioEl(emoji, x, y, opts={}) {
   if (opts.size) d.style.fontSize = opts.size+'px';
   if (opts.opacity) d.style.opacity = opts.opacity;
   if (opts.anim) d.style.animationDuration = opts.anim+'s';
+  applySpriteToElement(d);
   arena.appendChild(d); decoyEls.push(d);
   return d;
 }
@@ -3090,6 +3527,17 @@ function cSwarmFindReal() {
   setMsg("Find the REAL Onio! 👀");
   clearSpeech();
   suppressSpeech = true;
+  const talkers = [];
+  const chatterLines = [
+    'over here!',
+    'no, me!',
+    'im him 😈',
+    'pick me',
+    'this one',
+    'me me me',
+    'real onio!',
+    'tap me lol',
+  ];
 
   // Real Onio is hidden among fakes
   onio.style.opacity='0';
@@ -3103,9 +3551,10 @@ function cSwarmFindReal() {
       size: Math.max(32, 72 - Math.floor(count/6)),
       opacity, anim: 0.6+Math.random()
     });
+    talkers.push(el);
     el.addEventListener('pointerdown', e=>{
       e.stopPropagation();
-      speech(['nope!','not me!','try again','lol'][Math.floor(Math.random()*4)], 600);
+      speechOnElement(el, ['nope!','not me!','try again','lol'][Math.floor(Math.random()*4)], 540);
       el.style.opacity='0.1'; el.style.pointerEvents='none';
       registerMiss(p.x, p.y);
     });
@@ -3114,10 +3563,22 @@ function cSwarmFindReal() {
   // Real Onio placed randomly among them
   onio.style.opacity = String(0.6 + Math.random()*0.3);
   moveOnio(true);
-  if (level >= 12) startDeathTimer(Math.max(3600, 9000-level*180));
+  talkers.push(onio);
+  const chatterInterval = setInterval(()=>{
+    if (gamePaused || !trickActive) return;
+    const bursts = Math.min(3, Math.max(1, Math.floor(count / 12)));
+    for (let i=0; i<bursts; i++) {
+      const target = talkers[Math.floor(Math.random()*talkers.length)];
+      if (!target || !target.isConnected || target.style.pointerEvents === 'none') continue;
+      speechOnElement(target, chatterLines[Math.floor(Math.random()*chatterLines.length)], 460 + Math.random()*260);
+    }
+  }, 550 + Math.random()*220);
+
+  startDeathTimer(challengeLimit(9600, 3600));
   currentTrickCleanup=()=>{
     clearDeathTimer();
     suppressSpeech = false;
+    clearInterval(chatterInterval);
     onio.style.opacity='1';
     clearDecoys();
   };
@@ -3211,11 +3672,12 @@ function cClones() {
     const d=document.createElement('div');
     d.className='decoy'; d.textContent='😈';
     const p=randPos(); d.style.left=p.x+'px'; d.style.top=p.y+'px';
+    applySpriteToElement(d);
     d.addEventListener('pointerdown',e=>{e.stopPropagation();speech("WRONG! 😂",700);d.style.opacity='0.2';d.style.pointerEvents='none';registerMiss(p.x,p.y);});
     arena.appendChild(d); decoyEls.push(d);
   }
   onio.style.opacity='1';
-  if (level>=4) startDeathTimer(7000);
+  startDeathTimer(challengeLimit(9000, 4200));
   currentTrickCleanup=()=>{clearDecoys();clearDeathTimer();};
 }
 
@@ -3230,7 +3692,7 @@ function cDrag() {
     const dz=document.getElementById('drag-zone');
     dz.style.cssText=`left:${zx}px;top:${zy}px;width:${zw}px;height:${zh}px;`;
     dz.classList.add('active');
-    if (level>=4) startDeathTimer(7000);
+    startDeathTimer(challengeLimit(8600, 4000));
     function sd(e){if(!trickActive||e.target!==onio)return;e.preventDefault();isDragging=true;const rc=arena.getBoundingClientRect();const cx=(e.clientX??e.touches?.[0]?.clientX??0)-rc.left;const cy=(e.clientY??e.touches?.[0]?.clientY??0)-rc.top;dragOffX=cx-onioX;dragOffY=cy-onioY;onio.style.transition='none';}
     function md(e){if(!isDragging||!trickActive)return;const rc=arena.getBoundingClientRect();const cx=(e.clientX??e.touches?.[0]?.clientX??0)-rc.left;const cy=(e.clientY??e.touches?.[0]?.clientY??0)-rc.top;placeOnio(cx-dragOffX,cy-dragOffY,true);}
     function ed(){if(!isDragging)return;isDragging=false;if(onioX+36>zx&&onioX+36<zx+zw&&onioY+36>zy&&onioY+36<zy+zh){dz.classList.remove('active');clearDeathTimer();onHit(false, flowId);}else speech("not there! 🎯",500);}
@@ -3248,7 +3710,7 @@ function cShake() {
     document.getElementById('shake-ind').classList.add('active');
     const needed=Math.max(3,6-Math.floor(level/2));
     let count=0;
-    if (level>=4) startDeathTimer(6000);
+    startDeathTimer(challengeLimit(7600, 3600));
     function updateShakeCount(n) {
       document.getElementById('shake-count').textContent=`${n}/${needed}`;
     }
@@ -3302,7 +3764,7 @@ function cBlow() {
     document.getElementById('mic-onio').textContent='😈';
     document.getElementById('mic-status').textContent='calibrating...';
     document.getElementById('mic-meter-bar').style.width='0%';
-    if (level>=4) startDeathTimer(8000);
+    startDeathTimer(challengeLimit(9800, 4200));
     startMicChallenge(flowId);
     currentTrickCleanup=()=>{document.getElementById('mic-challenge').classList.remove('active');clearDeathTimer();stopMic();};
   });
@@ -3399,13 +3861,7 @@ function cUpsideDown() {
   setMsg("¡ǝɯ dɐʇ");
   document.getElementById('game-screen').style.transform='rotate(180deg)';
   speech("oops! 😬", 1500);
-  // Linger 8–12s, death timer at higher levels
-  const linger = level>=4 ? 8000 : 12000;
-  if (level>=4) startDeathTimer(linger);
-  else {
-    // Auto-restore after linger but only AFTER a hit
-    // Player must tap Onio while upside-down — no auto restore
-  }
+  startDeathTimer(challengeLimit(9800, 4200));
   currentTrickCleanup=()=>{document.getElementById('game-screen').style.transform='';clearDeathTimer();};
 }
 
@@ -3413,7 +3869,7 @@ function cMirror() {
   setMsg("Something feels... off?");
   document.getElementById('game-screen').style.transform='scaleX(-1)';
   speech("heh heh 😏", 2500);
-  if (level>=4) startDeathTimer(10000);
+  startDeathTimer(challengeLimit(11200, 5200));
   currentTrickCleanup=()=>{document.getElementById('game-screen').style.transform='';clearDeathTimer();};
 }
 
@@ -3421,25 +3877,27 @@ function cTiny() {
   onio.style.transition='font-size .5s'; onio.style.fontSize='20px';
   setMsg("Tap me! (I shrank 😂)");
   moveOnio(true);
-  if (level>=4) startDeathTimer(7000);
+  startDeathTimer(challengeLimit(8600, 3900));
   currentTrickCleanup=()=>{onio.style.fontSize='72px';clearDeathTimer();};
 }
 
 function cFakePause() {
   document.getElementById('fake-pause').classList.add('active');
   onio.style.pointerEvents='none'; trickActive=false; setMsg("...");
+  startDeathTimer(challengeLimit(8600, 3600));
   document.getElementById('resume-btn').onclick=()=>{
     document.getElementById('fake-pause').classList.remove('active');
     trickActive=true; onio.style.pointerEvents='auto'; moveOnio(true);
     speech("lolol 😂",800); setMsg("Ok ok, tap me now!");
   };
-  currentTrickCleanup=()=>{document.getElementById('fake-pause').classList.remove('active');};
+  currentTrickCleanup=()=>{document.getElementById('fake-pause').classList.remove('active');clearDeathTimer();};
 }
 
 function cFakeText() {
   const ftScreen=document.getElementById('fake-text'), ftMsgs=document.getElementById('ft-msgs');
   ftScreen.classList.add('active'); ftMsgs.innerHTML='';
   onio.style.pointerEvents='none'; trickActive=false; setMsg("...");
+  startDeathTimer(challengeLimit(10200, 4200));
   const convo=FAKE_TEXT_CONVOS[Math.floor(Math.random()*FAKE_TEXT_CONVOS.length)];
   let i=0;
 
@@ -3494,7 +3952,7 @@ function cFakeText() {
     trickActive=true; onio.style.pointerEvents='auto'; moveOnio(true);
     speech("ok I'm back 👋",900); setMsg("Where were we?");
   };
-  currentTrickCleanup=()=>{ftScreen.classList.remove('active');};
+  currentTrickCleanup=()=>{ftScreen.classList.remove('active');clearDeathTimer();};
 }
 
 function cTeleport() {
@@ -3509,7 +3967,7 @@ function cTeleport() {
     scheduleChallengeTimeout(hop,speed);
   }
   hop();
-  if (level>=5) startDeathTimer(5500);
+  startDeathTimer(challengeLimit(7600, 3300));
   currentTrickCleanup=()=>{clearDeathTimer();};
 }
 
@@ -3577,7 +4035,7 @@ function cSwipeCode() {
   let codeLive = false;
 
   setMsg('MEMORIZE: ' + seq.map(d=>glyph[d]).join(' '));
-  if (level >= 8) startDeathTimer(timeLimit);
+  startDeathTimer(Math.max(3600, timeLimit));
 
   scheduleChallengeTimeout(()=>{
     codeLive = true;
@@ -3675,7 +4133,7 @@ function cTracePath() {
   let next = 0;
   let failLock = false;
   setMsg('Trace the path dots in order');
-  if (level >= 8) startDeathTimer(Math.max(5500, 11000 - level*120));
+  startDeathTimer(Math.max(4200, 11000 - level*120));
 
   function markDone(idx) {
     const el = layer.querySelector(`div[data-idx="${idx}"]`);
@@ -3772,7 +4230,7 @@ function cRhythmTap() {
   let beatsElapsed = 0;
 
   setMsg(`Listen + tap on beat: ${scored}/${needed}`);
-  if (level >= 9) startDeathTimer(Math.max(4500, 10500 - level*100));
+  startDeathTimer(Math.max(3800, 10500 - level*100));
 
   function spawnPulse() {
     const pulse = document.createElement('div');
@@ -4190,6 +4648,11 @@ function doChaosTick() {
   if (level >= 16 && canDisrupt) pool.push({ id:'microLag', w: chaosVal(16, 45, 0.1, 1.1) });
   if (level >= 18 && canDisrupt) pool.push({ id:'invertControls', w: chaosVal(18, 50, 0.1, 1.0) });
   if (level >= 20 && canDisrupt) pool.push({ id:'fakePauseChaos', w: chaosVal(20, 55, 0.1, 0.9) });
+  if (level >= 9) pool.push({ id:'batteryLow', w: chaosVal(9, 28, 0.2, 1.4) });
+  if (level >= 11) pool.push({ id:'screenDark', w: chaosVal(11, 34, 0.2, 1.2) });
+  if (level >= 13) pool.push({ id:'deadPixels', w: chaosVal(13, 38, 0.2, 1.2) });
+  if (level >= 15) pool.push({ id:'chargeNow', w: chaosVal(15, 40, 0.2, 1.0) });
+  if (level >= 17) pool.push({ id:'fakeIncoming', w: chaosVal(17, 45, 0.2, 1.0) });
 
   const total = pool.reduce((a,c)=>a+c.w, 0);
   let r = Math.random()*total, chosen = pool[0];
@@ -4227,8 +4690,8 @@ function doChaosTick() {
     case 'fakeLevel':
       if (levelHidden) break;
       const offset = Math.floor(chaosVal(8,40,1,9)) + Math.floor(Math.random()*2);
-      const fake = Math.random()<0.5 ? level+offset : Math.max(1,level-offset);
-      document.getElementById('level-pill').textContent='LVL '+fake;
+      const fake = Math.random()<0.5 ? hits+offset : Math.max(0,hits-offset);
+      document.getElementById('level-pill').textContent='DEPTH '+fake;
       scheduleChallengeTimeout(()=>{
         if (!levelHidden) updateHUD();
       }, 1200+Math.random()*1000);
@@ -4308,6 +4771,30 @@ function doChaosTick() {
       }, 950);
       break;
     }
+    case 'batteryLow':
+      showSystemBanner('🪫', 'Battery Low', '1% remaining. performance reduced.', 'danger', 1900);
+      if (deathTimerInterval && deathTimerMs > 0) {
+        deathTimerMs = Math.max(120, deathTimerMs - Math.max(300, deathTimerMax*0.1));
+        updateDeathTimerUI();
+      }
+      break;
+    case 'screenDark':
+      markChaosDisrupt(1000);
+      showDarkScreen(820 + Math.random()*420);
+      break;
+    case 'deadPixels':
+      showDeadPixels(1200 + Math.random()*900);
+      break;
+    case 'chargeNow':
+      showSystemBanner('🔌', 'Charge Required', 'Connect charger to continue chaos mode.', 'cool', 1700);
+      if (deathTimerInterval && deathTimerMs > 0 && Math.random() < 0.7) {
+        deathTimerMs = Math.max(120, deathTimerMs * (0.9 - Math.random()*0.08));
+        updateDeathTimerUI();
+      }
+      break;
+    case 'fakeIncoming':
+      showSystemBanner('📞', 'Incoming Call', 'Unknown chaos caller...', 'default', 1550);
+      break;
   }
 }
 
@@ -4387,9 +4874,9 @@ function drawStarToken(ctx,cx,cy,r,sz) {
 }
 function tokenLabel(lv) {
   if(lv<=0)return'Play to earn your token!';
-  if(lv>=100)return`★ Legend Token (Lvl ${lv})`;
-  if(lv>=50)return`💀 Skull Token (Lvl ${lv-49}/50)`;
-  return`Ring Token (Lvl ${lv}/49)`;
+  if(lv>=100)return`★ Legend Token (Depth ${lv})`;
+  if(lv>=50)return`💀 Skull Token (Depth ${lv-49}/50)`;
+  return`Ring Token (Depth ${lv}/49)`;
 }
 
 // ============================================================
@@ -4399,15 +4886,15 @@ function saveProfileToken() { saveCanvas('profile-token-canvas'); }
 function saveCanvas(id) {
   const c=document.getElementById(id);
   const a=document.createElement('a');
-  a.download='onio-token-lv'+bestLevel+'.png';
+  a.download='onio-token-depth'+bestLevel+'.png';
   a.href=c.toDataURL('image/png'); a.click();
   showToast('Token saved! 🎉');
 }
 function shareScore() {
-  const lv=bestLevel>0?bestLevel:level;
-  const text=`I survived to Level ${lv} in ONIO 😈 Can you beat me? onio.game`;
+  const depth=bestLevel>0?bestLevel:hits;
+  const text=`I reached Depth ${depth} in ONIO 😈 Can you beat me? onio.game`;
   if(navigator.share){navigator.share({title:'ONIO',text}).catch(()=>{});return;}
-  navigator.clipboard.writeText(text).then(()=>showToast('Copied! 📋')).catch(()=>showToast('Level '+lv));
+  navigator.clipboard.writeText(text).then(()=>showToast('Copied! 📋')).catch(()=>showToast('Depth '+depth));
 }
 function showToast(msg) {
   const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
@@ -4418,6 +4905,7 @@ function showToast(msg) {
 // INIT
 // ============================================================
 updateEmotionalMode();
+refreshHomeVisuals();
 nextSnark();
 spawnBgMonsters();
 updateHUD();
