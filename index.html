@@ -244,10 +244,38 @@ html,body{
 #level-pill{font-family:'Fredoka One',cursive;font-size:16px;color:white;background:linear-gradient(180deg,#D76E1A 0%,#B64A06 100%);padding:4px 14px;border-radius:20px;letter-spacing:1px;
   box-shadow:0 3px 0 rgba(106,40,3,.45),0 6px 14px rgba(192,86,10,.28),inset 0 1px 0 rgba(255,255,255,.35);}
 #skip-pill{display:none;font-family:'Fredoka One',cursive;font-size:13px;color:white;background:linear-gradient(180deg,#9A48B2 0%,#722A89 100%);padding:3px 10px;border-radius:14px;box-shadow:0 3px 0 rgba(66,22,85,.45),0 6px 12px rgba(85,29,107,.24);}
-#game-controls{position:absolute;top:calc(env(safe-area-inset-top,0px) + 10px);right:10px;z-index:45;display:flex;gap:8px;pointer-events:auto;flex-wrap:wrap;justify-content:flex-end;max-width:62vw;}
-.gc-btn{background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(255,242,219,.96));border:2px solid #E8C070;color:#C0560A;font-family:'Fredoka One',cursive;
-  font-size:14px;padding:6px 10px;border-radius:12px;cursor:pointer;box-shadow:0 3px 0 rgba(176,112,32,.35),0 6px 14px rgba(0,0,0,.1);}
+#game-controls{
+  position:absolute;
+  left:50%;
+  bottom:calc(env(safe-area-inset-bottom,0px) + 12px);
+  transform:translateX(-50%);
+  z-index:45;
+  display:flex;
+  gap:10px;
+  pointer-events:auto;
+  align-items:center;
+  justify-content:center;
+  padding:8px 10px;
+  border-radius:999px;
+  border:2px solid rgba(232,192,112,.74);
+  background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,239,214,.94));
+  box-shadow:0 8px 24px rgba(0,0,0,.15);
+}
+.gc-btn{
+  width:48px;height:48px;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(255,242,219,.96));
+  border:2px solid #E8C070;color:#C0560A;font-family:'Fredoka One',cursive;
+  font-size:22px;line-height:1;border-radius:999px;cursor:pointer;
+  box-shadow:0 3px 0 rgba(176,112,32,.35),0 6px 14px rgba(0,0,0,.1);
+}
 .gc-btn:active{transform:translateY(1px);}
+.gc-btn.locked,.gc-btn:disabled{
+  opacity:.42;
+  filter:grayscale(1);
+  box-shadow:none;
+  cursor:not-allowed;
+}
 #msg-bar{width:100%;text-align:center;padding:0 16px;z-index:10;pointer-events:none;flex-shrink:0;margin-top:2px;}
 #msg-text{font-family:'Fredoka One',cursive;font-size:clamp(17px,5.2vw,24px);color:#C0560A;
   background:linear-gradient(180deg,rgba(255,255,255,.97),rgba(255,245,224,.98));padding:6px 20px;border-radius:25px;border:2.5px solid #E8C070;
@@ -693,6 +721,8 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
   .home-btn-row{gap:8px;}
   .play-cta{padding-left:52px;}
   .home-dot{display:none;}
+  #game-controls{bottom:calc(env(safe-area-inset-bottom,0px) + 8px);padding:7px 9px;gap:8px;}
+  .gc-btn{width:44px;height:44px;font-size:20px;}
 }
 </style>
 </head>
@@ -813,9 +843,9 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
     <div id="skip-pill">⚡ 0</div>
   </div>
   <div id="game-controls">
-    <button class="gc-btn" id="sound-btn" onclick="toggleSound(event)">🔊</button>
-    <button class="gc-btn" onclick="openPauseMenu(event)">⏸ Pause</button>
-    <button class="gc-btn" onclick="exitToHome(event)">🏠 Exit</button>
+    <button class="gc-btn" id="sound-btn" onclick="toggleSound(event)" aria-label="Sound" title="Sound">🔊</button>
+    <button class="gc-btn" id="pause-btn" onclick="openPauseMenu(event)" aria-label="Pause" title="Pause">⏸</button>
+    <button class="gc-btn" id="home-btn" onclick="exitToHome(event)" aria-label="Home" title="Home">🏠</button>
   </div>
   <div id="msg-bar"><div id="msg-text">TAP ME!</div></div>
   <div id="arena">
@@ -1471,6 +1501,7 @@ let sfxCtx = null;
 let sfxEnabled = localStorage.getItem('onio_sfx') !== '0';
 let sfxMasterGain = null;
 let sfxBlockedWarned = false;
+let controlsLockedForChallenge = false;
 const DEPTHS_PER_TIER = 4;
 
 function depthToTier(depth) {
@@ -1645,6 +1676,18 @@ function updateSoundBtn() {
   b.title = sfxEnabled ? 'Sound on' : 'Sound off';
 }
 
+function setCoreControlsLocked(locked) {
+  controlsLockedForChallenge = !!locked;
+  const pauseBtn = document.getElementById('pause-btn');
+  const homeBtn = document.getElementById('home-btn');
+  [pauseBtn, homeBtn].forEach(btn => {
+    if (!btn) return;
+    btn.disabled = controlsLockedForChallenge;
+    btn.classList.toggle('locked', controlsLockedForChallenge);
+    btn.setAttribute('aria-disabled', controlsLockedForChallenge ? 'true' : 'false');
+  });
+}
+
 function toggleSound(e) {
   if (e) { e.preventDefault(); e.stopPropagation(); }
   sfxEnabled = !sfxEnabled;
@@ -1784,6 +1827,7 @@ function openPauseMenu(e) {
   if (e) { e.preventDefault(); e.stopPropagation(); }
   if (!document.getElementById('game-screen').classList.contains('active')) return;
   normalizePauseState();
+  if (controlsLockedForChallenge) return;
   if (gamePaused) return;
   gamePaused = true;
   cleanupAll();
@@ -1804,6 +1848,7 @@ function resumeFromPause() {
 function exitToHome(e) {
   if (e) { e.preventDefault(); e.stopPropagation(); }
   normalizePauseState();
+  if (controlsLockedForChallenge) return;
   gamePaused = false;
   document.getElementById('real-pause').classList.remove('active');
   cleanupAll();
@@ -1943,6 +1988,7 @@ function startGame() {
   ensureSfxContext().then(()=>sfx('ui'));
   deathSequence++;
   gamePaused = false;
+  setCoreControlsLocked(false);
   document.getElementById('real-pause').classList.remove('active');
   cleanupAll();
   totalRuns++;
@@ -1994,6 +2040,7 @@ function dismissSkipBanner() {
 
 function finishGameStart() {
   misses=0; updateHUD(); updateSkipPill(); resize();
+  setCoreControlsLocked(false);
   placeOnio(gW/2-40, gH/2-40, true);
   startChaosSystem();
   scheduleChallengeTimeout(runNextChallenge, 500);
@@ -2159,6 +2206,7 @@ function triggerDeath(reason) {
   if (gamePaused) return;
   if (!document.getElementById('game-screen').classList.contains('active')) return;
   const thisDeath = ++deathSequence;
+  setCoreControlsLocked(false);
   // Record the challenge that killed the player as a failure
   if (lastChallengeId) recordChallengeResult(lastChallengeId, true, Date.now()-challengeStartMs);
   cleanupAll();
@@ -2231,6 +2279,7 @@ function doDeathScreen() {
 function cleanupAll() {
   beginNewChallengeFlow();
   clearChallengeTimeouts();
+  setCoreControlsLocked(false);
   clearDeathTimer(); clearSpeech(); clearDecoys(); stopMic();
   if (shakeCheckInterval) { clearInterval(shakeCheckInterval); shakeCheckInterval=null; }
   document.getElementById('fake-pause').classList.remove('active');
@@ -2318,6 +2367,7 @@ function onHit(force=false, sourceFlowId=null) {
   if (!force && !trickActive) return;
   if (transitionLocked) return;
   transitionLocked = true;
+  setCoreControlsLocked(false);
   trickActive = false;
   if (currentTrickCleanup) { currentTrickCleanup(); currentTrickCleanup = null; }
   clearDeathTimer();
@@ -2396,6 +2446,7 @@ function runNextChallenge() {
   normalizePauseState();
   if (gamePaused) return;
   cleanupAll(); resize(); moveOnio(true);
+  setCoreControlsLocked(false);
   const flowId = getActiveFlowId();
   onio.style.pointerEvents='none';
 
@@ -2908,23 +2959,64 @@ function flashBlank(durationMs=800) {
 }
 
 function spawnTapChaosSwarm(durationMs=1700) {
-  const count = 5 + Math.floor(Math.random()*7); // 5-11
+  const seedCount = 6 + Math.floor(Math.random()*6); // 6-11
+  const maxCount = Math.min(26, seedCount + 7 + Math.floor(level/3));
   const movers = [];
-  for (let i=0; i<count; i++) {
-    const p = randPos(20, 100);
-    const d = spawnOnioEl('😈', p.x, p.y, {
-      size: 34 + Math.random()*18,
-      opacity: 0.55 + Math.random()*0.25,
-      anim: 0.45 + Math.random()*0.45,
-    });
-    d.style.pointerEvents = 'none';
-    d.style.zIndex = '3';
-    movers.push({el:d, x:p.x, y:p.y});
+  const chatter = ['over here!', 'no, me!', 'im him!', 'tap me!', 'me me me', 'wrong one', 'this one!', 'nah this one'];
+
+  function removeMover(entry) {
+    if (!entry) return;
+    const idx = movers.indexOf(entry);
+    if (idx >= 0) movers.splice(idx, 1);
+    if (entry.el && entry.el.parentNode) entry.el.remove();
   }
 
+  function spawnDecoy(atX=null, atY=null) {
+    const p = atX===null || atY===null
+      ? randPos(20, 100)
+      : { x: Math.max(12, Math.min(gW-88, atX + (Math.random()-.5)*110)), y: Math.max(96, Math.min(gH-96, atY + (Math.random()-.5)*100)) };
+    const d = spawnOnioEl('😈', p.x, p.y, {
+      size: 32 + Math.random()*16,
+      opacity: 0.52 + Math.random()*0.28,
+      anim: 0.4 + Math.random()*0.45,
+    });
+    d.style.pointerEvents = 'auto';
+    d.style.zIndex = '3';
+    const entry = { el:d, x:p.x, y:p.y };
+    movers.push(entry);
+
+    if (Math.random() < 0.45) {
+      scheduleChallengeTimeout(() => {
+        if (!trickActive || gamePaused || !entry.el || !entry.el.isConnected) return;
+        speechOnElement(entry.el, chatter[Math.floor(Math.random()*chatter.length)], 380 + Math.random()*220);
+      }, 120 + Math.random()*260);
+    }
+
+    d.addEventListener('pointerdown', e => {
+      e.stopPropagation();
+      if (!trickActive || gamePaused) return;
+      const rect = d.getBoundingClientRect();
+      const ar = arena.getBoundingClientRect();
+      registerMiss(rect.left - ar.left + rect.width/2, rect.top - ar.top + rect.height/2);
+      speechOnElement(d, chatter[Math.floor(Math.random()*chatter.length)], 420 + Math.random()*260);
+      d.style.pointerEvents = 'none';
+      d.style.opacity = '0.18';
+      scheduleChallengeTimeout(() => removeMover(entry), 260);
+
+      // Wrong taps spawn extras to increase chaos.
+      const add = 1 + (Math.random() < Math.min(0.65, 0.18 + level*0.02) ? 1 : 0);
+      for (let i=0; i<add && movers.length < maxCount; i++) {
+        spawnDecoy(p.x, p.y);
+      }
+    });
+  }
+
+  for (let i=0; i<seedCount; i++) spawnDecoy();
+
   const moverInt = setInterval(()=>{
-    if (!trickActive) return;
+    if (!trickActive || gamePaused) return;
     movers.forEach(m => {
+      if (!m.el || !m.el.isConnected) return;
       m.x = Math.max(12, Math.min(gW-82, m.x + (Math.random()-.5)*58));
       m.y = Math.max(96, Math.min(gH-90, m.y + (Math.random()-.5)*54));
       m.el.style.transition = 'left .16s linear, top .16s linear';
@@ -2933,9 +3025,19 @@ function spawnTapChaosSwarm(durationMs=1700) {
     });
   }, 160);
 
-  scheduleChallengeTimeout(()=>clearInterval(moverInt), durationMs);
+  const chatInt = setInterval(()=>{
+    if (!trickActive || gamePaused || movers.length===0) return;
+    const bursts = Math.min(4, Math.max(1, Math.floor(movers.length/5)));
+    for (let i=0; i<bursts; i++) {
+      const entry = movers[Math.floor(Math.random()*movers.length)];
+      if (!entry || !entry.el || !entry.el.isConnected) continue;
+      speechOnElement(entry.el, chatter[Math.floor(Math.random()*chatter.length)], 360 + Math.random()*220);
+    }
+  }, 420 + Math.random()*160);
+
+  scheduleChallengeTimeout(()=>{ clearInterval(moverInt); clearInterval(chatInt); }, durationMs);
   scheduleChallengeTimeout(()=>{
-    movers.forEach(m => { if (m.el.parentNode) m.el.remove(); });
+    movers.slice().forEach(removeMover);
     decoyEls = decoyEls.filter(d => d.parentNode);
   }, durationMs + 120);
 }
@@ -3528,6 +3630,7 @@ function cSwarmFindReal() {
   clearSpeech();
   suppressSpeech = true;
   const talkers = [];
+  const maxCount = Math.min(44, count + 12 + Math.floor(level * 0.6));
   const chatterLines = [
     'over here!',
     'no, me!',
@@ -3538,27 +3641,48 @@ function cSwarmFindReal() {
     'real onio!',
     'tap me lol',
   ];
+  const wrongLines = ['nope!','not me!','try again','lol','wrong one','still wrong'];
 
   // Real Onio is hidden among fakes
   onio.style.opacity='0';
   const FAKE_EMOJIS = ['😈','😈','😈','😈','😏','👹','👺','😜','🤡','👻','💀','😤'];
 
-  for (let i=0; i<count; i++) {
-    const p = randPos(30, 110);
+  function spawnFake(atX=null, atY=null) {
+    const p = (atX===null || atY===null)
+      ? randPos(30, 110)
+      : { x: Math.max(12, Math.min(gW-88, atX + (Math.random()-.5)*120)), y: Math.max(98, Math.min(gH-98, atY + (Math.random()-.5)*110)) };
     const emoji = FAKE_EMOJIS[Math.floor(Math.random()*FAKE_EMOJIS.length)];
     const opacity = 0.55 + Math.random()*0.35;
     const el = spawnOnioEl(emoji, p.x, p.y, {
       size: Math.max(32, 72 - Math.floor(count/6)),
       opacity, anim: 0.6+Math.random()
     });
+    if (Math.random() < 0.5) {
+      scheduleChallengeTimeout(()=>{
+        if (!trickActive || gamePaused || !el.isConnected) return;
+        speechOnElement(el, chatterLines[Math.floor(Math.random()*chatterLines.length)], 420 + Math.random()*220);
+      }, 120 + Math.random()*260);
+    }
     talkers.push(el);
     el.addEventListener('pointerdown', e=>{
       e.stopPropagation();
-      speechOnElement(el, ['nope!','not me!','try again','lol'][Math.floor(Math.random()*4)], 540);
-      el.style.opacity='0.1'; el.style.pointerEvents='none';
-      registerMiss(p.x, p.y);
+      if (!trickActive) return;
+      speechOnElement(el, wrongLines[Math.floor(Math.random()*wrongLines.length)], 540);
+      const rr = el.getBoundingClientRect();
+      const ar = arena.getBoundingClientRect();
+      registerMiss(rr.left - ar.left + rr.width/2, rr.top - ar.top + rr.height/2);
+      const tx = rr.left - ar.left + rr.width/2;
+      const ty = rr.top - ar.top + rr.height/2;
+      el.style.pointerEvents='none';
+      el.style.opacity='0.08';
+      scheduleChallengeTimeout(()=>el.remove(), 160);
+      const add = 1 + (Math.random() < Math.min(0.82, 0.24 + level*0.02) ? 1 : 0);
+      for (let i=0; i<add && talkers.filter(t => t && t.isConnected && t !== onio).length < maxCount; i++) {
+        spawnFake(tx, ty);
+      }
     });
   }
+  for (let i=0; i<count; i++) spawnFake();
 
   // Real Onio placed randomly among them
   onio.style.opacity = String(0.6 + Math.random()*0.3);
@@ -4653,6 +4777,7 @@ function doChaosTick() {
   if (level >= 13) pool.push({ id:'deadPixels', w: chaosVal(13, 38, 0.2, 1.2) });
   if (level >= 15) pool.push({ id:'chargeNow', w: chaosVal(15, 40, 0.2, 1.0) });
   if (level >= 17) pool.push({ id:'fakeIncoming', w: chaosVal(17, 45, 0.2, 1.0) });
+  if (level >= 10 && canDisrupt) pool.push({ id:'controlsLock', w: chaosVal(10, 35, 0.1, 1.0) });
 
   const total = pool.reduce((a,c)=>a+c.w, 0);
   let r = Math.random()*total, chosen = pool[0];
@@ -4795,6 +4920,24 @@ function doChaosTick() {
     case 'fakeIncoming':
       showSystemBanner('📞', 'Incoming Call', 'Unknown chaos caller...', 'default', 1550);
       break;
+    case 'controlsLock': {
+      if (controlsLockedForChallenge) break;
+      markChaosDisrupt(2200);
+      const priorPointer = onio.style.pointerEvents;
+      setCoreControlsLocked(true);
+      trickActive = false;
+      onio.style.pointerEvents = 'none';
+      showSystemBanner('🚫', 'Controls Locked', 'no pause. no home. win this minigame first.', 'danger', 1900);
+      speech('too easy to pause 😈', 1100);
+      scheduleChallengeTimeout(()=>{
+        if (!document.getElementById('game-screen').classList.contains('active')) return;
+        if (gamePaused) return;
+        trickActive = true;
+        onio.style.pointerEvents = priorPointer || 'auto';
+        setMsg('resume.');
+      }, 1450);
+      break;
+    }
   }
 }
 
