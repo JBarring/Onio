@@ -237,9 +237,17 @@ html,body{
   font-family:'Fredoka One',cursive;font-size:16px;color:#C0560A;letter-spacing:.5px;
   padding:4px 12px;box-shadow:0 6px 18px rgba(192,86,10,.2);min-width:84px;text-align:center;
 }
+#combo-chip{
+  display:none;position:absolute;top:calc(env(safe-area-inset-top,0px) + 84px);right:12px;
+  z-index:44;pointer-events:none;background:rgba(255,255,255,.96);border:2px solid #E8C070;border-radius:14px;
+  font-family:'Fredoka One',cursive;font-size:14px;color:#A65A10;letter-spacing:.6px;
+  padding:4px 10px;box-shadow:0 6px 18px rgba(192,86,10,.16);
+}
+#combo-chip.hot{color:#8C2C8E;border-color:#C070D0;animation:comboPulse .32s ease-in-out infinite alternate;}
 #dtimer-chip.warn{border-color:#FFB300;color:#B56A00;}
 #dtimer-chip.urgent{border-color:#E84030;color:#C62828;animation:timerPulse .35s ease-in-out infinite alternate;}
 @keyframes timerPulse{from{transform:translateX(-50%) scale(1)}to{transform:translateX(-50%) scale(1.05)}}
+@keyframes comboPulse{from{transform:scale(1)}to{transform:scale(1.06)}}
 #hud{width:100%;padding:calc(env(safe-area-inset-top,0px) + 14px) 16px 6px;display:flex;justify-content:space-between;align-items:center;z-index:10;pointer-events:none;flex-shrink:0;}
 #level-pill{font-family:'Fredoka One',cursive;font-size:16px;color:white;background:linear-gradient(180deg,#D76E1A 0%,#B64A06 100%);padding:4px 14px;border-radius:20px;letter-spacing:1px;
   box-shadow:0 3px 0 rgba(106,40,3,.45),0 6px 14px rgba(192,86,10,.28),inset 0 1px 0 rgba(255,255,255,.35);}
@@ -712,9 +720,11 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
 }
 .cc-main{font-family:'Fredoka One',cursive;font-size:clamp(24px,7vw,34px);color:#C0560A;line-height:1.05;}
 .cc-sub{font-family:'Nunito',sans-serif;font-size:clamp(13px,3.8vw,16px);color:#A07040;font-weight:700;margin-top:6px;line-height:1.3;}
+.cc-meta{font-family:'Fredoka One',cursive;font-size:clamp(12px,3.4vw,14px);color:#7B2D8B;letter-spacing:.8px;margin-top:8px;min-height:16px;}
 
 @media (max-width:560px){
   #dtimer-chip{top:calc(env(safe-area-inset-top,0px) + 118px);font-size:14px;padding:4px 10px;min-width:74px;}
+  #combo-chip{top:calc(env(safe-area-inset-top,0px) + 118px);font-size:12px;padding:3px 8px;}
   #home-screen{padding-left:10px;padding-right:10px;}
   .home-stage{border-width:3px;border-radius:24px;padding:18px 12px 12px;}
   .home-logo{font-size:clamp(62px,19vw,86px);letter-spacing:2px;}
@@ -838,6 +848,7 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
 <div id="game-screen" class="screen">
   <div id="dtimer-wrap"><div id="dtimer-bar"></div></div>
   <div id="dtimer-chip">0.0s</div>
+  <div id="combo-chip">COMBO x2</div>
   <div id="hud">
     <div id="level-pill">DEPTH 0</div>
     <div id="skip-pill">⚡ 0</div>
@@ -866,6 +877,7 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
     <div id="challenge-clear">
       <div class="cc-main" id="cc-main">MINIGAME CLEAR +1</div>
       <div class="cc-sub" id="cc-sub">Get ready for the next one</div>
+      <div class="cc-meta" id="cc-meta"></div>
     </div>
 
     <!-- Cheeky defeat moment before transitioning -->
@@ -1019,7 +1031,7 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
 // ============================================================
 const DEBUG = {
   TAP_ONLY:        false, // true = only tap challenge, ignore all others
-  FORCE_TAP_COUNT: null,  // null = random | set integer e.g. 3 to always use 3 taps
+  FORCE_TAP_COUNT: null,  // null = random | set integer e.g. 7 to force tap count
   SHOW_HIT_COUNT:  true,  // always keep remaining count visible in message bar
   FAST_TRANSITIONS:false, // true = skip cheeky defeat + level clear animations
 };
@@ -1224,6 +1236,7 @@ let bestLevel  = +localStorage.getItem('onio_best')   || 0;
 let totalRuns  = +localStorage.getItem('onio_runs')   || 0;
 let totalHits  = +localStorage.getItem('onio_hits')   || 0;
 let totalDeaths= +localStorage.getItem('onio_deaths') || 0;
+let bestCombo  = +localStorage.getItem('onio_best_combo') || 0;
 let inventory  = JSON.parse(localStorage.getItem('onio_inv') || '{"lucky":0,"big":0}');
 
 function saveStats() {
@@ -1231,6 +1244,7 @@ function saveStats() {
   localStorage.setItem('onio_runs',   totalRuns);
   localStorage.setItem('onio_hits',   totalHits);
   localStorage.setItem('onio_deaths', totalDeaths);
+  localStorage.setItem('onio_best_combo', bestCombo);
   localStorage.setItem('onio_inv',    JSON.stringify(inventory));
 }
 
@@ -1239,6 +1253,10 @@ function saveStats() {
 // ============================================================
 const DEFAULT_PROFILE = {
   challengeStats: {},   // { challengeId: { attempts, failures, totalMs } }
+  tapSpeed: [],         // recent inter-tap intervals (ms)
+  missBias: { left: 0, right: 0 },
+  reactionTimes: [],
+  weakMechanics: {},
   failStreak: 0,        // consecutive challenge failures this session
   winStreak: 0,
   totalSessions: 0,
@@ -1251,19 +1269,61 @@ const DEFAULT_PROFILE = {
 
 let playerProfile = JSON.parse(localStorage.getItem('onio_profile') || 'null') || {...DEFAULT_PROFILE};
 
+function ensureProfileShape() {
+  playerProfile.challengeStats = playerProfile.challengeStats || {};
+  playerProfile.tapSpeed = Array.isArray(playerProfile.tapSpeed) ? playerProfile.tapSpeed : [];
+  playerProfile.missBias = playerProfile.missBias || { left: 0, right: 0 };
+  playerProfile.missBias.left = +playerProfile.missBias.left || 0;
+  playerProfile.missBias.right = +playerProfile.missBias.right || 0;
+  playerProfile.reactionTimes = Array.isArray(playerProfile.reactionTimes) ? playerProfile.reactionTimes : [];
+  playerProfile.weakMechanics = playerProfile.weakMechanics || {};
+  playerProfile.failStreak = +playerProfile.failStreak || 0;
+  playerProfile.winStreak = +playerProfile.winStreak || 0;
+  playerProfile.totalSessions = +playerProfile.totalSessions || 0;
+  playerProfile.lastPlayedTs = +playerProfile.lastPlayedTs || 0;
+  playerProfile.sessionCount = +playerProfile.sessionCount || 0;
+  playerProfile.frustrationScore = +playerProfile.frustrationScore || 0;
+  playerProfile.weaknesses = Array.isArray(playerProfile.weaknesses) ? playerProfile.weaknesses : [];
+  if (typeof playerProfile.firstEverPlay !== 'boolean') playerProfile.firstEverPlay = true;
+}
+ensureProfileShape();
+
 function saveProfile() {
   localStorage.setItem('onio_profile', JSON.stringify(playerProfile));
+}
+
+function pushBounded(arr, value, maxLen=80) {
+  arr.push(value);
+  if (arr.length > maxLen) arr.splice(0, arr.length - maxLen);
+}
+
+function recordTapSpeed(deltaMs) {
+  if (!Number.isFinite(deltaMs) || deltaMs <= 0) return;
+  pushBounded(playerProfile.tapSpeed, Math.round(deltaMs), 120);
+  saveProfile();
+}
+
+function recordReactionTimeMs(ms) {
+  if (!Number.isFinite(ms) || ms < 0) return;
+  pushBounded(playerProfile.reactionTimes, Math.round(ms), 120);
+  saveProfile();
 }
 
 function recordChallengeResult(challengeId, failed, durationMs) {
   if (!playerProfile.challengeStats[challengeId]) {
     playerProfile.challengeStats[challengeId] = { attempts:0, failures:0, totalMs:0 };
   }
+  if (!playerProfile.weakMechanics[challengeId]) {
+    playerProfile.weakMechanics[challengeId] = { attempts:0, fails:0 };
+  }
   const s = playerProfile.challengeStats[challengeId];
+  const w = playerProfile.weakMechanics[challengeId];
   s.attempts++;
   s.totalMs += durationMs;
+  w.attempts++;
   if (failed) {
     s.failures++;
+    w.fails++;
     playerProfile.failStreak++;
     playerProfile.winStreak = 0;
     playerProfile.frustrationScore = Math.min(100, playerProfile.frustrationScore + 8);
@@ -1298,6 +1358,12 @@ function getAdaptiveWeight(challenge) {
   // Keep levels 1-5 approachable; avoid hard-difficulty spikes too early.
   if (level <= 5 && challenge.id !== 'tap') weight *= 0.55;
   else if (level <= 10 && ['timer', 'dodge'].includes(challenge.id)) weight *= 0.8;
+  if (challenge.id === 'tap') {
+    if (level <= 3) weight *= 1.2;
+    else if (level >= 8) weight *= Math.max(0.32, 0.82 - (level-8)*0.025);
+  } else if (level >= 8) {
+    weight *= 1.08;
+  }
 
   // After a few runs, weaknesses become more likely, but gradually.
   const isWeakness = playerProfile.weaknesses.includes(challenge.id);
@@ -1481,6 +1547,7 @@ let lastAx=0, lastAy=0, lastAz=0, shakeCheckInterval=null;
 let lastChallengeId=null, currentTrickCleanup=null;
 let snarkIdx=0, roastIdx=0, storeSnarkIdx=0, deathRoastIdx=0;
 let gamePaused = false;
+let pauseSnapshot = null;
 let suppressArenaMiss = false;
 let suppressSpeech = false;
 let holdEscapeInterval = null;
@@ -1490,6 +1557,8 @@ let challengeTimeoutIds = [];
 let challengeFlowSeq = 0;
 let activeChallengeFlowId = 0;
 let transitionLocked = false;
+let challengeFirstInputTracked = false;
+let challengeMissesStart = 0;
 let deathSequence = 0;
 let sfxCtx = null;
 let sfxEnabled = localStorage.getItem('onio_sfx') !== '0';
@@ -1498,7 +1567,33 @@ let sfxBlockedWarned = false;
 let controlsLockedForChallenge = false;
 let activeMinigameId = null;
 let activeChaosIntervals = [];
+let activeChaosEffects = new Map();
+let chaosEffectSeq = 0;
+let chaosSpikeUntil = 0;
+let nextChaosSpikeAt = 0;
+let comboStreak = 0;
+let runBestCombo = 0;
+let recentMinigames = [];
 const DEPTHS_PER_TIER = 4;
+const CHAOS_TUNING = {
+  allowFakeouts: true,
+  trackingMode: 'local',
+  mobileTarget: 'ios',
+};
+const CHEAT_EVENT_MULTIPLIER = {
+  tap_last_moment_dodge: 1.15,
+  tap_fake_hit: 0.92,
+  hold_teleport: 1.22,
+  hold_bleed: 1.12,
+  drag_zone_shift: 1.08,
+  dodge_last_second: 1.15,
+  swipe_shuffle: 1.1,
+  trace_reroute: 1.08,
+  rhythm_shift: 1.08,
+  pinch_fakeout: 1.06,
+  twofinger_drain: 1.06,
+  tilt_zone_shift: 1.08,
+};
 
 function depthToTier(depth) {
   return 1 + Math.floor(Math.max(0, depth) / DEPTHS_PER_TIER);
@@ -1508,11 +1603,140 @@ function syncDifficultyTier() {
   level = depthToTier(hits);
 }
 
-function scheduleChallengeTimeout(fn, delayMs) {
-  const timeoutId = setTimeout(() => {
-    challengeTimeoutIds = challengeTimeoutIds.filter(id => id !== timeoutId);
+function getChaosLevel01(depth=hits) {
+  return Math.max(0, Math.min(1, depth / 90));
+}
+
+function maybeTriggerCheat(eventType, chaosLevel=getChaosLevel01()) {
+  const normalized = Math.max(0, Math.min(1, chaosLevel));
+  const weakScore = playerProfile.weakMechanics?.[activeMinigameId || lastChallengeId || ''] || 0;
+  const weaknessBoost = weakScore > 0.42 ? 1 + Math.min(0.26, (weakScore - 0.42) * 0.95) : 1;
+  const eventBoost = CHEAT_EVENT_MULTIPLIER[eventType] || 1;
+  const spikeBoost = Date.now() < chaosSpikeUntil ? 1.12 : 1;
+  const chance = (0.05 + normalized * 0.35) * eventBoost * weaknessBoost * spikeBoost; // 5% -> 40% base
+  return Math.random() < Math.min(0.92, chance);
+}
+
+function getInputChaosProfile(depth=hits) {
+  const level01 = getChaosLevel01(depth);
+  const inSpike = Date.now() < chaosSpikeUntil;
+  const spikeBoost = inSpike ? 0.1 : 0;
+  return {
+    level01,
+    inSpike,
+    tapOffsetChance: Math.min(0.44, 0.01 + level01 * 0.2 + spikeBoost),
+    tapOffsetPx: Math.round(5 + level01 * 15 + (inSpike ? 2 : 0)),
+    latencyChance: Math.min(0.46, 0.02 + level01 * 0.2 + spikeBoost),
+    latencyMinMs: 50,
+    latencyMaxMs: Math.round(110 + level01 * 40 + (inSpike ? 18 : 0)),
+    dragLagChance: Math.min(0.56, 0.05 + level01 * 0.24 + spikeBoost),
+    dragOvershootChance: Math.min(0.38, 0.02 + level01 * 0.16 + spikeBoost * 0.6),
+    holdBleedChance: Math.min(0.26, 0.02 + level01 * 0.12 + spikeBoost * 0.5),
+    holdBleedPerTick: Math.round(level01 * 20 + (inSpike ? 8 : 0)),
+  };
+}
+
+function maybeApplyInputLatency(flowId, tag, fn, chanceScale=1) {
+  const profile = getInputChaosProfile();
+  const chance = Math.min(0.85, profile.latencyChance * Math.max(0.15, chanceScale));
+  if (Math.random() >= chance) return false;
+  const lagMs = profile.latencyMinMs +
+    Math.random() * (profile.latencyMaxMs - profile.latencyMinMs);
+  if (Math.random() < 0.26) {
+    const label = tag ? `${tag} lag` : 'lag';
+    setMsg(`${label} ${Math.round(lagMs)}ms`);
+  }
+  scheduleChallengeTimeout(() => {
+    if (!isFlowCurrent(flowId) || !trickActive) return;
     fn();
-  }, delayMs);
+  }, lagMs);
+  return true;
+}
+
+function applyTapOffsetChaos(x, y, chanceScale=1) {
+  const profile = getInputChaosProfile();
+  const chance = Math.min(0.9, profile.tapOffsetChance * Math.max(0.2, chanceScale));
+  if (Math.random() >= chance) return { x, y, shifted:false };
+  const angle = Math.random() * Math.PI * 2;
+  const radius = 5 + Math.random() * Math.max(1, profile.tapOffsetPx - 5);
+  return {
+    x: x + Math.cos(angle) * radius,
+    y: y + Math.sin(angle) * radius,
+    shifted:true,
+  };
+}
+
+function isDistortedTapHit(point, hitRadius=36) {
+  const cx = onioX + 36;
+  const cy = onioY + 36;
+  return Math.hypot(point.x - cx, point.y - cy) <= hitRadius;
+}
+
+function resolveArenaPointFromEvent(e) {
+  const rc = arena.getBoundingClientRect();
+  return {
+    x: (e.clientX ?? e.touches?.[0]?.clientX ?? (rc.left + onioX + 36)) - rc.left,
+    y: (e.clientY ?? e.touches?.[0]?.clientY ?? (rc.top + onioY + 36)) - rc.top,
+  };
+}
+
+function clampOnioX(x) {
+  return Math.max(10, Math.min(gW-90, x));
+}
+
+function clampOnioY(y) {
+  return Math.max(10, Math.min(gH-100, y));
+}
+
+function moveDragZone(dz, x, y, w, h) {
+  const nx = Math.max(16, Math.min(gW - w - 16, x));
+  const ny = Math.max(98, Math.min(gH - h - 16, y));
+  dz.style.left = nx + 'px';
+  dz.style.top = ny + 'px';
+  return { x:nx, y:ny };
+}
+
+function setMessageTemp(text, ms=520) {
+  const prior = document.getElementById('msg-text').textContent;
+  setMsg(text);
+  scheduleChallengeTimeout(() => {
+    if (document.getElementById('msg-text').textContent === text) setMsg(prior);
+  }, ms);
+}
+
+function getChaosMaxConcurrent(depth=hits, duringSpike=false) {
+  let max = 1;
+  if (depth >= 10 && Math.random() < Math.min(0.72, 0.22 + depth*0.01)) max = 2;
+  if (depth >= 26 && Math.random() < Math.min(0.58, 0.10 + depth*0.006)) max = 3;
+  if (duringSpike && depth >= 40 && Math.random() < 0.55) max = Math.max(max, 3);
+  return max;
+}
+
+function registerChaosEffect(effectId, durationMs=900) {
+  const token = `${effectId}-${++chaosEffectSeq}`;
+  activeChaosEffects.set(token, Date.now() + Math.max(120, durationMs));
+  scheduleChallengeTimeout(() => activeChaosEffects.delete(token), Math.max(120, durationMs));
+}
+
+function pruneChaosEffects() {
+  const now = Date.now();
+  activeChaosEffects.forEach((until, key) => {
+    if (until <= now) activeChaosEffects.delete(key);
+  });
+}
+
+function scheduleChallengeTimeout(fn, delayMs) {
+  let timeoutId = null;
+  const tick = () => {
+    challengeTimeoutIds = challengeTimeoutIds.filter(id => id !== timeoutId);
+    if (gamePaused) {
+      timeoutId = setTimeout(tick, 120);
+      challengeTimeoutIds.push(timeoutId);
+      return;
+    }
+    fn();
+  };
+  timeoutId = setTimeout(tick, delayMs);
   challengeTimeoutIds.push(timeoutId);
   return timeoutId;
 }
@@ -1525,6 +1749,8 @@ function clearChallengeTimeouts() {
 function beginNewChallengeFlow() {
   activeChallengeFlowId = ++challengeFlowSeq;
   transitionLocked = false;
+  challengeFirstInputTracked = false;
+  challengeMissesStart = misses;
   return activeChallengeFlowId;
 }
 
@@ -1540,6 +1766,12 @@ function trackChaosInterval(intervalId) {
 function clearTrackedChaosIntervals() {
   activeChaosIntervals.forEach(clearInterval);
   activeChaosIntervals = [];
+}
+
+function recordChallengeInputOnce() {
+  if (challengeFirstInputTracked) return;
+  challengeFirstInputTracked = true;
+  recordReactionTimeMs(Date.now() - challengeStartMs);
 }
 
 function isFlowCurrent(flowId) {
@@ -1835,9 +2067,19 @@ function openPauseMenu(e) {
   normalizePauseState();
   if (controlsLockedForChallenge) return;
   if (gamePaused) return;
+  pauseSnapshot = {
+    flowId: activeChallengeFlowId,
+    minigameId: activeMinigameId,
+    hadCurrentCleanup: !!currentTrickCleanup,
+    trickActive,
+    onioPointer: onio.style.pointerEvents || 'auto',
+    suppressArenaMiss,
+    suppressSpeech,
+  };
   gamePaused = true;
-  cleanupAll();
-  lastChallengeId = null;
+  trickActive = false;
+  onio.style.pointerEvents = 'none';
+  clearSpeech();
   document.getElementById('real-pause').classList.add('active');
 }
 
@@ -1845,9 +2087,19 @@ function resumeFromPause() {
   if (!document.getElementById('game-screen').classList.contains('active')) return;
   document.getElementById('real-pause').classList.remove('active');
   gamePaused = false;
+  const snap = pauseSnapshot;
+  pauseSnapshot = null;
+  updateHUD();
+  if (snap && snap.hadCurrentCleanup && snap.minigameId && snap.flowId === activeChallengeFlowId) {
+    suppressArenaMiss = !!snap.suppressArenaMiss;
+    suppressSpeech = !!snap.suppressSpeech;
+    trickActive = true;
+    onio.style.pointerEvents = snap.onioPointer || 'auto';
+    setMsg('resume.');
+    return;
+  }
   resize();
   moveOnio(true);
-  updateHUD();
   scheduleChallengeTimeout(runNextChallenge, 180);
 }
 
@@ -1855,6 +2107,7 @@ function exitToHome(e) {
   if (e) { e.preventDefault(); e.stopPropagation(); }
   normalizePauseState();
   if (controlsLockedForChallenge) return;
+  pauseSnapshot = null;
   gamePaused = false;
   document.getElementById('real-pause').classList.remove('active');
   cleanupAll();
@@ -2005,6 +2258,10 @@ function startGame() {
   saveProfile(); saveStats();
   showScreen('game-screen');
   level=1; hits=0; misses=0;
+  comboStreak = 0;
+  runBestCombo = 0;
+  recentMinigames = [];
+  updateComboChip();
   syncDifficultyTier();
   if (inventory.lucky > 0 || inventory.big > 0) {
     showSkipPrompt();
@@ -2071,8 +2328,32 @@ function placeOnio(x, y, instant) {
     setTimeout(positionSign, instant ? 0 : 200);
   }
 }
+
+function getMissBiasDirection() {
+  const l = playerProfile.missBias.left || 0;
+  const r = playerProfile.missBias.right || 0;
+  if (Math.abs(l - r) < 6) return null;
+  return l > r ? 'left' : 'right';
+}
+
 function randPos(mx=80, my=130) {
-  return { x: mx+Math.random()*(gW-mx*2-80), y: my+Math.random()*(gH-my-120) };
+  const minX = mx;
+  const maxX = gW - mx - 80;
+  const minY = my;
+  const maxY = gH - 120;
+  const biasDir = getMissBiasDirection();
+  const chaos = getChaosLevel01();
+  const applyBias = !!biasDir && Math.random() < (0.16 + chaos * 0.32);
+  let x;
+  if (applyBias) {
+    const mid = (minX + maxX) * 0.5;
+    if (biasDir === 'left') x = minX + Math.random() * Math.max(20, mid - minX - 16);
+    else x = mid + Math.random() * Math.max(20, maxX - mid - 16);
+  } else {
+    x = minX + Math.random() * Math.max(20, maxX - minX);
+  }
+  const y = minY + Math.random() * Math.max(20, maxY - minY);
+  return { x, y };
 }
 function moveOnio(instant) { const p=randPos(); placeOnio(p.x, p.y, instant); }
 
@@ -2080,14 +2361,64 @@ function moveOnio(instant) { const p=randPos(); placeOnio(p.x, p.y, instant); }
 // HUD
 // ============================================================
 function setMsg(t) { document.getElementById('msg-text').textContent = t; }
+function updateComboChip() {
+  const chip = document.getElementById('combo-chip');
+  chip.style.display = 'none';
+  chip.classList.remove('hot');
+  chip.textContent = '';
+}
 function updateHUD() {
   if (!levelHidden) {
     const pb = Math.max(bestLevel, hits);
     document.getElementById('level-pill').textContent = `DEPTH ${hits} • PB ${pb}`;
   }
+  updateComboChip();
   // No score pill, no progress bar — clean HUD
 }
-function showChallengeClear(flowId=activeChallengeFlowId) {
+function getClutchState(hasTimer, timerRatio) {
+  const budget = getMissBudget();
+  const missLeft = Math.max(0, budget - misses);
+  const timerClutch = hasTimer && timerRatio <= 0.12;
+  const missClutch = missLeft <= Math.max(2, Math.floor(budget * 0.08));
+  return {
+    timerClutch,
+    missClutch,
+    isClutch: timerClutch || missClutch,
+  };
+}
+
+function playClutchFx() {
+  const gs = document.getElementById('game-screen');
+  gs.style.transition = 'transform .14s ease, filter .14s ease';
+  gs.style.transform = 'scale(1.012)';
+  gs.style.filter = 'saturate(1.28)';
+  scheduleChallengeTimeout(() => {
+    gs.style.transform = '';
+    gs.style.filter = '';
+    scheduleChallengeTimeout(() => { gs.style.transition = ''; }, 180);
+  }, 170);
+}
+
+function registerMinigameHistory(id) {
+  if (!id) return;
+  recentMinigames = [id, ...recentMinigames.filter(x => x !== id)].slice(0, 4);
+}
+
+function getMinigameSelectionWeight(challenge) {
+  let weight = getAdaptiveWeight(challenge);
+  if (recentMinigames.includes(challenge.id)) {
+    const idx = recentMinigames.indexOf(challenge.id);
+    const penalty = idx === 0 ? 0.34 : idx === 1 ? 0.52 : 0.72;
+    weight *= penalty;
+  }
+  // Keep early runs approachable and familiar.
+  if (hits <= 7 && challenge.id === 'tap') weight *= 1.24;
+  if (hits <= 5 && ['tiltBalance','twoFinger','pinchTrap','freeze','blow'].includes(challenge.id)) weight *= 0.46;
+  if (Date.now() < chaosSpikeUntil && challenge.id !== 'tap') weight *= 1.08;
+  return Math.max(0.04, weight);
+}
+
+function showChallengeClear(flowId=activeChallengeFlowId, details={}) {
   const mains = [
     'OK FINE. YOU GOT ME.',
     'MINIGAME CLEAR',
@@ -2102,10 +2433,16 @@ function showChallengeClear(flowId=activeChallengeFlowId) {
     'you\'re still behind, by the way.',
   ];
   const box = document.getElementById('challenge-clear');
+  const meta = document.getElementById('cc-meta');
   document.getElementById('cc-main').textContent = mains[Math.floor(Math.random()*mains.length)];
   document.getElementById('cc-sub').textContent = subs[Math.floor(Math.random()*subs.length)];
+  const tags = [];
+  if (details.isPerfect) tags.push('PERFECT');
+  if (details.isClutch) tags.push('CLUTCH');
+  meta.textContent = tags.join(' • ');
   box.classList.add('active');
   sfx('clear');
+  if (details.isClutch) playClutchFx();
   scheduleChallengeTimeout(() => {
     if (!isFlowCurrent(flowId)) return;
     box.classList.remove('active');
@@ -2113,6 +2450,8 @@ function showChallengeClear(flowId=activeChallengeFlowId) {
 }
 function hideChallengeClear() {
   document.getElementById('challenge-clear').classList.remove('active');
+  const meta = document.getElementById('cc-meta');
+  if (meta) meta.textContent = '';
 }
 function updateSkipPill() {
   const n = inventory.lucky+inventory.big;
@@ -2191,6 +2530,7 @@ function startDeathTimer(ms) {
   chip.style.display='block';
   updateDeathTimerUI();
   deathTimerInterval = setInterval(()=>{
+    if (gamePaused) return;
     deathTimerMs -= 100;
     updateDeathTimerUI();
     if (deathTimerMs<=0) { clearDeathTimer(); triggerDeath('too slow!'); }
@@ -2212,11 +2552,21 @@ function triggerDeath(reason) {
   if (gamePaused) return;
   if (!document.getElementById('game-screen').classList.contains('active')) return;
   const thisDeath = ++deathSequence;
+  const hadTimer = !!deathTimerInterval && deathTimerMax > 0;
+  const timerRatio = hadTimer ? Math.max(0, deathTimerMs / deathTimerMax) : 1;
+  const clutchState = getClutchState(hadTimer, timerRatio);
   setCoreControlsLocked(false);
   // Record the challenge that killed the player as a failure
   if (lastChallengeId) recordChallengeResult(lastChallengeId, true, Date.now()-challengeStartMs);
+  comboStreak = 0;
+  updateComboChip();
   cleanupAll();
-  speech('hehe... '+reason, 0);
+  if (clutchState.isClutch) {
+    setMsg('ALMOST.');
+    speech('that was close 😈', 0);
+  } else {
+    speech('hehe... '+reason, 0);
+  }
   haptic([50,30,80]);
   setTimeout(()=>{
     if (thisDeath !== deathSequence) return;
@@ -2252,7 +2602,7 @@ function doDeathScreen() {
   showScreen('death-screen');
   const emojis=['😬','😤','💀','🤯','👑','💅','🔥','😂'];
   document.getElementById('death-emoji').textContent = emojis[Math.min(level-1,emojis.length-1)];
-  document.getElementById('death-lvl').textContent = `You reached Depth ${hits} • Tier ${level}`;
+  document.getElementById('death-lvl').textContent = `You reached Depth ${hits}`;
 
   // Mode-aware death roast
   let roastPool;
@@ -2287,6 +2637,9 @@ function cleanupAll() {
   beginNewChallengeFlow();
   clearChallengeTimeouts();
   clearTrackedChaosIntervals();
+  activeChaosEffects.clear();
+  chaosSpikeUntil = 0;
+  nextChaosSpikeAt = 0;
   activeMinigameId = null;
   setCoreControlsLocked(false);
   clearDeathTimer(); clearSpeech(); clearDecoys(); stopMic();
@@ -2353,6 +2706,9 @@ function getMissWarningAt() { return Math.floor(getMissBudget() * 0.25); } // wa
 function registerMiss(x, y) {
   normalizePauseState();
   if (gamePaused) return;
+  if (x < gW * 0.5) playerProfile.missBias.left++;
+  else playerProfile.missBias.right++;
+  if ((playerProfile.missBias.left + playerProfile.missBias.right) % 6 === 0) saveProfile();
   spawnRipple(x, y, 'miss-flash');
   haptic(15);
   sfx('miss');
@@ -2376,6 +2732,10 @@ function onHit(force=false, sourceFlowId=null) {
   if (sourceFlowId !== null && sourceFlowId !== activeChallengeFlowId) return;
   if (!force && !trickActive) return;
   if (transitionLocked) return;
+  const hadTimer = !!deathTimerInterval && deathTimerMax > 0;
+  const timerRatio = hadTimer ? Math.max(0, deathTimerMs / deathTimerMax) : 1;
+  const clutchState = getClutchState(hadTimer, timerRatio);
+  const isPerfect = misses === challengeMissesStart;
   transitionLocked = true;
   setCoreControlsLocked(false);
   trickActive = false;
@@ -2383,42 +2743,44 @@ function onHit(force=false, sourceFlowId=null) {
   clearDeathTimer();
   onio.style.pointerEvents = 'none';
   if (lastChallengeId) recordChallengeResult(lastChallengeId, false, Date.now()-challengeStartMs);
+  comboStreak++;
+  runBestCombo = Math.max(runBestCombo, comboStreak);
+  if (comboStreak > bestCombo) {
+    bestCombo = comboStreak;
+    saveStats();
+  }
   const prevLevel = level;
   hits++;
   syncDifficultyTier();
   const didTierUp = level > prevLevel;
   const flowId = sourceFlowId ?? activeChallengeFlowId;
 
+  // Tier is internal-only; player flow stays "clear minigame -> next minigame".
   if (didTierUp) {
-    // Tier up (internally level-based difficulty), while user-facing progress stays depth-based.
-    hideChallengeClear();
-    if (DEBUG.FAST_TRANSITIONS) {
-      levelUp(flowId);
-    } else {
-      showCheekyDefeat(()=>{ levelUp(flowId); }, flowId);
-    }
-  } else {
-    // Standard minigame clear
-    showChallengeClear(flowId);
-    setMsg('minigame clear.');
-    updateHUD();
-    scheduleChallengeTimeout(() => {
-      if (!isFlowCurrent(flowId)) return;
-      runNextChallenge();
-    }, 1600);
+    misses = 0;
+    startChaosSystem();
   }
-}
 
-function levelUp(sourceFlowId=null) {
-  if (sourceFlowId !== null && sourceFlowId !== activeChallengeFlowId) return;
-  misses = 0;
-  startChaosSystem();
+  showChallengeClear(flowId, {
+    combo: comboStreak,
+    isClutch: clutchState.isClutch,
+    isPerfect,
+  });
+  const moveOnLines = [
+    'again.',
+    'next.',
+    'keep going.',
+    'lucky clear.',
+    'moving on.',
+    clutchState.isClutch ? 'CLUTCH clear.' : '',
+  ];
+  const filtered = moveOnLines.filter(Boolean);
+  setMsg(filtered[Math.floor(Math.random()*filtered.length)]);
   updateHUD();
-  if (DEBUG.FAST_TRANSITIONS) {
+  scheduleChallengeTimeout(() => {
+    if (!isFlowCurrent(flowId)) return;
     runNextChallenge();
-  } else {
-    showLevelClear(level, ()=>{ runNextChallenge(); }, sourceFlowId ?? activeChallengeFlowId);
-  }
+  }, 1500);
 }
 
 // ============================================================
@@ -2426,7 +2788,7 @@ function levelUp(sourceFlowId=null) {
 // Chaos lives in doChaosTick()/tap chaos and can stack during these.
 // ============================================================
 const MINIGAMES = [
-  {id:'tap',         minLv:1,  w:6.2, fn:cTap},
+  {id:'tap',         minLv:1,  w:3.2, fn:cTap},
   {id:'hold',        minLv:2,  w:2.6, fn:cHold},
   {id:'drag',        minLv:4,  w:2.0, fn:cDrag},
   {id:'dodge',       minLv:5,  w:1.7, fn:cDodge},
@@ -2454,6 +2816,8 @@ function runNextChallenge() {
   if (DEBUG.TAP_ONLY) {
     lastChallengeId = 'tap';
     activeMinigameId = 'tap';
+    registerMinigameHistory('tap');
+    challengeMissesStart = misses;
     challengeStartMs = Date.now();
     scheduleChallengeTimeout(()=>{
       if (!isFlowCurrent(flowId)) return;
@@ -2463,12 +2827,14 @@ function runNextChallenge() {
   }
 
   const pool = MINIGAMES.filter(c=>c.minLv<=level);
-  const total = pool.reduce((a,c)=>a+getAdaptiveWeight(c), 0);
+  const total = pool.reduce((a,c)=>a+getMinigameSelectionWeight(c), 0);
   let r=Math.random()*total, chosen=pool[0];
-  for(let i=0;i<pool.length;i++){r-=getAdaptiveWeight(pool[i]);if(r<=0){chosen=pool[i];break;}}
+  for(let i=0;i<pool.length;i++){r-=getMinigameSelectionWeight(pool[i]);if(r<=0){chosen=pool[i];break;}}
   if (chosen.id===lastChallengeId && pool.length>1) return runNextChallenge();
   lastChallengeId=chosen.id;
+  registerMinigameHistory(chosen.id);
   activeMinigameId = chosen.id;
+  challengeMissesStart = misses;
   challengeStartMs = Date.now();
   maybeShowWeaknessBanner(chosen.id);
   scheduleChallengeTimeout(()=>{
@@ -2517,6 +2883,15 @@ function positionSign() {
   // Float above Onio
   sign.style.left = (onioX - 3) + 'px';
   sign.style.top  = (onioY - 70) + 'px';
+}
+
+function updateSign(number, animate=true) {
+  const num = document.getElementById('sign-number');
+  num.textContent = number;
+  if (!animate) return;
+  num.className = 'sign-number bump';
+  scheduleChallengeTimeout(()=>{ num.className='sign-number'; }, 200);
+  shakeSign();
 }
 
 function shakeSign() {
@@ -2737,7 +3112,7 @@ const LEVEL_CLEAR_SUBS = [
 
 function showLevelClear(newLevel, cb, flowId=activeChallengeFlowId) {
   const lc = document.getElementById('level-clear');
-  document.getElementById('lc-text').textContent = 'TIER ' + newLevel + '!';
+  document.getElementById('lc-text').textContent = 'NICE CLEAR!';
   document.getElementById('lc-sub').textContent  = LEVEL_CLEAR_SUBS[Math.floor(Math.random()*LEVEL_CLEAR_SUBS.length)];
   lc.classList.add('active');
   sfx('mumble');
@@ -3078,18 +3453,24 @@ function cTap() {
   if (DEBUG.FORCE_TAP_COUNT !== null) {
     tapTarget = DEBUG.FORCE_TAP_COUNT;
   } else {
-    tapTarget = level <= 2  ? 1
-              : level <= 4  ? (Math.random() < 0.55 ? 1 : 2)
-              : level <= 6  ? 2 + Math.floor(Math.random()*2) // 2-3
-              : level <= 10 ? 2 + Math.floor(Math.random()*3) // 2-4
-              : level <= 15 ? Math.ceil(Math.random()*3)+2    // 3-5
-              : level <= 25 ? Math.ceil(Math.random()*4)+4  // 5-8
-              :               Math.ceil(Math.random()*8)+8; // 9-16
+    // Starts at 5 minimum and scales upward with depth/tier.
+    const minTap = Math.min(26, 5 + Math.floor(Math.max(0, level-1) * 0.72));
+    const spread = level <= 4 ? 2
+                 : level <= 10 ? 3
+                 : level <= 20 ? 5
+                 : 8;
+    tapTarget = minTap + Math.floor(Math.random() * (spread + 1));
+    // Occasional extra spike to keep deep runs unpredictable.
+    if (Math.random() < Math.min(0.34, 0.10 + level * 0.012)) {
+      tapTarget += 1 + Math.floor(Math.random() * Math.max(2, Math.min(8, 2 + Math.floor(level / 7))));
+    }
+    tapTarget = Math.min(42, tapTarget);
   }
 
   let remaining = tapTarget;
   let chaosBudget = getTapChaosBudget();
   let chaosLocked = false;
+  let lastTapAt = 0;
 
   const moveEvery = level <= 2 ? 999 : level <= 5 ? 3 : level <= 10 ? 2 : 1;
   let tapsSinceMove = 0;
@@ -3113,153 +3494,186 @@ function cTap() {
   trickActive = false;
   scheduleChallengeTimeout(()=>{ trickActive=true; onio.style.pointerEvents='auto'; }, 300);
 
-  function handleTap() {
+  function handleTap(e) {
     if (!trickActive || chaosLocked) return;
+    recordChallengeInputOnce();
+    const chaosLevel = getChaosLevel01();
+    const rawPoint = resolveArenaPointFromEvent(e || {});
+    const runTap = () => {
+      if (!trickActive || chaosLocked) return;
+      const now = performance.now();
+      if (lastTapAt > 0) recordTapSpeed(now - lastTapAt);
+      lastTapAt = now;
 
-    remaining--;
-    tapsSinceMove++;
-    const isFinal = remaining <= 0;
+      const drifted = applyTapOffsetChaos(rawPoint.x, rawPoint.y, 0.8 + chaosLevel*0.75);
+      if (drifted.shifted && !isDistortedTapHit(drifted, Math.max(26, 36 - level*0.18))) {
+        registerMiss(drifted.x, drifted.y);
+        speech(['input slipped 😈','close...','drifted tap'][Math.floor(Math.random()*3)], 380);
+        setMessageTemp('tap drift.');
+        return;
+      }
 
-    // Instant sign update — same frame as tap
-    if (!isFinal) {
-      const displayNum = getSignDisplay(remaining);
-      const num = document.getElementById('sign-number');
-      num.textContent = displayNum;
-      num.className = 'sign-number bump';
-      scheduleChallengeTimeout(()=>num.className='sign-number', 200);
-    }
-
-    spawnHitBurst(onioX+36, onioY+36, isFinal);
-    sfx('hit');
-
-    // GUARD: chaos NEVER runs on the final tap
-    if (isFinal) {
-      trickActive = false;
-      onio.style.pointerEvents = 'none';
-      hideSign();
-      // Quick wobble — no scale-up, no waiting
-      onio.style.transition = 'transform 0.2s ease';
-      onio.style.transform = 'rotate(-15deg)';
-      scheduleChallengeTimeout(()=>{ onio.style.transform=''; onio.style.transition=''; }, 200);
-      const hitLines = modeLines('hit');
-      speech(hitLines[Math.floor(Math.random()*hitLines.length)], 0);
-      setMsg('GOT HIM! ✓');
-      scheduleChallengeTimeout(()=>{ clearSpeech(); onHit(true, flowId); }, 380);
-      return;
-    }
-
-    // Occasional speech bubble — 30% of taps only
-    if (Math.random() < 0.30) {
-      const hitMsgs = ["ow!","hey!","stop!","rude.","again?!","😤","ugh!","not fair!"];
-      speech(hitMsgs[Math.floor(Math.random()*hitMsgs.length)], 280);
-    }
-
-    // Instant teleport after tap — no transition, so hit area matches visual immediately
-    if (tapsSinceMove >= moveEvery) {
-      tapsSinceMove = 0;
-      moveOnio(true);           // true = instant, no CSS transition lag
-      positionSign();           // sign follows immediately too
-    }
-
-    // Chaos check — only on non-final taps
-    if (chaosBudget <= 0) return;
-    if (Math.random() > getTapChaosChance()) return;
-
-    // Non-pausing events are FREE — don't consume budget
-    // Only pausing events (signTroll, callFn) consume budget
-    const canDoPausing = chaosBudget >= 1;
-
-    const events = [];
-    // Core non-pausing events — free, equal weights so variety shows up
-    events.push({w:2, cost:0, fn:'fakeMissFn'});    // lies about your tap
-    events.push({w:2, cost:0, fn:'glitchSignFn'});  // sign scrambles
-    events.push({w:2, cost:0, fn:'shakeFn'});        // arena shake
-    // Level 3+
-    if (level >= 3) events.push({w:2, cost:0, fn:'fakeGhostFn'});   // fake Onio
-    if (level >= 3) events.push({w:2, cost:0, fn:'tinyFn'});        // Onio shrinks
-    if (level >= 8) events.push({w:2, cost:0, fn:'swarmChaosFn'});  // moving mini swarm
-    // Level 4+
-    if (level >= 4) events.push({w:2, cost:0, fn:'blankFn'});       // screen blanks
-    if (level >= 4) events.push({w:2, cost:0, fn:'textBannerFn'});  // fake text
-    // Level 5+
-    if (level >= 5) events.push({w:2, cost:0, fn:'flipFn'});        // screen mirrors
-    // Pausing events — cost 1 budget each, less common
-    if (canDoPausing)             events.push({w:2, cost:1, fn:'signTrollFn'});
-    if (level >= 7 && canDoPausing) events.push({w:1, cost:1, fn:'callFn'});
-
-    const total = events.reduce((a,e)=>a+e.w, 0);
-    let r = Math.random()*total, chosen = events[0];
-    for (let i=0;i<events.length;i++) { r-=events[i].w; if(r<=0){chosen=events[i];break;} }
-
-    // Only consume budget if this event has a cost
-    chaosBudget -= (chosen.cost || 0);
-
-    switch(chosen.fn) {
-      case 'signTrollFn':
-        trickActive=false; onio.style.pointerEvents='none';
-        const trollAnns = ["actually... let me fix that 😈","hmm. miscounted.","wait—","oops. typo. 😈","hold on.","i meant more."];
-        setMsg(trollAnns[Math.floor(Math.random()*trollAnns.length)]);
-        speech("heh 😈", 0);
-        scheduleChallengeTimeout(()=>{
-          trollSign(remaining, newTarget=>{
-            remaining = newTarget;
-            clearSpeech();
-            const postLines = ["there we go.","much better.","sorry. (not sorry)","that's the real number. probably.","my bad. (not my bad)"];
-            setMsg(postLines[Math.floor(Math.random()*postLines.length)]);
-            trickActive=true; onio.style.pointerEvents='auto';
-          });
-        }, 250);
-        break;
-      case 'fakeMissFn':
-        // Move Onio instantly, claim player missed — the lie is the event
+      // Onio occasionally dodges at the last moment.
+      if (remaining > 1 && maybeTriggerCheat('tap_last_moment_dodge', chaosLevel) && Math.random() < 0.46) {
         moveOnio(true);
-        positionSign();
-        fakeMissClaim();
-        break;
-      case 'glitchSignFn':
-        glitchSign(remaining);
-        break;
-      case 'fakeGhostFn':
-        spawnFakeOnioPop();
-        break;
-      case 'blankFn':
-        flashBlank(600 + level*10);
-        break;
-      case 'swarmChaosFn':
-        spawnTapChaosSwarm(1500 + Math.random()*800);
-        speech(['too many me','good luck 👀','find me now'][Math.floor(Math.random()*3)], 480);
-        break;
-      case 'flipFn':
-        document.getElementById('game-screen').style.transform='scaleX(-1)';
-        setMsg("something feels off... 😏");
-        scheduleChallengeTimeout(()=>{ document.getElementById('game-screen').style.transform=''; setMsg('tap me.'); },
-          Math.max(1000, 800+level*50));
-        break;
-      case 'textBannerFn':
-        showFakeTextBanner();
-        break;
-      case 'callFn':
-        chaosLocked=true; trickActive=false; onio.style.pointerEvents='none';
-        showFakeCall(()=>{
-          if (!isFlowCurrent(flowId)) return;
-          chaosLocked=false;
-          trickActive=true;
-          onio.style.pointerEvents='auto';
-        });
-        break;
-      case 'shakeFn':
-        arena.style.animation='none'; void arena.offsetWidth;
-        arena.style.animation='screenShake .35s ease';
-        scheduleChallengeTimeout(()=>arena.style.animation='', 380);
-        break;
-      case 'tinyFn':
-        onio.style.transition='font-size .3s'; onio.style.fontSize='24px';
-        scheduleChallengeTimeout(()=>{
-          onio.style.fontSize='72px';
-          scheduleChallengeTimeout(()=>onio.style.transition='', 300);
-        }, 800+Math.random()*400);
-        break;
-    }
+        speech(['too slow 😈','nice try','nope'][Math.floor(Math.random()*3)], 420);
+        setMsg('...missed.');
+        return;
+      }
+
+      remaining--;
+      tapsSinceMove++;
+      const isFinal = remaining <= 0;
+
+      // Instant sign update — same frame as tap
+      if (!isFinal) {
+        updateSign(getSignDisplay(remaining), true);
+      }
+
+      spawnHitBurst(onioX+36, onioY+36, isFinal);
+      sfx('hit');
+
+      // GUARD: chaos NEVER runs on the final tap
+      if (isFinal) {
+        trickActive = false;
+        onio.style.pointerEvents = 'none';
+        hideSign();
+        // Quick wobble — no scale-up, no waiting
+        onio.style.transition = 'transform 0.2s ease';
+        onio.style.transform = 'rotate(-15deg)';
+        scheduleChallengeTimeout(()=>{ onio.style.transform=''; onio.style.transition=''; }, 200);
+        const hitLines = modeLines('hit');
+        speech(hitLines[Math.floor(Math.random()*hitLines.length)], 0);
+        setMsg('GOT HIM! ✓');
+        scheduleChallengeTimeout(()=>{ clearSpeech(); onHit(true, flowId); }, 380);
+        return;
+      }
+
+      // Fake hit: occasionally the tap "doesn't count" (controlled, depth-scaled).
+      if (maybeTriggerCheat('tap_fake_hit', chaosLevel) && Math.random() < 0.30) {
+        remaining++;
+        updateSign(getSignDisplay(remaining), true);
+        speech(["nah. doesn't count.","my rules 😈","that one was fake"], 480);
+        setMsg("doesn't count.");
+        return;
+      }
+
+      // Occasional speech bubble — 30% of taps only
+      if (Math.random() < 0.30) {
+        const hitMsgs = ["ow!","hey!","stop!","rude.","again?!","😤","ugh!","not fair!"];
+        speech(hitMsgs[Math.floor(Math.random()*hitMsgs.length)], 280);
+      }
+
+      // Instant teleport after tap — no transition, so hit area matches visual immediately
+      if (tapsSinceMove >= moveEvery) {
+        tapsSinceMove = 0;
+        moveOnio(true);           // true = instant, no CSS transition lag
+        positionSign();           // sign follows immediately too
+      }
+
+      // Chaos check — only on non-final taps
+      if (chaosBudget <= 0) return;
+      if (Math.random() > getTapChaosChance()) return;
+
+      // Non-pausing events are FREE — don't consume budget
+      // Only pausing events (signTroll, callFn) consume budget
+      const canDoPausing = chaosBudget >= 1;
+
+      const events = [];
+      // Core non-pausing events — free, equal weights so variety shows up
+      events.push({w:2, cost:0, fn:'fakeMissFn'});    // lies about your tap
+      events.push({w:2, cost:0, fn:'glitchSignFn'});  // sign scrambles
+      events.push({w:2, cost:0, fn:'shakeFn'});        // arena shake
+      // Level 3+
+      if (level >= 3) events.push({w:2, cost:0, fn:'fakeGhostFn'});   // fake Onio
+      if (level >= 3) events.push({w:2, cost:0, fn:'tinyFn'});        // Onio shrinks
+      if (level >= 8) events.push({w:2, cost:0, fn:'swarmChaosFn'});  // moving mini swarm
+      // Level 4+
+      if (level >= 4) events.push({w:2, cost:0, fn:'blankFn'});       // screen blanks
+      if (level >= 4) events.push({w:2, cost:0, fn:'textBannerFn'});  // fake text
+      // Level 5+
+      if (level >= 5) events.push({w:2, cost:0, fn:'flipFn'});        // screen mirrors
+      // Pausing events — cost 1 budget each, less common
+      if (canDoPausing)             events.push({w:2, cost:1, fn:'signTrollFn'});
+      if (level >= 7 && canDoPausing) events.push({w:1, cost:1, fn:'callFn'});
+
+      const total = events.reduce((a,e)=>a+e.w, 0);
+      let r = Math.random()*total, chosen = events[0];
+      for (let i=0;i<events.length;i++) { r-=events[i].w; if(r<=0){chosen=events[i];break;} }
+
+      // Only consume budget if this event has a cost
+      chaosBudget -= (chosen.cost || 0);
+
+      switch(chosen.fn) {
+        case 'signTrollFn':
+          trickActive=false; onio.style.pointerEvents='none';
+          const trollAnns = ["actually... let me fix that 😈","hmm. miscounted.","wait—","oops. typo. 😈","hold on.","i meant more."];
+          setMsg(trollAnns[Math.floor(Math.random()*trollAnns.length)]);
+          speech("heh 😈", 0);
+          scheduleChallengeTimeout(()=>{
+            trollSign(remaining, newTarget=>{
+              remaining = newTarget;
+              clearSpeech();
+              const postLines = ["there we go.","much better.","sorry. (not sorry)","that's the real number. probably.","my bad. (not my bad)"];
+              setMsg(postLines[Math.floor(Math.random()*postLines.length)]);
+              trickActive=true; onio.style.pointerEvents='auto';
+            });
+          }, 250);
+          break;
+        case 'fakeMissFn':
+          // Move Onio instantly, claim player missed — the lie is the event
+          moveOnio(true);
+          positionSign();
+          fakeMissClaim();
+          break;
+        case 'glitchSignFn':
+          glitchSign(remaining);
+          break;
+        case 'fakeGhostFn':
+          spawnFakeOnioPop();
+          break;
+        case 'blankFn':
+          flashBlank(600 + level*10);
+          break;
+        case 'swarmChaosFn':
+          spawnTapChaosSwarm(1500 + Math.random()*800);
+          speech(['too many me','good luck 👀','find me now'][Math.floor(Math.random()*3)], 480);
+          break;
+        case 'flipFn':
+          document.getElementById('game-screen').style.transform='scaleX(-1)';
+          setMsg("something feels off... 😏");
+          scheduleChallengeTimeout(()=>{ document.getElementById('game-screen').style.transform=''; setMsg('tap me.'); },
+            Math.max(1000, 800+level*50));
+          break;
+        case 'textBannerFn':
+          showFakeTextBanner();
+          break;
+        case 'callFn':
+          chaosLocked=true; trickActive=false; onio.style.pointerEvents='none';
+          showFakeCall(()=>{
+            if (!isFlowCurrent(flowId)) return;
+            chaosLocked=false;
+            trickActive=true;
+            onio.style.pointerEvents='auto';
+          });
+          break;
+        case 'shakeFn':
+          arena.style.animation='none'; void arena.offsetWidth;
+          arena.style.animation='screenShake .35s ease';
+          scheduleChallengeTimeout(()=>arena.style.animation='', 380);
+          break;
+        case 'tinyFn':
+          onio.style.transition='font-size .3s'; onio.style.fontSize='24px';
+          scheduleChallengeTimeout(()=>{
+            onio.style.fontSize='72px';
+            scheduleChallengeTimeout(()=>onio.style.transition='', 300);
+          }, 800+Math.random()*400);
+          break;
+      }
+    };
+
+    if (maybeApplyInputLatency(flowId, 'tap', runTap, 0.85 + chaosLevel*0.75)) return;
+    runTap();
   }
 
   onio.addEventListener('pointerdown', handleTap);
@@ -3273,6 +3687,7 @@ function cTap() {
 
 
 function cDodge() {
+  const flowId = getActiveFlowId();
   // How hard Onio fights: nearMissesToSurrender decreases with level
   // lv1-3: gives up after 3-5 near-misses (lazy)
   // lv4-8: gives up after 8-15
@@ -3373,9 +3788,34 @@ function cDodge() {
     }
   }
 
+  function tiredTapInterceptor(e) {
+    if (!isTired || !trickActive) return;
+    if (!maybeTriggerCheat('dodge_last_second', getChaosLevel01()) || Math.random() > 0.58) return;
+    e.stopImmediatePropagation();
+    if (tiredTimeout) {
+      clearTimeout(tiredTimeout);
+      tiredTimeout = null;
+    }
+    isTired = false;
+    nearMisses = Math.max(0, Math.floor(nearMisses * 0.65));
+    onio.style.transition = '';
+    moveOnio(true);
+    speech('not yet 😈', 620);
+    setMsg('almost, but no.');
+    if (maybeApplyInputLatency(flowId, 'dodge', () => {
+      if (!trickActive) return;
+      arena.addEventListener('pointermove', dodge);
+      arena.addEventListener('touchmove', dodge, {passive:true});
+    }, 0.8)) return;
+    arena.addEventListener('pointermove', dodge);
+    arena.addEventListener('touchmove', dodge, {passive:true});
+  }
+
+  onio.addEventListener('pointerdown', tiredTapInterceptor, true);
   arena.addEventListener('pointermove', dodge);
   arena.addEventListener('touchmove', dodge, {passive:true});
   currentTrickCleanup = () => {
+    onio.removeEventListener('pointerdown', tiredTapInterceptor, true);
     arena.removeEventListener('pointermove', dodge);
     arena.removeEventListener('touchmove', dodge);
     if (tiredTimeout) clearTimeout(tiredTimeout);
@@ -3392,6 +3832,7 @@ function cHold() {
     holdStopHandler = null;
     setMsg("Hold me! Don't. Let. Go.");
     onio.style.pointerEvents='auto'; trickActive=true;
+    startDeathTimer(challengeLimit(9800, 4200));
 
     // Hold scales up with level: longer required hold, stronger drain, more escape antics.
     const needed      = Math.min(3400, 1500 + level*58);
@@ -3439,7 +3880,9 @@ function cHold() {
     escapeInterval = setInterval(()=>{
       if (gamePaused || !trickActive || !isHolding) return;
       if (Math.random() < escapeChance) {
-        const teleportNow = level >= 9 && Math.random() < Math.min(0.35, 0.08 + level*0.012);
+        const teleportNow = level >= 7 &&
+          maybeTriggerCheat('hold_teleport', getChaosLevel01()) &&
+          Math.random() < Math.min(0.42, 0.12 + level*0.01);
         if (teleportNow) {
           moveOnio(true);
           speech('teleport 😈', 550);
@@ -3472,6 +3915,14 @@ function cHold() {
           dropHold(false);
           speech("stay ON me 😈", 500);
           return;
+        }
+        const inputProfile = getInputChaosProfile();
+        if (
+          progress > 0 &&
+          maybeTriggerCheat('hold_bleed', inputProfile.level01) &&
+          Math.random() < inputProfile.holdBleedChance
+        ) {
+          progress = Math.max(0, progress - inputProfile.holdBleedPerTick);
         }
         progress = Math.min(needed, progress + fillStep);
         updateHoldRing(progress/needed);
@@ -3506,6 +3957,7 @@ function cHold() {
     function startH(e) {
       if (holdPointerId !== null) return;
       if (!trickActive || e.target !== onio) return;
+      recordChallengeInputOnce();
       e.preventDefault();
       holdPointerId = e.pointerId ?? null;
       holdClientX = e.clientX ?? holdClientX;
@@ -3547,6 +3999,7 @@ function cHold() {
       clearHoldInterval();
       clearInterval(escapeInterval);
       holdEscapeInterval = null;
+      clearDeathTimer();
       const w=document.getElementById('hold-ring-wrap');
       w.classList.remove('active'); w.style.cssText='';
       document.getElementById('hold-arc').style.strokeDashoffset='301.6';
@@ -3590,12 +4043,69 @@ function cDrag() {
     dz.style.cssText=`left:${zx}px;top:${zy}px;width:${zw}px;height:${zh}px;`;
     dz.classList.add('active');
     startDeathTimer(challengeLimit(8600, 4000));
-    function sd(e){if(!trickActive||e.target!==onio)return;e.preventDefault();isDragging=true;const rc=arena.getBoundingClientRect();const cx=(e.clientX??e.touches?.[0]?.clientX??0)-rc.left;const cy=(e.clientY??e.touches?.[0]?.clientY??0)-rc.top;dragOffX=cx-onioX;dragOffY=cy-onioY;onio.style.transition='none';}
-    function md(e){if(!isDragging||!trickActive)return;const rc=arena.getBoundingClientRect();const cx=(e.clientX??e.touches?.[0]?.clientX??0)-rc.left;const cy=(e.clientY??e.touches?.[0]?.clientY??0)-rc.top;placeOnio(cx-dragOffX,cy-dragOffY,true);}
-    function ed(){if(!isDragging)return;isDragging=false;if(onioX+36>zx&&onioX+36<zx+zw&&onioY+36>zy&&onioY+36<zy+zh){dz.classList.remove('active');clearDeathTimer();onHit(false, flowId);}else speech("not there! 🎯",500);}
+    let zoneShiftInt = null;
+    if (level >= 9) {
+      zoneShiftInt = setInterval(() => {
+        if (!trickActive || gamePaused || !isDragging) return;
+        if (!maybeTriggerCheat('drag_zone_shift', getChaosLevel01()) || Math.random() > 0.42) return;
+        const moved = moveDragZone(dz, zx + (Math.random()-0.5)*96, zy + (Math.random()-0.5)*84, zw, zh);
+        zx = moved.x;
+        zy = moved.y;
+        setMessageTemp('zone shifted.');
+      }, 620);
+    }
+    function sd(e){
+      if(!trickActive||e.target!==onio)return;
+      recordChallengeInputOnce();
+      e.preventDefault();
+      isDragging=true;
+      const rc=arena.getBoundingClientRect();
+      const cx=(e.clientX??e.touches?.[0]?.clientX??0)-rc.left;
+      const cy=(e.clientY??e.touches?.[0]?.clientY??0)-rc.top;
+      dragOffX=cx-onioX;
+      dragOffY=cy-onioY;
+      onio.style.transition='none';
+    }
+    function md(e){
+      if(!isDragging||!trickActive)return;
+      const rc=arena.getBoundingClientRect();
+      const cx=(e.clientX??e.touches?.[0]?.clientX??0)-rc.left;
+      const cy=(e.clientY??e.touches?.[0]?.clientY??0)-rc.top;
+      const tx = cx-dragOffX;
+      const ty = cy-dragOffY;
+      const profile = getInputChaosProfile();
+      const slippery = Math.random() < profile.dragLagChance;
+      if (slippery) {
+        const lag = 0.32 + Math.random()*0.2 + profile.level01*0.2;
+        let nx = onioX + (tx - onioX)*lag;
+        let ny = onioY + (ty - onioY)*lag;
+        if (Math.random() < profile.dragOvershootChance) {
+          nx += (Math.random()-0.5) * (8 + profile.tapOffsetPx * 0.6);
+          ny += (Math.random()-0.5) * (8 + profile.tapOffsetPx * 0.6);
+        }
+        placeOnio(nx, ny, true);
+      } else {
+        placeOnio(tx,ty,true);
+      }
+    }
+    function resolveDrop() {
+      if (onioX+36>zx&&onioX+36<zx+zw&&onioY+36>zy&&onioY+36<zy+zh) {
+        dz.classList.remove('active');
+        clearDeathTimer();
+        onHit(false, flowId);
+      } else {
+        speech("not there! 🎯",500);
+      }
+    }
+    function ed(){
+      if(!isDragging)return;
+      isDragging=false;
+      if (maybeApplyInputLatency(flowId, 'drag', resolveDrop, 0.78)) return;
+      resolveDrop();
+    }
     arena.addEventListener('pointerdown',sd);arena.addEventListener('pointermove',md);arena.addEventListener('pointerup',ed);
     arena.addEventListener('touchstart',sd,{passive:false});arena.addEventListener('touchmove',md,{passive:true});arena.addEventListener('touchend',ed);
-    currentTrickCleanup=()=>{dz.classList.remove('active');clearDeathTimer();arena.removeEventListener('pointerdown',sd);arena.removeEventListener('pointermove',md);arena.removeEventListener('pointerup',ed);arena.removeEventListener('touchstart',sd);arena.removeEventListener('touchmove',md);arena.removeEventListener('touchend',ed);};
+    currentTrickCleanup=()=>{dz.classList.remove('active');clearDeathTimer();if(zoneShiftInt){clearInterval(zoneShiftInt);zoneShiftInt=null;}arena.removeEventListener('pointerdown',sd);arena.removeEventListener('pointermove',md);arena.removeEventListener('pointerup',ed);arena.removeEventListener('touchstart',sd);arena.removeEventListener('touchmove',md);arena.removeEventListener('touchend',ed);};
   });
 }
 
@@ -3787,7 +4297,29 @@ function cTimer() {
   }
 
   if (level >= 7) scheduleTimerSteal();
-  currentTrickCleanup=()=>{clearDeathTimer();};
+  function onTimerTap(e) {
+    if (!trickActive) return;
+    e.stopImmediatePropagation();
+    recordChallengeInputOnce();
+    const rawPoint = resolveArenaPointFromEvent(e || {});
+    const resolveTap = () => {
+      if (!trickActive) return;
+      const drifted = applyTapOffsetChaos(rawPoint.x, rawPoint.y, 0.78 + getChaosLevel01()*0.52);
+      if (drifted.shifted && !isDistortedTapHit(drifted, Math.max(24, 34 - level*0.16))) {
+        registerMiss(drifted.x, drifted.y);
+        return;
+      }
+      onHit(false, flowId);
+    };
+    if (maybeApplyInputLatency(flowId, 'timer', resolveTap, 0.9 + getChaosLevel01()*0.46)) return;
+    resolveTap();
+  }
+
+  onio.addEventListener('pointerdown', onTimerTap, true);
+  currentTrickCleanup=()=>{
+    clearDeathTimer();
+    onio.removeEventListener('pointerdown', onTimerTap, true);
+  };
 }
 
 function getEvtPoint(e) {
@@ -3813,6 +4345,7 @@ function cSwipeCode() {
   let idx = 0;
   let startPt = null;
   let codeLive = false;
+  let shuffleUsed = false;
 
   setMsg('MEMORIZE: ' + seq.map(d=>glyph[d]).join(' '));
   startDeathTimer(Math.max(3600, timeLimit));
@@ -3830,8 +4363,25 @@ function cSwipeCode() {
     return dy > 0 ? 'down' : 'up';
   }
 
+  function maybeShuffleRemainingCode() {
+    if (shuffleUsed || level < 9 || idx < 1) return;
+    if (!maybeTriggerCheat('swipe_shuffle', getChaosLevel01()) || Math.random() > 0.24) return;
+    const remaining = seq.length - idx;
+    if (remaining < 2) return;
+    const a = idx + Math.floor(Math.random() * remaining);
+    let b = idx + Math.floor(Math.random() * remaining);
+    if (a === b) b = idx + ((b - idx + 1) % remaining);
+    const tmp = seq[a];
+    seq[a] = seq[b];
+    seq[b] = tmp;
+    shuffleUsed = true;
+    speech('code changed 😈', 620);
+    setMessageTemp('code changed.');
+  }
+
   function onDown(e) {
     e.stopImmediatePropagation();
+    recordChallengeInputOnce();
     startPt = getEvtPoint(e);
   }
 
@@ -3843,22 +4393,29 @@ function cSwipeCode() {
     startPt = null;
     if (!got) return;
 
-    const want = seq[idx];
-    if (got === want) {
-      idx++;
-      speech(['ok','nice','good','keep going'][Math.floor(Math.random()*4)], 350);
-      setMsg(idx >= len ? 'CODE CRACKED ✅' : `Swipe code ${idx}/${len}`);
-      if (idx >= len) {
-        clearDeathTimer();
-        onHit(false, flowId);
+    const resolveSwipe = () => {
+      if (!trickActive) return;
+      const want = seq[idx];
+      if (got === want) {
+        idx++;
+        speech(['ok','nice','good','keep going'][Math.floor(Math.random()*4)], 350);
+        setMsg(idx >= len ? 'CODE CRACKED ✅' : `Swipe code ${idx}/${len}`);
+        maybeShuffleRemainingCode();
+        if (idx >= len) {
+          clearDeathTimer();
+          onHit(false, flowId);
+        }
+        return;
       }
-      return;
-    }
 
-    idx = 0;
-    speech(['wrong swipe','nope','start over 😈'][Math.floor(Math.random()*3)], 550);
-    setMsg(`Wrong order — ${idx}/${len}`);
-    registerMiss(end.x, end.y);
+      idx = 0;
+      speech(['wrong swipe','nope','start over 😈'][Math.floor(Math.random()*3)], 550);
+      setMsg(`Wrong order — ${idx}/${len}`);
+      registerMiss(end.x, end.y);
+    };
+
+    if (maybeApplyInputLatency(flowId, 'swipe', resolveSwipe, 0.74 + getChaosLevel01()*0.42)) return;
+    resolveSwipe();
   }
 
   arena.addEventListener('pointerdown', onDown, true);
@@ -3881,6 +4438,7 @@ function cTracePath() {
   const count = Math.min(8, 4 + Math.floor(level / 12));
   const radius = 22;
   const points = [];
+  const dotEls = [];
   const layer = document.createElement('div');
   layer.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:24;';
   arena.appendChild(layer);
@@ -3907,11 +4465,14 @@ function cTracePath() {
     p.style.cssText = `position:absolute;left:${points[i].x-radius}px;top:${points[i].y-radius}px;width:${radius*2}px;height:${radius*2}px;border-radius:50%;border:3px solid #E8A030;background:${i===0?'#FFF6E8':'rgba(255,255,255,0.65)'};box-shadow:0 0 0 3px rgba(232,160,48,0.16);`;
     p.dataset.idx = String(i);
     layer.appendChild(p);
+    dotEls.push(p);
   }
 
   let tracing = false;
   let next = 0;
   let failLock = false;
+  let stepLock = false;
+  let rerouteUsed = false;
   setMsg('Trace the path dots in order');
   startDeathTimer(Math.max(4200, 11000 - level*120));
 
@@ -3930,6 +4491,7 @@ function cTracePath() {
 
   function onDown(e) {
     e.stopImmediatePropagation();
+    recordChallengeInputOnce();
     const p = getEvtPoint(e);
     if (near(p, points[0], 10)) {
       tracing = true;
@@ -3942,20 +4504,47 @@ function cTracePath() {
   }
 
   function onMove(e) {
-    if (!tracing || !trickActive) return;
+    if (!tracing || !trickActive || stepLock) return;
     e.stopImmediatePropagation();
     const p = getEvtPoint(e);
     const target = points[next];
     if (!target) return;
 
-    if (near(p, target, 10)) {
-      markDone(next);
-      next++;
-      setMsg(next >= points.length ? 'PATH CLEARED ✅' : `Trace ${next}/${points.length}`);
-      if (next >= points.length) {
-        clearDeathTimer();
-        onHit(false, flowId);
+    if (
+      !rerouteUsed &&
+      next >= Math.max(2, points.length - 2) &&
+      maybeTriggerCheat('trace_reroute', getChaosLevel01()) &&
+      Math.random() < 0.32
+    ) {
+      rerouteUsed = true;
+      target.x = clampOnioX(target.x + (Math.random()-0.5) * 90);
+      target.y = clampOnioY(target.y + (Math.random()-0.5) * 86);
+      const dot = dotEls[next];
+      if (dot) {
+        dot.style.left = (target.x - radius) + 'px';
+        dot.style.top = (target.y - radius) + 'px';
       }
+      speech('path moved 😈', 620);
+      setMessageTemp('path rerouted.');
+      return;
+    }
+
+    if (near(p, target, 10)) {
+      stepLock = true;
+      const completeStep = () => {
+        if (!trickActive) { stepLock = false; return; }
+        markDone(next);
+        next++;
+        setMsg(next >= points.length ? 'PATH CLEARED ✅' : `Trace ${next}/${points.length}`);
+        if (next >= points.length) {
+          clearDeathTimer();
+          onHit(false, flowId);
+          return;
+        }
+        stepLock = false;
+      };
+      if (maybeApplyInputLatency(flowId, 'trace', completeStep, 0.62 + getChaosLevel01()*0.35)) return;
+      completeStep();
       return;
     }
 
@@ -4008,6 +4597,7 @@ function cRhythmTap() {
   let beatWindowStart = 0;
   let beatWindowEnd = 0;
   let beatsElapsed = 0;
+  let beatShiftUsed = false;
 
   setMsg(`Listen + tap on beat: ${scored}/${needed}`);
   startDeathTimer(Math.max(3800, 10500 - level*100));
@@ -4025,8 +4615,20 @@ function cRhythmTap() {
     spawnPulse();
     sfx('beat');
     const now = performance.now();
-    beatWindowStart = now - grace * 0.4;
-    beatWindowEnd = now + grace;
+    let shift = 0;
+    if (
+      !beatShiftUsed &&
+      level >= 12 &&
+      maybeTriggerCheat('rhythm_shift', getChaosLevel01()) &&
+      Math.random() < 0.24
+    ) {
+      beatShiftUsed = true;
+      shift = (Math.random() < 0.5 ? -1 : 1) * grace * (0.18 + Math.random()*0.2);
+      setMessageTemp('tempo drift.');
+      speech('off beat 😈', 500);
+    }
+    beatWindowStart = now - grace * 0.4 + shift;
+    beatWindowEnd = now + grace + shift;
     if (beatsElapsed > needed + 5 && scored < needed) {
       clearInterval(beatInterval);
       triggerDeath('off beat 😈');
@@ -4036,20 +4638,32 @@ function cRhythmTap() {
   function onTap(e) {
     e.stopPropagation();
     if (!trickActive) return;
-    const now = performance.now();
-    if (now >= beatWindowStart && now <= beatWindowEnd) {
-      scored++;
-      sfx('beatHit');
-      speech(['nice timing','on beat','clean'][Math.floor(Math.random()*3)], 320);
-      setMsg(`Listen + tap on beat: ${scored}/${needed}`);
-      if (scored >= needed) {
-        clearInterval(beatInterval);
-        clearDeathTimer();
-        onHit(false, flowId);
+    recordChallengeInputOnce();
+    const rawPoint = resolveArenaPointFromEvent(e || {});
+    const judgeTap = () => {
+      if (!trickActive) return;
+      const drifted = applyTapOffsetChaos(rawPoint.x, rawPoint.y, 0.54 + getChaosLevel01()*0.34);
+      if (drifted.shifted && !isDistortedTapHit(drifted, 34)) {
+        registerMiss(drifted.x, drifted.y);
+        return;
       }
-      return;
-    }
-    registerMiss(onioX+36, onioY+36);
+      const now = performance.now();
+      if (now >= beatWindowStart && now <= beatWindowEnd) {
+        scored++;
+        sfx('beatHit');
+        speech(['nice timing','on beat','clean'][Math.floor(Math.random()*3)], 320);
+        setMsg(`Listen + tap on beat: ${scored}/${needed}`);
+        if (scored >= needed) {
+          clearInterval(beatInterval);
+          clearDeathTimer();
+          onHit(false, flowId);
+        }
+        return;
+      }
+      registerMiss(onioX+36, onioY+36);
+    };
+    if (maybeApplyInputLatency(flowId, 'rhythm', judgeTap, 0.58 + getChaosLevel01()*0.38)) return;
+    judgeTap();
   }
 
   onio.addEventListener('pointerdown', onTap);
@@ -4072,6 +4686,7 @@ function cPinchTrap() {
   const needRatio = Math.max(0.58, 0.74 - level * 0.005);
   const pointerMap = new Map();
   let startDist = 0;
+  let fakeoutUsed = false;
   setMsg('Pinch Onio with 2 fingers');
   startDeathTimer(Math.max(5000, 9800 - level*90));
 
@@ -4086,6 +4701,7 @@ function cPinchTrap() {
   function onDown(e) {
     if (!trickActive || e.target !== onio) return;
     e.stopPropagation();
+    recordChallengeInputOnce();
     pointerMap.set(e.pointerId, {x:e.clientX, y:e.clientY});
     if (pointerMap.size === 2 && !startDist) {
       startDist = Math.max(18, dist());
@@ -4100,9 +4716,27 @@ function cPinchTrap() {
     const ratio = dist() / startDist;
     const pct = Math.max(0, Math.min(100, Math.round((1 - ratio) * 100)));
     setMsg(`Pinch ${pct}%`);
+    if (
+      !fakeoutUsed &&
+      level >= 14 &&
+      ratio <= needRatio + 0.1 &&
+      maybeTriggerCheat('pinch_fakeout', getChaosLevel01()) &&
+      Math.random() < 0.26
+    ) {
+      fakeoutUsed = true;
+      startDist = Math.max(18, dist() * (1.1 + Math.random()*0.16));
+      speech('harder 😈', 620);
+      setMessageTemp('not enough pinch.');
+      return;
+    }
     if (ratio <= needRatio) {
-      clearDeathTimer();
-      onHit(false, flowId);
+      const finish = () => {
+        if (!trickActive) return;
+        clearDeathTimer();
+        onHit(false, flowId);
+      };
+      if (maybeApplyInputLatency(flowId, 'pinch', finish, 0.7 + getChaosLevel01()*0.36)) return;
+      finish();
     }
   }
 
@@ -4138,12 +4772,15 @@ function cTwoFingerLock() {
   const needMs = Math.max(1200, 2400 - level * 30);
   const pointerSet = new Set();
   let held = 0;
+  let jamCooldown = false;
+  let finishing = false;
   setMsg('Hold Onio with TWO fingers');
   startDeathTimer(Math.max(5000, 9600 - level*85));
 
   function onDown(e) {
     if (!trickActive || e.target !== onio) return;
     e.stopPropagation();
+    recordChallengeInputOnce();
     pointerSet.add(e.pointerId);
   }
 
@@ -4155,12 +4792,31 @@ function cTwoFingerLock() {
     if (!trickActive) return;
     if (pointerSet.size >= 2) held = Math.min(needMs, held + 80);
     else held = Math.max(0, held - 120);
+    if (
+      !jamCooldown &&
+      held > needMs * 0.58 &&
+      maybeTriggerCheat('twofinger_drain', getChaosLevel01()) &&
+      Math.random() < 0.2
+    ) {
+      jamCooldown = true;
+      held = Math.max(0, held - needMs * (0.18 + Math.min(0.16, level*0.002)));
+      speech('one finger slipped 😈', 620);
+      setMessageTemp('lock destabilized.');
+      scheduleChallengeTimeout(() => { jamCooldown = false; }, 760);
+    }
     const pct = Math.round((held / needMs) * 100);
     setMsg(`Two-finger lock ${pct}%`);
     if (held >= needMs) {
-      clearInterval(holdTick);
-      clearDeathTimer();
-      onHit(false, flowId);
+      if (finishing) return;
+      finishing = true;
+      const finish = () => {
+        if (!trickActive) return;
+        clearInterval(holdTick);
+        clearDeathTimer();
+        onHit(false, flowId);
+      };
+      if (maybeApplyInputLatency(flowId, 'lock', finish, 0.72 + getChaosLevel01()*0.3)) return;
+      finish();
     }
   }, 80);
 
@@ -4186,13 +4842,15 @@ function cTiltBalance() {
 
   const zoneW = Math.max(120, Math.min(190, gW * 0.32));
   const zoneH = Math.max(95, Math.min(150, gH * 0.25));
-  const zx = (gW - zoneW) / 2;
-  const zy = (gH - zoneH) / 2;
+  let zx = (gW - zoneW) / 2;
+  let zy = (gH - zoneH) / 2;
   const needMs = Math.max(1200, 2300 - level * 24);
   let held = 0;
   let dragMode = false;
   let dragging = false;
   let offX = 0, offY = 0;
+  let zoneShiftCooldown = 0;
+  let finishing = false;
 
   const zone = document.createElement('div');
   zone.style.cssText = `position:absolute;left:${zx}px;top:${zy}px;width:${zoneW}px;height:${zoneH}px;border:3px dashed #4CAF50;border-radius:16px;background:rgba(76,175,80,0.08);z-index:10;pointer-events:none;`;
@@ -4263,14 +4921,33 @@ function cTiltBalance() {
 
   const holdTick = setInterval(()=>{
     if (!trickActive) return;
+    if (
+      level >= 18 &&
+      Date.now() >= zoneShiftCooldown &&
+      maybeTriggerCheat('tilt_zone_shift', getChaosLevel01()) &&
+      Math.random() < 0.16
+    ) {
+      const moved = moveDragZone(zone, zx + (Math.random()-0.5)*84, zy + (Math.random()-0.5)*84, zoneW, zoneH);
+      zx = moved.x;
+      zy = moved.y;
+      zoneShiftCooldown = Date.now() + 900;
+      setMessageTemp('zone drift.');
+    }
     if (inZone()) held = Math.min(needMs, held + 100);
     else held = Math.max(0, held - 140);
     const pct = Math.round((held / needMs) * 100);
     setMsg(`${dragMode ? 'Hold in zone' : 'Balance'} ${pct}%`);
     if (held >= needMs) {
-      clearInterval(holdTick);
-      clearDeathTimer();
-      onHit(false, flowId);
+      if (finishing) return;
+      finishing = true;
+      const finish = () => {
+        if (!trickActive) return;
+        clearInterval(holdTick);
+        clearDeathTimer();
+        onHit(false, flowId);
+      };
+      if (maybeApplyInputLatency(flowId, 'tilt', finish, 0.66 + getChaosLevel01()*0.36)) return;
+      finish();
     }
   }, 100);
 
@@ -4494,6 +5171,35 @@ function showFakeTextChaos(durationMs=1500) {
   }, durationMs);
 }
 
+function showFakeoutMoment(title, sub, tone='danger', durationMs=1200) {
+  const o = document.createElement('div');
+  o.className = 'chaos-system-banner';
+  const bg = tone === 'danger'
+    ? 'linear-gradient(180deg,#2B1212 0%,#1E0B0B 100%)'
+    : tone === 'cool'
+      ? 'linear-gradient(180deg,#15253C 0%,#10192A 100%)'
+      : 'linear-gradient(180deg,#1F1F2F 0%,#151525 100%)';
+  o.style.cssText = [
+    'position:absolute',
+    'inset:0',
+    'z-index:74',
+    'display:flex',
+    'align-items:center',
+    'justify-content:center',
+    'pointer-events:none',
+    `background:${bg}`,
+    'animation:popIn .2s ease',
+  ].join(';');
+  o.innerHTML = `
+    <div style="background:rgba(255,255,255,.95);border:2px solid #E8C070;border-radius:16px;padding:16px 18px;box-shadow:0 12px 32px rgba(0,0,0,.22);text-align:center;max-width:84vw;">
+      <div style="font-family:'Fredoka One',cursive;font-size:clamp(26px,8vw,38px);color:#C0560A;line-height:1.08;">${title}</div>
+      <div style="font-family:'Nunito',sans-serif;font-size:clamp(13px,3.8vw,16px);color:#7A4A22;font-weight:700;margin-top:8px;">${sub}</div>
+    </div>
+  `;
+  arena.appendChild(o);
+  scheduleChallengeTimeout(() => o.remove(), durationMs);
+}
+
 // All chaos values are continuous functions of level, not tiers
 function chaosVal(minLv, maxLv, minVal, maxVal) {
   // Returns a 0→1 progress through the range, clamped
@@ -4501,9 +5207,32 @@ function chaosVal(minLv, maxLv, minVal, maxVal) {
   return minVal + (maxVal - minVal) * t;
 }
 
+function triggerChaosSpike() {
+  const dur = 2000 + Math.random()*3000; // 2-5s
+  chaosSpikeUntil = Date.now() + dur;
+  const minGap = Math.max(7000, 12000 - hits * 46);
+  const maxGap = Math.max(minGap + 2200, 22000 - hits * 60);
+  nextChaosSpikeAt = Date.now() + minGap + Math.random() * (maxGap - minGap);
+  showSystemBanner('⚠️', 'Chaos Spike', 'onio is escalating.', 'danger', 900);
+}
+
+function canUseFakeouts() {
+  // Let the run breathe before trolling events start.
+  return !!CHAOS_TUNING.allowFakeouts && hits >= 14;
+}
+
+function canUseHeavyFakeouts() {
+  return canUseFakeouts() && hits >= 22;
+}
+
 function startChaosSystem() {
   stopChaosSystem();
   if (level < 3) return; // perfectly calm until level 3
+  if (level >= 6 && !nextChaosSpikeAt) {
+    const minGap = Math.max(7000, 12000 - hits * 46);
+    const maxGap = Math.max(minGap + 2200, 22000 - hits * 60);
+    nextChaosSpikeAt = Date.now() + minGap + Math.random() * (maxGap - minGap);
+  }
 
   // Smooth ramp: gentle through lv20, then steadily tighter.
   const tickMs = level <= 20
@@ -4540,6 +5269,9 @@ function stopChaosSystem() {
   glitchEl.style.opacity='0'; glitchEl.classList.remove('active'); glitchEl.style.display='none';
   levelHidden = false;
   chaosDisruptUntil = 0;
+  chaosSpikeUntil = 0;
+  nextChaosSpikeAt = 0;
+  activeChaosEffects.clear();
   document.getElementById('level-pill').className = '';
   updateHUD();
 }
@@ -4562,8 +5294,10 @@ const CHAOS_MODULES = [
   { id:'microLag',      minLv:16, requiresDisrupt:true, weight:()=>chaosVal(16, 45, 0.1, 1.1) },
   { id:'invertControls',minLv:18, requiresDisrupt:true, weight:()=>chaosVal(18, 50, 0.1, 1.0) },
   { id:'upsideDownChaos',minLv:13,requiresDisrupt:true, weight:()=>chaosVal(13, 45, 0.08, 0.7) },
-  { id:'fakePauseChaos',minLv:20, requiresDisrupt:true, weight:()=>chaosVal(20, 55, 0.1, 0.9) },
-  { id:'fakeTextChaos', minLv:11, requiresDisrupt:true, weight:()=>chaosVal(11, 45, 0.1, 0.9) },
+  { id:'fakePauseChaos',minLv:20, requiresDisrupt:true, allow:()=>canUseFakeouts(), weight:()=>chaosVal(20, 55, 0.1, 0.9) },
+  { id:'fakeTextChaos', minLv:11, requiresDisrupt:true, allow:()=>canUseFakeouts(), weight:()=>chaosVal(11, 45, 0.1, 0.9) },
+  { id:'fakeRunOver',   minLv:22, requiresDisrupt:true, allow:()=>canUseHeavyFakeouts(), weight:()=>chaosVal(22, 60, 0.08, 0.7) },
+  { id:'fakeRunClear',  minLv:26, requiresDisrupt:true, allow:()=>canUseHeavyFakeouts(), weight:()=>chaosVal(26, 70, 0.06, 0.6) },
   { id:'batteryLow',    minLv:9,  weight:()=>chaosVal(9, 28, 0.2, 1.4) },
   { id:'screenDark',    minLv:11, weight:()=>chaosVal(11, 34, 0.2, 1.2) },
   { id:'deadPixels',    minLv:13, weight:()=>chaosVal(13, 38, 0.2, 1.2) },
@@ -4571,6 +5305,36 @@ const CHAOS_MODULES = [
   { id:'fakeIncoming',  minLv:17, weight:()=>chaosVal(17, 45, 0.2, 1.0) },
   { id:'controlsLock',  minLv:10, requiresDisrupt:true, weight:()=>chaosVal(10, 35, 0.1, 1.0) },
 ];
+
+const CHAOS_EFFECT_WINDOW = {
+  screenShake: 420,
+  glitchOnio: 420,
+  glitchMsg: 620,
+  hideLevel: 2200,
+  fakeLevel: 1200,
+  invertColors: 340,
+  spinOnio: 360,
+  fakeNotif: 760,
+  ghostTap: 280,
+  timeSteal: 560,
+  teleportPop: 520,
+  hitboxShrink: 980,
+  cloneBurst: 2600,
+  gravityPull: 980,
+  microLag: 760,
+  invertControls: 1300,
+  upsideDownChaos: 1300,
+  fakePauseChaos: 980,
+  fakeTextChaos: 1200,
+  fakeRunOver: 1400,
+  fakeRunClear: 1350,
+  batteryLow: 1900,
+  screenDark: 1200,
+  deadPixels: 1200,
+  chargeNow: 1700,
+  fakeIncoming: 1550,
+  controlsLock: 1900,
+};
 
 const CHAOS_HANDLERS = {
   screenShake() {
@@ -4699,6 +5463,32 @@ const CHAOS_HANDLERS = {
       onio.style.pointerEvents='auto';
     }, 1000);
   },
+  fakeRunOver() {
+    markChaosDisrupt(1800);
+    trickActive = false;
+    onio.style.pointerEvents='none';
+    showFakeoutMoment('RUN OVER', 'lol. jk. keep suffering.', 'danger', 1200);
+    scheduleChallengeTimeout(()=>{
+      if (!document.getElementById('game-screen').classList.contains('active')) return;
+      if (gamePaused) return;
+      trickActive = true;
+      onio.style.pointerEvents='auto';
+      setMsg('resume.');
+    }, 1100);
+  },
+  fakeRunClear() {
+    markChaosDisrupt(1700);
+    trickActive = false;
+    onio.style.pointerEvents='none';
+    showFakeoutMoment('RUN CLEAR!', 'one more minigame 😈', 'cool', 1150);
+    scheduleChallengeTimeout(()=>{
+      if (!document.getElementById('game-screen').classList.contains('active')) return;
+      if (gamePaused) return;
+      trickActive = true;
+      onio.style.pointerEvents='auto';
+      setMsg('not done.');
+    }, 1000);
+  },
   batteryLow() {
     showSystemBanner('🪫', 'Battery Low', '1% remaining. performance reduced.', 'danger', 1900);
     if (!deathTimerInterval || deathTimerMs <= 0) return;
@@ -4742,6 +5532,13 @@ const CHAOS_HANDLERS = {
 };
 
 function doChaosTick() {
+  pruneChaosEffects();
+  const now = Date.now();
+  if (level >= 6 && now >= nextChaosSpikeAt) triggerChaosSpike();
+  const inSpike = now < chaosSpikeUntil;
+  const maxConcurrent = getChaosMaxConcurrent(hits, inSpike);
+  if (activeChaosEffects.size >= maxConcurrent) return;
+
   const canDisrupt = chaosDisruptReady();
   const pool = [];
   for (let i=0; i<CHAOS_MODULES.length; i++) {
@@ -4749,16 +5546,26 @@ function doChaosTick() {
     if (level < mod.minLv) continue;
     if (mod.requiresDisrupt && !canDisrupt) continue;
     if (mod.allow && !mod.allow()) continue;
-    const w = mod.weight();
+    const w = mod.weight() * (inSpike ? 1.3 : 1);
     if (w > 0) pool.push({ id:mod.id, w });
   }
   if (!pool.length) return;
 
-  const total = pool.reduce((a,c)=>a+c.w, 0);
-  let r = Math.random()*total, chosen = pool[0];
-  for (let i=0; i<pool.length; i++) { r-=pool[i].w; if(r<=0){chosen=pool[i];break;} }
-  const handler = CHAOS_HANDLERS[chosen.id];
-  if (typeof handler === 'function') handler();
+  let fireCount = 1;
+  if (inSpike && Math.random() < 0.56) fireCount++;
+  if ((inSpike || hits >= 24) && Math.random() < 0.24) fireCount++;
+  fireCount = Math.min(fireCount, Math.max(1, maxConcurrent - activeChaosEffects.size));
+
+  for (let n=0; n<fireCount; n++) {
+    const total = pool.reduce((a,c)=>a+c.w, 0);
+    let r = Math.random()*total, chosen = pool[0];
+    for (let i=0; i<pool.length; i++) { r-=pool[i].w; if(r<=0){chosen=pool[i];break;} }
+    const handler = CHAOS_HANDLERS[chosen.id];
+    if (typeof handler !== 'function') continue;
+    handler();
+    registerChaosEffect(chosen.id, CHAOS_EFFECT_WINDOW[chosen.id] || 900);
+    if (activeChaosEffects.size >= maxConcurrent) break;
+  }
 }
 
 function cleanupChaos() {
@@ -4779,6 +5586,7 @@ function cleanupChaos() {
 onio.addEventListener('pointerdown', e=>{
   normalizePauseState();
   if (gamePaused) return;
+  recordChallengeInputOnce();
   e.stopPropagation(); if (!trickActive) return;
   if ([
     'tap','hold','drag','shake','blow',
@@ -4789,6 +5597,7 @@ onio.addEventListener('pointerdown', e=>{
 arena.addEventListener('pointerdown', e=>{
   normalizePauseState();
   if (gamePaused) return;
+  recordChallengeInputOnce();
   if (suppressArenaMiss) return;
   if (e.target===onio||e.target.classList.contains('decoy')) return;
   if (!trickActive) return;
