@@ -1283,9 +1283,8 @@ function recordChallengeResult(challengeId, failed, durationMs) {
 
 // Adaptive weight modifier — easier early game, ramps smoothly, then weaponizes weaknesses
 const CHALLENGE_RAMP_SPAN = {
-  tap: 2, hold: 8, clones: 8, swarmAll: 10, drag: 10, dodge: 12, timer: 12,
-  mirror: 14, shake: 12, blow: 14, fakepause: 14, faketext: 16, teleport: 14,
-  upsidedown: 18, swarmFind: 16, swarmMove: 18, swarmSpawn: 20,
+  tap: 2, hold: 8, drag: 10, dodge: 12, timer: 12,
+  shake: 12, blow: 14,
   swipeCode: 12, tracePath: 14, rhythmTap: 14, pinchTrap: 16, twoFinger: 16,
   tiltBalance: 18, freeze: 14,
 };
@@ -1298,7 +1297,7 @@ function getAdaptiveWeight(challenge) {
 
   // Keep levels 1-5 approachable; avoid hard-difficulty spikes too early.
   if (level <= 5 && challenge.id !== 'tap') weight *= 0.55;
-  else if (level <= 10 && ['swarmAll', 'timer', 'dodge'].includes(challenge.id)) weight *= 0.8;
+  else if (level <= 10 && ['timer', 'dodge'].includes(challenge.id)) weight *= 0.8;
 
   // After a few runs, weaknesses become more likely, but gradually.
   const isWeakness = playerProfile.weaknesses.includes(challenge.id);
@@ -1446,9 +1445,6 @@ function dismissReturnGreeting() {
 const WEAKNESS_TAUNTS = {
   dodge:      ["oh you hate this one don't you 😈","let's do the thing you hate","dodge time. you love this. (you don't)"],
   hold:       ["hold challenge incoming. good luck lol","you always let go too early 😏","HOLD. you can do it. (probably not)"],
-  clones:     ["can you find the real me? spoiler: no","find the real one. this should be fun to watch.","which one am i? answer: not the one you pick"],
-  swarmAll:   ["tapping time. all of them. yes ALL.","swarm incoming. you love these. (you don't)","lots of me. every one of them wants chaos."],
-  swarmFind:  ["find the real me among the fakes. good luck.","somewhere in here... the real Onio. somewhere."],
   drag:       ["drag challenge. remember to actually drop me IN the zone.","drag me. into the zone. not near it. in it."],
   shake:      ["time to shake. yes literally. shake your phone.","shake it. shake it. shake it. still shaking?"],
   timer:      ["fast one coming. don't blink.","HURRY challenge. you struggle with these.","timer incoming. tick. tick. tick."],
@@ -1459,8 +1455,6 @@ const WEAKNESS_TAUNTS = {
   twoFinger:  ["two-finger lock incoming.","bring both thumbs this time.","dual-touch challenge. yes, both."],
   tiltBalance:["tilt control time. stay centered.","balance me in the zone.","steady tilt, steady hands."],
   freeze:     ["freeze challenge. don't touch.","hands off. literally.","the hardest move: do nothing."],
-  mirror:     ["mirror time. left is right. right is wrong.","everything flipped. you've been warned."],
-  upsidedown: ["prepare to read upside down.","¡dn ǝpᴉsdn"],
 };
 
 function maybeShowWeaknessBanner(challengeId) {
@@ -1502,6 +1496,8 @@ let sfxEnabled = localStorage.getItem('onio_sfx') !== '0';
 let sfxMasterGain = null;
 let sfxBlockedWarned = false;
 let controlsLockedForChallenge = false;
+let activeMinigameId = null;
+let activeChaosIntervals = [];
 const DEPTHS_PER_TIER = 4;
 
 function depthToTier(depth) {
@@ -1534,6 +1530,16 @@ function beginNewChallengeFlow() {
 
 function getActiveFlowId() {
   return activeChallengeFlowId;
+}
+
+function trackChaosInterval(intervalId) {
+  activeChaosIntervals.push(intervalId);
+  return intervalId;
+}
+
+function clearTrackedChaosIntervals() {
+  activeChaosIntervals.forEach(clearInterval);
+  activeChaosIntervals = [];
 }
 
 function isFlowCurrent(flowId) {
@@ -2259,8 +2265,9 @@ function doDeathScreen() {
       dodge:    "you and dodge. a true love story. a tragic one.",
       hold:     "the hold challenge. again. it always gets you.",
       timer:    "the timer. your nemesis. the clock wins again.",
-      clones:   "you never find the real me. statistically notable.",
       shake:    "you don't shake enough. or too much. one of those.",
+      tracePath:"you drift off the path every time. consistent, at least.",
+      swipeCode:"swipe order memory? not your strongest asset.",
     };
     roastPool = weaknessCallouts[wk] ? [weaknessCallouts[wk]] : DEATH_ROASTS;
   } else {
@@ -2279,11 +2286,14 @@ function doDeathScreen() {
 function cleanupAll() {
   beginNewChallengeFlow();
   clearChallengeTimeouts();
+  clearTrackedChaosIntervals();
+  activeMinigameId = null;
   setCoreControlsLocked(false);
   clearDeathTimer(); clearSpeech(); clearDecoys(); stopMic();
   if (shakeCheckInterval) { clearInterval(shakeCheckInterval); shakeCheckInterval=null; }
   document.getElementById('fake-pause').classList.remove('active');
   document.getElementById('fake-text').classList.remove('active');
+  document.getElementById('ft-close-wrap').style.display='';
   if (!gamePaused) document.getElementById('real-pause').classList.remove('active');
   document.getElementById('lvl-splash').classList.remove('active');
   document.getElementById('level-clear').classList.remove('active');
@@ -2412,34 +2422,24 @@ function levelUp(sourceFlowId=null) {
 }
 
 // ============================================================
-// CHALLENGE SYSTEM
+// MINIGAME SYSTEM (core skill tests only)
+// Chaos lives in doChaosTick()/tap chaos and can stack during these.
 // ============================================================
-const CHALLENGES = [
-  {id:'tap',         minLv:1,  w:6.0, fn:cTap},          // core mechanic, very frequent early
-  {id:'hold',        minLv:2,  w:2.4, fn:cHold},
-  {id:'clones',      minLv:3,  w:1.4, fn:cClones},
+const MINIGAMES = [
+  {id:'tap',         minLv:1,  w:6.2, fn:cTap},
+  {id:'hold',        minLv:2,  w:2.6, fn:cHold},
   {id:'drag',        minLv:4,  w:2.0, fn:cDrag},
-  {id:'dodge',       minLv:5,  w:1.8, fn:cDodge},
-  {id:'swipeCode',   minLv:6,  w:1.9, fn:cSwipeCode},
+  {id:'dodge',       minLv:5,  w:1.7, fn:cDodge},
+  {id:'swipeCode',   minLv:6,  w:1.8, fn:cSwipeCode},
   {id:'timer',       minLv:6,  w:1.4, fn:cTimer},
-  {id:'swarmAll',    minLv:7,  w:1.8, fn:cSwarmTapAll},
-  {id:'tracePath',   minLv:8,  w:1.6, fn:cTracePath},
-  {id:'mirror',      minLv:8,  w:0.9, fn:cMirror},
-  {id:'rhythmTap',   minLv:9,  w:1.4, fn:cRhythmTap},
-  {id:'shake',       minLv:9,  w:1.2, fn:cShake},
+  {id:'tracePath',   minLv:8,  w:1.5, fn:cTracePath},
+  {id:'rhythmTap',   minLv:9,  w:1.3, fn:cRhythmTap},
+  {id:'shake',       minLv:9,  w:1.1, fn:cShake},
   {id:'freeze',      minLv:10, w:1.0, fn:cFreezeTest},
   {id:'blow',        minLv:10, w:0.9, fn:cBlow},
-  {id:'fakepause',   minLv:10, w:0.8, fn:cFakePause},
-  {id:'faketext',    minLv:11, w:0.8, fn:cFakeText},
-  {id:'teleport',    minLv:12, w:1.1, fn:cTeleport},
-  {id:'pinchTrap',   minLv:12, w:1.1, fn:cPinchTrap},
-  {id:'upsidedown',  minLv:13, w:0.8, fn:cUpsideDown},
-  {id:'twoFinger',   minLv:14, w:1.0, fn:cTwoFingerLock},
-  {id:'swarmFind',   minLv:15, w:1.8, fn:cSwarmFindReal},
+  {id:'pinchTrap',   minLv:12, w:1.0, fn:cPinchTrap},
+  {id:'twoFinger',   minLv:14, w:0.95, fn:cTwoFingerLock},
   {id:'tiltBalance', minLv:16, w:0.9, fn:cTiltBalance},
-  {id:'tiny',        minLv:18, w:1.0, fn:cTiny},
-  {id:'swarmMove',   minLv:30, w:1.6, fn:cSwarmMoving},
-  {id:'swarmSpawn',  minLv:55, w:1.5, fn:cSwarmSpawning},
 ];
 
 function runNextChallenge() {
@@ -2453,6 +2453,7 @@ function runNextChallenge() {
   // DEBUG: force tap only
   if (DEBUG.TAP_ONLY) {
     lastChallengeId = 'tap';
+    activeMinigameId = 'tap';
     challengeStartMs = Date.now();
     scheduleChallengeTimeout(()=>{
       if (!isFlowCurrent(flowId)) return;
@@ -2461,12 +2462,13 @@ function runNextChallenge() {
     return;
   }
 
-  const pool = CHALLENGES.filter(c=>c.minLv<=level);
+  const pool = MINIGAMES.filter(c=>c.minLv<=level);
   const total = pool.reduce((a,c)=>a+getAdaptiveWeight(c), 0);
   let r=Math.random()*total, chosen=pool[0];
   for(let i=0;i<pool.length;i++){r-=getAdaptiveWeight(pool[i]);if(r<=0){chosen=pool[i];break;}}
   if (chosen.id===lastChallengeId && pool.length>1) return runNextChallenge();
   lastChallengeId=chosen.id;
+  activeMinigameId = chosen.id;
   challengeStartMs = Date.now();
   maybeShowWeaknessBanner(chosen.id);
   scheduleChallengeTimeout(()=>{
@@ -3561,16 +3563,8 @@ function cHold() {
 }
 
 // ============================================================
-// SWARM HELPERS
+// DECOY HELPERS
 // ============================================================
-function getSwarmCount() {
-  // Exact ranges: lv1-10 → 1-5, lv11-25 → 4-15, lv26-50 → 12-50, lv51+ → 25-200
-  if (level <= 10) return Math.round(1 + (level-1)/9 * 4);
-  if (level <= 25) return Math.round(4 + (level-11)/14 * 11);
-  if (level <= 50) return Math.round(12 + (level-26)/24 * 38);
-  return Math.min(200, Math.round(25 + (level-51) * 3.4));
-}
-
 function spawnOnioEl(emoji, x, y, opts={}) {
   const d = document.createElement('div');
   d.className = 'decoy';
@@ -3582,227 +3576,6 @@ function spawnOnioEl(emoji, x, y, opts={}) {
   applySpriteToElement(d);
   arena.appendChild(d); decoyEls.push(d);
   return d;
-}
-
-// ---- VARIANT A: Tap ALL (lv1-10 feel) ----
-function cSwarmTapAll() {
-  const flowId = getActiveFlowId();
-  const count = getSwarmCount();
-  const timeLimit = Math.max(3000, 12000 - level*200);
-  let remaining = count;
-  setMsg(`TAP ALL ${count}! ⏰`);
-  startDeathTimer(timeLimit);
-
-  // hide real Onio, spawn the grid
-  onio.style.display='none';
-
-  for (let i=0; i<count; i++) {
-    const p = randPos(30, 110);
-    // Mix of identical Onios — at higher levels some are slightly different
-    const sameEmoji = level<=10 || Math.random()>0.15;
-    const el = spawnOnioEl(sameEmoji?'😈':'😏', p.x, p.y, {
-      size: Math.max(28, 72 - Math.floor(count/8)),
-      anim: 0.7 + Math.random()*0.8
-    });
-    el.addEventListener('pointerdown', e=>{
-      e.stopPropagation();
-      if (!trickActive) return;
-      el.style.opacity='0.15'; el.style.pointerEvents='none';
-      haptic(15);
-      spawnRipple(p.x+36, p.y+36, 'hit-flash');
-      remaining--;
-      setMsg(remaining > 0 ? `${remaining} left!` : 'GOT EM! 😤');
-      if (remaining <= 0) {
-        clearDeathTimer();
-        onio.style.display='';
-        onHit(false, flowId);
-      }
-    });
-  }
-
-  currentTrickCleanup=()=>{ clearDeathTimer(); onio.style.display=''; clearDecoys(); };
-}
-
-// ---- VARIANT B: Find the REAL one (lv11-25 feel) ----
-function cSwarmFindReal() {
-  const count = getSwarmCount();
-  setMsg("Find the REAL Onio! 👀");
-  clearSpeech();
-  suppressSpeech = true;
-  const talkers = [];
-  const maxCount = Math.min(44, count + 12 + Math.floor(level * 0.6));
-  const chatterLines = [
-    'over here!',
-    'no, me!',
-    'im him 😈',
-    'pick me',
-    'this one',
-    'me me me',
-    'real onio!',
-    'tap me lol',
-  ];
-  const wrongLines = ['nope!','not me!','try again','lol','wrong one','still wrong'];
-
-  // Real Onio is hidden among fakes
-  onio.style.opacity='0';
-  const FAKE_EMOJIS = ['😈','😈','😈','😈','😏','👹','👺','😜','🤡','👻','💀','😤'];
-
-  function spawnFake(atX=null, atY=null) {
-    const p = (atX===null || atY===null)
-      ? randPos(30, 110)
-      : { x: Math.max(12, Math.min(gW-88, atX + (Math.random()-.5)*120)), y: Math.max(98, Math.min(gH-98, atY + (Math.random()-.5)*110)) };
-    const emoji = FAKE_EMOJIS[Math.floor(Math.random()*FAKE_EMOJIS.length)];
-    const opacity = 0.55 + Math.random()*0.35;
-    const el = spawnOnioEl(emoji, p.x, p.y, {
-      size: Math.max(32, 72 - Math.floor(count/6)),
-      opacity, anim: 0.6+Math.random()
-    });
-    if (Math.random() < 0.5) {
-      scheduleChallengeTimeout(()=>{
-        if (!trickActive || gamePaused || !el.isConnected) return;
-        speechOnElement(el, chatterLines[Math.floor(Math.random()*chatterLines.length)], 420 + Math.random()*220);
-      }, 120 + Math.random()*260);
-    }
-    talkers.push(el);
-    el.addEventListener('pointerdown', e=>{
-      e.stopPropagation();
-      if (!trickActive) return;
-      speechOnElement(el, wrongLines[Math.floor(Math.random()*wrongLines.length)], 540);
-      const rr = el.getBoundingClientRect();
-      const ar = arena.getBoundingClientRect();
-      registerMiss(rr.left - ar.left + rr.width/2, rr.top - ar.top + rr.height/2);
-      const tx = rr.left - ar.left + rr.width/2;
-      const ty = rr.top - ar.top + rr.height/2;
-      el.style.pointerEvents='none';
-      el.style.opacity='0.08';
-      scheduleChallengeTimeout(()=>el.remove(), 160);
-      const add = 1 + (Math.random() < Math.min(0.82, 0.24 + level*0.02) ? 1 : 0);
-      for (let i=0; i<add && talkers.filter(t => t && t.isConnected && t !== onio).length < maxCount; i++) {
-        spawnFake(tx, ty);
-      }
-    });
-  }
-  for (let i=0; i<count; i++) spawnFake();
-
-  // Real Onio placed randomly among them
-  onio.style.opacity = String(0.6 + Math.random()*0.3);
-  moveOnio(true);
-  talkers.push(onio);
-  const chatterInterval = setInterval(()=>{
-    if (gamePaused || !trickActive) return;
-    const bursts = Math.min(3, Math.max(1, Math.floor(count / 12)));
-    for (let i=0; i<bursts; i++) {
-      const target = talkers[Math.floor(Math.random()*talkers.length)];
-      if (!target || !target.isConnected || target.style.pointerEvents === 'none') continue;
-      speechOnElement(target, chatterLines[Math.floor(Math.random()*chatterLines.length)], 460 + Math.random()*260);
-    }
-  }, 550 + Math.random()*220);
-
-  startDeathTimer(challengeLimit(9600, 3600));
-  currentTrickCleanup=()=>{
-    clearDeathTimer();
-    suppressSpeech = false;
-    clearInterval(chatterInterval);
-    onio.style.opacity='1';
-    clearDecoys();
-  };
-}
-
-// ---- VARIANT C: Moving swarm, tap all (lv26-50 feel) ----
-function cSwarmMoving() {
-  const flowId = getActiveFlowId();
-  const count = getSwarmCount();
-  const timeLimit = Math.max(4000, 14000 - level*150);
-  let remaining = count;
-  setMsg(`TAP ALL ${count} — they're moving! 😤`);
-  startDeathTimer(timeLimit);
-  onio.style.display='none';
-
-  const sz = Math.max(24, 68 - Math.floor(count/5));
-  const speed = Math.max(600, 2500 - level*40);
-
-  for (let i=0; i<count; i++) {
-    const p = randPos(30,110);
-    const el = spawnOnioEl('😈', p.x, p.y, {size:sz, anim:0.5+Math.random()*0.6});
-    let ex=p.x, ey=p.y;
-    // each Onio wanders
-    const wander = setInterval(()=>{
-      if (!trickActive || el.style.pointerEvents==='none') { clearInterval(wander); return; }
-      ex = Math.max(20, Math.min(gW-80, ex + (Math.random()-.5)*60));
-      ey = Math.max(110, Math.min(gH-80, ey + (Math.random()-.5)*60));
-      el.style.transition=`left ${speed}ms ease, top ${speed}ms ease`;
-      el.style.left=ex+'px'; el.style.top=ey+'px';
-    }, speed + Math.random()*300);
-
-    el.addEventListener('pointerdown', e=>{
-      e.stopPropagation(); if (!trickActive) return;
-      clearInterval(wander);
-      el.style.opacity='0.1'; el.style.pointerEvents='none';
-      haptic(15); spawnRipple(ex+sz/2, ey+sz/2, 'hit-flash');
-      remaining--;
-      setMsg(remaining>0 ? `${remaining} left!` : 'GOT EM ALL! 💀');
-      if (remaining<=0) { clearDeathTimer(); onio.style.display=''; onHit(false, flowId); }
-    });
-  }
-  currentTrickCleanup=()=>{ clearDeathTimer(); onio.style.display=''; clearDecoys(); };
-}
-
-// ---- VARIANT D: Spawning chaos — they keep appearing (lv51+) ----
-function cSwarmSpawning() {
-  const flowId = getActiveFlowId();
-  const timeLimit = Math.max(5000, 8000 - (level-51)*50);
-  const spawnRate = Math.max(150, 800 - (level-51)*15); // ms between spawns
-  const targetKills = Math.round(25 + (level-51)*2);
-  let killed = 0;
-  setMsg(`TAP ${targetKills} before time runs out! 🌪️`);
-  startDeathTimer(timeLimit);
-  onio.style.display='none';
-
-  const sz = Math.max(20, 60 - Math.floor((level-51)/5));
-
-  const spawnInterval = setInterval(()=>{
-    if (!trickActive) { clearInterval(spawnInterval); return; }
-    const p = randPos(20,100);
-    const el = spawnOnioEl(['😈','🔥','💀'][Math.floor(Math.random()*3)], p.x, p.y, {size:sz,anim:0.4+Math.random()*.5});
-    // auto-remove after 2s if not tapped
-    const autoRemove = setTimeout(()=>{
-      if (el.parentNode) { el.style.opacity='0'; setTimeout(()=>el.remove(),200); decoyEls=decoyEls.filter(d=>d!==el); }
-    }, 2000);
-    el.addEventListener('pointerdown', e=>{
-      e.stopPropagation(); if (!trickActive) return;
-      clearTimeout(autoRemove);
-      el.style.opacity='0'; el.style.pointerEvents='none';
-      setTimeout(()=>{el.remove();decoyEls=decoyEls.filter(d=>d!==el);},200);
-      haptic(12); spawnRipple(p.x+sz/2, p.y+sz/2, 'hit-flash');
-      killed++;
-      setMsg(`${killed}/${targetKills} — keep going! 🌪️`);
-      if (killed>=targetKills) {
-        clearInterval(spawnInterval); clearDeathTimer();
-        onio.style.display=''; onHit(false, flowId);
-      }
-    });
-    decoyEls.push(el);
-  }, spawnRate);
-
-  currentTrickCleanup=()=>{ clearInterval(spawnInterval); clearDeathTimer(); onio.style.display=''; clearDecoys(); };
-}
-
-// Original single-Onio clone challenge (kept for variety at low levels)
-function cClones() {
-  setMsg("Which one is me? 👀");
-  onio.style.opacity='0.15';
-  const count=Math.min(3+level,8);
-  for(let i=0;i<count;i++){
-    const d=document.createElement('div');
-    d.className='decoy'; d.textContent='😈';
-    const p=randPos(); d.style.left=p.x+'px'; d.style.top=p.y+'px';
-    applySpriteToElement(d);
-    d.addEventListener('pointerdown',e=>{e.stopPropagation();speech("WRONG! 😂",700);d.style.opacity='0.2';d.style.pointerEvents='none';registerMiss(p.x,p.y);});
-    arena.appendChild(d); decoyEls.push(d);
-  }
-  onio.style.opacity='1';
-  startDeathTimer(challengeLimit(9000, 4200));
-  currentTrickCleanup=()=>{clearDecoys();clearDeathTimer();};
 }
 
 function cDrag() {
@@ -3976,123 +3749,6 @@ function stopMic() {
   if (micInterval){clearInterval(micInterval);micInterval=null;}
   if (micStream){micStream.getTracks().forEach(t=>t.stop());micStream=null;}
   micAnalyser=null;
-}
-
-// ============================================================
-// CHAOS CHALLENGES — longer lingering
-// ============================================================
-function cUpsideDown() {
-  setMsg("¡ǝɯ dɐʇ");
-  document.getElementById('game-screen').style.transform='rotate(180deg)';
-  speech("oops! 😬", 1500);
-  startDeathTimer(challengeLimit(9800, 4200));
-  currentTrickCleanup=()=>{document.getElementById('game-screen').style.transform='';clearDeathTimer();};
-}
-
-function cMirror() {
-  setMsg("Something feels... off?");
-  document.getElementById('game-screen').style.transform='scaleX(-1)';
-  speech("heh heh 😏", 2500);
-  startDeathTimer(challengeLimit(11200, 5200));
-  currentTrickCleanup=()=>{document.getElementById('game-screen').style.transform='';clearDeathTimer();};
-}
-
-function cTiny() {
-  onio.style.transition='font-size .5s'; onio.style.fontSize='20px';
-  setMsg("Tap me! (I shrank 😂)");
-  moveOnio(true);
-  startDeathTimer(challengeLimit(8600, 3900));
-  currentTrickCleanup=()=>{onio.style.fontSize='72px';clearDeathTimer();};
-}
-
-function cFakePause() {
-  document.getElementById('fake-pause').classList.add('active');
-  onio.style.pointerEvents='none'; trickActive=false; setMsg("...");
-  startDeathTimer(challengeLimit(8600, 3600));
-  document.getElementById('resume-btn').onclick=()=>{
-    document.getElementById('fake-pause').classList.remove('active');
-    trickActive=true; onio.style.pointerEvents='auto'; moveOnio(true);
-    speech("lolol 😂",800); setMsg("Ok ok, tap me now!");
-  };
-  currentTrickCleanup=()=>{document.getElementById('fake-pause').classList.remove('active');clearDeathTimer();};
-}
-
-function cFakeText() {
-  const ftScreen=document.getElementById('fake-text'), ftMsgs=document.getElementById('ft-msgs');
-  ftScreen.classList.add('active'); ftMsgs.innerHTML='';
-  onio.style.pointerEvents='none'; trickActive=false; setMsg("...");
-  startDeathTimer(challengeLimit(10200, 4200));
-  const convo=FAKE_TEXT_CONVOS[Math.floor(Math.random()*FAKE_TEXT_CONVOS.length)];
-  let i=0;
-
-  function next() {
-    if (i>=convo.length) return;
-    const msg=convo[i]; i++;
-    if (msg.s==='them') {
-      const tr=document.createElement('div'); tr.className='ft-row them';
-      tr.innerHTML='<div class="ft-typing"><span></span><span></span><span></span></div>';
-      ftMsgs.appendChild(tr); ftMsgs.scrollTop=ftMsgs.scrollHeight;
-      setTimeout(()=>{
-        tr.remove();
-        const row=document.createElement('div'); row.className='ft-row them';
-        row.innerHTML=`<div class="ft-bub">${msg.t}</div>`;
-        ftMsgs.appendChild(row); ftMsgs.scrollTop=ftMsgs.scrollHeight;
-        setTimeout(next, msg.d||800);
-      }, 700+Math.random()*400);
-    } else {
-      setTimeout(()=>{
-        const tr=document.createElement('div'); tr.className='ft-row them';
-        tr.innerHTML='<div class="ft-typing"><span></span><span></span><span></span></div>';
-        ftMsgs.appendChild(tr); ftMsgs.scrollTop=ftMsgs.scrollHeight;
-        const cd=msg.cd||55, finalText=msg.t, typoText=msg.typo, typoAt=msg.typoAt;
-        setTimeout(()=>{
-          tr.remove();
-          const row=document.createElement('div'); row.className='ft-row me';
-          const bub=document.createElement('div'); bub.className='ft-bub'; bub.textContent='';
-          row.appendChild(bub); ftMsgs.appendChild(row);
-          if (typoText&&typoAt!==undefined) {
-            let ci=0, typed='';
-            function typeTypo(){
-              if(ci<typoText.length){typed+=typoText[ci];bub.textContent=typed+'|';ftMsgs.scrollTop=ftMsgs.scrollHeight;ci++;setTimeout(typeTypo,cd+Math.random()*25);}
-              else{setTimeout(backspace,550);}
-            }
-            function backspace(){
-              if(typed.length>typoAt){typed=typed.slice(0,-1);bub.textContent=typed+'|';ftMsgs.scrollTop=ftMsgs.scrollHeight;setTimeout(backspace,75);}
-              else{let ei=0;const rest=finalText.slice(typoAt);function typeRest(){if(ei<rest.length){typed+=rest[ei];ei++;bub.textContent=typed+'|';ftMsgs.scrollTop=ftMsgs.scrollHeight;setTimeout(typeRest,cd+Math.random()*25);}else{bub.textContent=finalText;setTimeout(next,msg.d||900);}}typeRest();}
-            }
-            typeTypo();
-          } else {
-            let ci=0;
-            function typeChar(){if(ci<finalText.length){bub.textContent=finalText.slice(0,ci+1)+'|';ftMsgs.scrollTop=ftMsgs.scrollHeight;ci++;setTimeout(typeChar,cd+Math.random()*25);}else{bub.textContent=finalText;setTimeout(next,msg.d||900);}}
-            typeChar();
-          }
-        }, 600+Math.random()*300);
-      }, (msg.d||800)*.35);
-    }
-  }
-  next();
-  document.getElementById('ft-close').onclick=()=>{
-    ftScreen.classList.remove('active');
-    trickActive=true; onio.style.pointerEvents='auto'; moveOnio(true);
-    speech("ok I'm back 👋",900); setMsg("Where were we?");
-  };
-  currentTrickCleanup=()=>{ftScreen.classList.remove('active');clearDeathTimer();};
-}
-
-function cTeleport() {
-  const flowId = getActiveFlowId();
-  setMsg("Catch me if you can! 😤");
-  let count=0; const maxHops=5+level; const speed=Math.max(260,700-level*32);
-  function hop(){
-    if(!isFlowCurrent(flowId) || !trickActive || count>=maxHops) return;
-    moveOnio(true);
-    speech(['nope','heh','here!','over here!'][Math.floor(Math.random()*4)],300);
-    count++;
-    scheduleChallengeTimeout(hop,speed);
-  }
-  hop();
-  startDeathTimer(challengeLimit(7600, 3300));
-  currentTrickCleanup=()=>{clearDeathTimer();};
 }
 
 function cTimer() {
@@ -4702,6 +4358,142 @@ function markChaosDisrupt(ms) {
   chaosDisruptUntil = Math.max(chaosDisruptUntil, Date.now() + ms);
 }
 
+function minigameAllowsCloneChaos() {
+  if (!activeMinigameId) return false;
+  return [
+    'tap','hold','drag','dodge','timer','swipeCode','tracePath',
+    'rhythmTap','shake','freeze','blow','pinchTrap','twoFinger','tiltBalance',
+  ].includes(activeMinigameId);
+}
+
+function runCloneChaosBurst() {
+  if (!minigameAllowsCloneChaos()) return;
+  const depth = Math.max(0, hits);
+  const seed = depth < 8 ? 2 + Math.floor(Math.random()*2)
+             : depth < 20 ? 4 + Math.floor(Math.random()*3)
+             : depth < 40 ? 7 + Math.floor(Math.random()*5)
+             : 11 + Math.floor(Math.random()*8);
+  const maxCount = depth < 8 ? 8
+                : depth < 20 ? 14
+                : depth < 40 ? 24
+                : 36;
+  const moveChaos = depth >= 14;
+  const spawnOnWrong = depth >= 22;
+  const durationMs = depth < 8 ? 1200
+                 : depth < 20 ? 1900
+                 : depth < 40 ? 2800
+                 : 3600;
+  const chatter = ['over here!','im him','no ME','tap this one','wrong one lol','this one!'];
+  const movers = [];
+
+  function removeMover(entry) {
+    if (!entry) return;
+    const idx = movers.indexOf(entry);
+    if (idx >= 0) movers.splice(idx, 1);
+    if (entry.el && entry.el.parentNode) entry.el.remove();
+  }
+
+  function spawnClone(atX=null, atY=null) {
+    if (movers.length >= maxCount) return;
+    const p = (atX===null || atY===null)
+      ? randPos(16, 96)
+      : {
+          x: Math.max(12, Math.min(gW-88, atX + (Math.random()-.5)*120)),
+          y: Math.max(94, Math.min(gH-98, atY + (Math.random()-.5)*110)),
+        };
+    const d = spawnOnioEl('😈', p.x, p.y, {
+      size: 32 + Math.random()*12,
+      opacity: 0.55 + Math.random()*0.25,
+      anim: 0.55 + Math.random()*0.4,
+    });
+    d.style.pointerEvents = 'auto';
+    d.style.zIndex = '3';
+    const entry = { el:d, x:p.x, y:p.y };
+    movers.push(entry);
+
+    if (Math.random() < 0.5) {
+      scheduleChallengeTimeout(() => {
+        if (!trickActive || gamePaused || !entry.el || !entry.el.isConnected) return;
+        speechOnElement(entry.el, chatter[Math.floor(Math.random()*chatter.length)], 360 + Math.random()*200);
+      }, 90 + Math.random()*240);
+    }
+
+    d.addEventListener('pointerdown', e => {
+      e.stopPropagation();
+      if (!trickActive || gamePaused) return;
+      const rr = d.getBoundingClientRect();
+      const ar = arena.getBoundingClientRect();
+      const cx = rr.left - ar.left + rr.width/2;
+      const cy = rr.top - ar.top + rr.height/2;
+      speechOnElement(d, chatter[Math.floor(Math.random()*chatter.length)], 380 + Math.random()*220);
+      registerMiss(cx, cy);
+      d.style.pointerEvents = 'none';
+      d.style.opacity = '0.1';
+      scheduleChallengeTimeout(() => removeMover(entry), 170);
+
+      if (!spawnOnWrong) return;
+      const add = 1 + (Math.random() < Math.min(0.78, 0.24 + depth*0.01) ? 1 : 0);
+      for (let i=0; i<add; i++) spawnClone(cx, cy);
+    });
+  }
+
+  for (let i=0; i<seed; i++) spawnClone();
+  setMsg(depth >= 20 ? 'clone chaos ++' : 'clones incoming');
+
+  if (moveChaos) {
+    const moveInt = trackChaosInterval(setInterval(() => {
+      if (!trickActive || gamePaused) return;
+      movers.forEach(m => {
+        if (!m.el || !m.el.isConnected) return;
+        m.x = Math.max(10, Math.min(gW-84, m.x + (Math.random()-.5)*58));
+        m.y = Math.max(92, Math.min(gH-90, m.y + (Math.random()-.5)*54));
+        m.el.style.transition = 'left .15s linear, top .15s linear';
+        m.el.style.left = m.x + 'px';
+        m.el.style.top = m.y + 'px';
+      });
+    }, 170));
+    scheduleChallengeTimeout(() => clearInterval(moveInt), durationMs);
+  }
+
+  const talkInt = trackChaosInterval(setInterval(() => {
+    if (!trickActive || gamePaused || movers.length === 0) return;
+    const bursts = Math.min(4, Math.max(1, Math.floor(movers.length / 5)));
+    for (let i=0; i<bursts; i++) {
+      const entry = movers[Math.floor(Math.random()*movers.length)];
+      if (!entry || !entry.el || !entry.el.isConnected) continue;
+      speechOnElement(entry.el, chatter[Math.floor(Math.random()*chatter.length)], 340 + Math.random()*200);
+    }
+  }, 430 + Math.random()*150));
+  scheduleChallengeTimeout(() => clearInterval(talkInt), durationMs);
+
+  scheduleChallengeTimeout(() => {
+    movers.slice().forEach(removeMover);
+    decoyEls = decoyEls.filter(d => d.parentNode);
+  }, durationMs + 120);
+}
+
+function showFakeTextChaos(durationMs=1500) {
+  const ftScreen = document.getElementById('fake-text');
+  const ftMsgs = document.getElementById('ft-msgs');
+  const closeWrap = document.getElementById('ft-close-wrap');
+  const convo = FAKE_TEXT_CONVOS[Math.floor(Math.random()*FAKE_TEXT_CONVOS.length)];
+  const rows = convo.slice(0, Math.min(4, convo.length));
+  ftMsgs.innerHTML = '';
+  rows.forEach(msg => {
+    const row = document.createElement('div');
+    row.className = 'ft-row ' + (msg.s === 'me' ? 'me' : 'them');
+    row.innerHTML = `<div class="ft-bub">${msg.t}</div>`;
+    ftMsgs.appendChild(row);
+  });
+  ftMsgs.scrollTop = ftMsgs.scrollHeight;
+  closeWrap.style.display = 'none';
+  ftScreen.classList.add('active');
+  scheduleChallengeTimeout(() => {
+    ftScreen.classList.remove('active');
+    closeWrap.style.display = '';
+  }, durationMs);
+}
+
 // All chaos values are continuous functions of level, not tiers
 function chaosVal(minLv, maxLv, minVal, maxVal) {
   // Returns a 0→1 progress through the range, clamped
@@ -4752,193 +4544,221 @@ function stopChaosSystem() {
   updateHUD();
 }
 
-function doChaosTick() {
-  const pool = [];
-  const canDisrupt = chaosDisruptReady();
+const CHAOS_MODULES = [
+  { id:'screenShake',   minLv:3,  weight:()=>chaosVal(3, 20, 0.3, 2.8) },
+  { id:'glitchOnio',    minLv:3,  weight:()=>chaosVal(3, 18, 0.2, 2.2) },
+  { id:'glitchMsg',     minLv:5,  weight:()=>chaosVal(5, 20, 0.2, 1.8) },
+  { id:'hideLevel',     minLv:6,  weight:()=>chaosVal(6, 25, 0.2, 2.2) },
+  { id:'fakeLevel',     minLv:8,  weight:()=>chaosVal(8, 30, 0.2, 1.8) },
+  { id:'invertColors',  minLv:10, weight:()=>chaosVal(10, 30, 0.1, 0.8) },
+  { id:'spinOnio',      minLv:12, weight:()=>chaosVal(12, 35, 0.1, 1.2) },
+  { id:'fakeNotif',     minLv:6,  weight:()=>chaosVal(6, 24, 0.2, 1.4) },
+  { id:'ghostTap',      minLv:7,  weight:()=>chaosVal(7, 24, 0.2, 1.4) },
+  { id:'timeSteal',     minLv:9,  weight:()=>chaosVal(9, 30, 0.1, 1.4) },
+  { id:'teleportPop',   minLv:10, weight:()=>chaosVal(10, 35, 0.2, 1.6) },
+  { id:'hitboxShrink',  minLv:12, weight:()=>chaosVal(12, 35, 0.2, 1.1) },
+  { id:'cloneBurst',    minLv:5,  allow:()=>minigameAllowsCloneChaos(), weight:()=>chaosVal(5, 35, 0.2, 1.9) },
+  { id:'gravityPull',   minLv:14, requiresDisrupt:true, weight:()=>chaosVal(14, 40, 0.1, 1.2) },
+  { id:'microLag',      minLv:16, requiresDisrupt:true, weight:()=>chaosVal(16, 45, 0.1, 1.1) },
+  { id:'invertControls',minLv:18, requiresDisrupt:true, weight:()=>chaosVal(18, 50, 0.1, 1.0) },
+  { id:'upsideDownChaos',minLv:13,requiresDisrupt:true, weight:()=>chaosVal(13, 45, 0.08, 0.7) },
+  { id:'fakePauseChaos',minLv:20, requiresDisrupt:true, weight:()=>chaosVal(20, 55, 0.1, 0.9) },
+  { id:'fakeTextChaos', minLv:11, requiresDisrupt:true, weight:()=>chaosVal(11, 45, 0.1, 0.9) },
+  { id:'batteryLow',    minLv:9,  weight:()=>chaosVal(9, 28, 0.2, 1.4) },
+  { id:'screenDark',    minLv:11, weight:()=>chaosVal(11, 34, 0.2, 1.2) },
+  { id:'deadPixels',    minLv:13, weight:()=>chaosVal(13, 38, 0.2, 1.2) },
+  { id:'chargeNow',     minLv:15, weight:()=>chaosVal(15, 40, 0.2, 1.0) },
+  { id:'fakeIncoming',  minLv:17, weight:()=>chaosVal(17, 45, 0.2, 1.0) },
+  { id:'controlsLock',  minLv:10, requiresDisrupt:true, weight:()=>chaosVal(10, 35, 0.1, 1.0) },
+];
 
-  pool.push({ id:'screenShake', w: chaosVal(3, 20, 0.3, 2.8) });
-  pool.push({ id:'glitchOnio', w: chaosVal(3, 18, 0.2, 2.2) });
-  if (level >= 5) pool.push({ id:'glitchMsg', w: chaosVal(5, 20, 0.2, 1.8) });
-  if (level >= 6) pool.push({ id:'hideLevel', w: chaosVal(6, 25, 0.2, 2.2) });
-  if (level >= 8) pool.push({ id:'fakeLevel', w: chaosVal(8, 30, 0.2, 1.8) });
-  if (level >= 10) pool.push({ id:'invertColors', w: chaosVal(10, 30, 0.1, 0.8) });
-  if (level >= 12) pool.push({ id:'spinOnio', w: chaosVal(12, 35, 0.1, 1.2) });
-  if (level >= 6) pool.push({ id:'fakeNotif', w: chaosVal(6, 24, 0.2, 1.4) });
-  if (level >= 7) pool.push({ id:'ghostTap', w: chaosVal(7, 24, 0.2, 1.4) });
-  if (level >= 9) pool.push({ id:'timeSteal', w: chaosVal(9, 30, 0.1, 1.4) });
-  if (level >= 10) pool.push({ id:'teleportPop', w: chaosVal(10, 35, 0.2, 1.6) });
-  if (level >= 12) pool.push({ id:'hitboxShrink', w: chaosVal(12, 35, 0.2, 1.1) });
-  if (level >= 14 && canDisrupt) pool.push({ id:'gravityPull', w: chaosVal(14, 40, 0.1, 1.2) });
-  if (level >= 16 && canDisrupt) pool.push({ id:'microLag', w: chaosVal(16, 45, 0.1, 1.1) });
-  if (level >= 18 && canDisrupt) pool.push({ id:'invertControls', w: chaosVal(18, 50, 0.1, 1.0) });
-  if (level >= 20 && canDisrupt) pool.push({ id:'fakePauseChaos', w: chaosVal(20, 55, 0.1, 0.9) });
-  if (level >= 9) pool.push({ id:'batteryLow', w: chaosVal(9, 28, 0.2, 1.4) });
-  if (level >= 11) pool.push({ id:'screenDark', w: chaosVal(11, 34, 0.2, 1.2) });
-  if (level >= 13) pool.push({ id:'deadPixels', w: chaosVal(13, 38, 0.2, 1.2) });
-  if (level >= 15) pool.push({ id:'chargeNow', w: chaosVal(15, 40, 0.2, 1.0) });
-  if (level >= 17) pool.push({ id:'fakeIncoming', w: chaosVal(17, 45, 0.2, 1.0) });
-  if (level >= 10 && canDisrupt) pool.push({ id:'controlsLock', w: chaosVal(10, 35, 0.1, 1.0) });
+const CHAOS_HANDLERS = {
+  screenShake() {
+    document.getElementById('game-screen').classList.add('chaos-shake');
+    scheduleChallengeTimeout(()=>document.getElementById('game-screen').classList.remove('chaos-shake'), 320);
+  },
+  glitchOnio() {
+    onio.classList.add('chaos-glitch');
+    scheduleChallengeTimeout(()=>onio.classList.remove('chaos-glitch'), 420);
+  },
+  glitchMsg() {
+    const el = document.getElementById('msg-text');
+    const real = el.textContent;
+    const gc = '!@#$%^&*Ω≠∂∆ᵎ⚡';
+    const intensity = chaosVal(5, 35, 0.12, 0.5);
+    el.textContent = real.split('').map(c=>Math.random()<intensity?gc[Math.floor(Math.random()*gc.length)]:c).join('');
+    scheduleChallengeTimeout(()=>el.textContent=real, Math.max(260, chaosVal(5,35,620,240)));
+  },
+  hideLevel() {
+    if (levelHidden) return;
+    levelHidden = true;
+    document.getElementById('level-pill').textContent = '';
+    document.getElementById('level-pill').classList.add('hidden-lv');
+    scheduleChallengeTimeout(()=>{
+      levelHidden=false;
+      document.getElementById('level-pill').classList.remove('hidden-lv');
+      updateHUD();
+    }, Math.max(1100, chaosVal(6, 35, 4200, 1400)));
+  },
+  fakeLevel() {
+    if (levelHidden) return;
+    const offset = Math.floor(chaosVal(8,40,1,9)) + Math.floor(Math.random()*2);
+    const fake = Math.random()<0.5 ? hits+offset : Math.max(0,hits-offset);
+    document.getElementById('level-pill').textContent='DEPTH '+fake;
+    scheduleChallengeTimeout(()=>{
+      if (!levelHidden) updateHUD();
+    }, 1200+Math.random()*1000);
+  },
+  invertColors() {
+    document.getElementById('game-screen').style.filter='invert(1) hue-rotate(180deg)';
+    scheduleChallengeTimeout(()=>document.getElementById('game-screen').style.filter='', 220+Math.random()*140);
+  },
+  spinOnio() {
+    onio.style.transition='transform .3s ease';
+    onio.style.transform='rotate(360deg)';
+    scheduleChallengeTimeout(()=>{onio.style.transition='';onio.style.transform='';}, 350);
+  },
+  fakeNotif() {
+    showFakeTextBanner();
+  },
+  ghostTap() {
+    const x = 20 + Math.random()*(gW-40);
+    const y = 80 + Math.random()*(gH-120);
+    spawnRipple(x, y, 'hit-flash');
+  },
+  timeSteal() {
+    if (!deathTimerInterval || deathTimerMs <= 0) return;
+    const stealPct = 0.08 + Math.random() * 0.10;
+    deathTimerMs = Math.max(120, deathTimerMs * (1 - stealPct));
+    updateDeathTimerUI();
+    sfx('steal');
+    setMsg('⏳ time stolen');
+  },
+  teleportPop() {
+    moveOnio(true);
+    speech(['here now','blink 😈','teleport!'][Math.floor(Math.random()*3)], 350);
+  },
+  hitboxShrink() {
+    onio.style.transition='font-size .2s';
+    onio.style.fontSize='42px';
+    scheduleChallengeTimeout(()=>{ onio.style.fontSize='72px'; onio.style.transition=''; }, 900);
+  },
+  cloneBurst() {
+    runCloneChaosBurst();
+  },
+  gravityPull() {
+    markChaosDisrupt(1400);
+    const targets = [
+      {x:20,y:120},{x:gW-96,y:120},{x:20,y:gH-120},{x:gW-96,y:gH-120},
+    ];
+    const t = targets[Math.floor(Math.random()*targets.length)];
+    const pull = trackChaosInterval(setInterval(()=>{
+      if (!trickActive) { clearInterval(pull); return; }
+      placeOnio(onioX + (t.x - onioX) * 0.18, onioY + (t.y - onioY) * 0.18, true);
+    }, 70));
+    scheduleChallengeTimeout(()=>clearInterval(pull), 880);
+  },
+  microLag() {
+    markChaosDisrupt(1200);
+    setMsg('lag spike...');
+    onio.style.pointerEvents='none';
+    scheduleChallengeTimeout(()=>{ if (trickActive) onio.style.pointerEvents='auto'; }, 260 + Math.random()*280);
+  },
+  invertControls() {
+    markChaosDisrupt(1600);
+    document.getElementById('game-screen').style.transform='scaleX(-1)';
+    setMsg('controls feel wrong...');
+    scheduleChallengeTimeout(()=>{ document.getElementById('game-screen').style.transform=''; }, 900 + Math.random()*500);
+  },
+  upsideDownChaos() {
+    markChaosDisrupt(1400);
+    document.getElementById('game-screen').style.transform='rotate(180deg)';
+    setMsg('everything upside down.');
+    scheduleChallengeTimeout(()=>{ document.getElementById('game-screen').style.transform=''; }, 800 + Math.random()*500);
+  },
+  fakePauseChaos() {
+    markChaosDisrupt(1700);
+    const fp = document.getElementById('fake-pause');
+    const rb = document.getElementById('resume-btn');
+    rb.style.display='none';
+    fp.classList.add('active');
+    scheduleChallengeTimeout(()=>{
+      fp.classList.remove('active');
+      rb.style.display='';
+    }, 950);
+  },
+  fakeTextChaos() {
+    markChaosDisrupt(1800);
+    trickActive = false;
+    onio.style.pointerEvents='none';
+    showFakeTextChaos(1200 + Math.random()*650);
+    scheduleChallengeTimeout(()=>{
+      if (!document.getElementById('game-screen').classList.contains('active')) return;
+      if (gamePaused) return;
+      trickActive = true;
+      onio.style.pointerEvents='auto';
+    }, 1000);
+  },
+  batteryLow() {
+    showSystemBanner('🪫', 'Battery Low', '1% remaining. performance reduced.', 'danger', 1900);
+    if (!deathTimerInterval || deathTimerMs <= 0) return;
+    deathTimerMs = Math.max(120, deathTimerMs - Math.max(300, deathTimerMax*0.1));
+    updateDeathTimerUI();
+  },
+  screenDark() {
+    markChaosDisrupt(1000);
+    showDarkScreen(820 + Math.random()*420);
+  },
+  deadPixels() {
+    showDeadPixels(1200 + Math.random()*900);
+  },
+  chargeNow() {
+    showSystemBanner('🔌', 'Charge Required', 'Connect charger to continue chaos mode.', 'cool', 1700);
+    if (deathTimerInterval && deathTimerMs > 0 && Math.random() < 0.7) {
+      deathTimerMs = Math.max(120, deathTimerMs * (0.9 - Math.random()*0.08));
+      updateDeathTimerUI();
+    }
+  },
+  fakeIncoming() {
+    showSystemBanner('📞', 'Incoming Call', 'Unknown chaos caller...', 'default', 1550);
+  },
+  controlsLock() {
+    if (controlsLockedForChallenge) return;
+    markChaosDisrupt(2200);
+    const priorPointer = onio.style.pointerEvents;
+    setCoreControlsLocked(true);
+    trickActive = false;
+    onio.style.pointerEvents = 'none';
+    showSystemBanner('🚫', 'Controls Locked', 'no pause. no home. win this minigame first.', 'danger', 1900);
+    speech('too easy to pause 😈', 1100);
+    scheduleChallengeTimeout(()=>{
+      if (!document.getElementById('game-screen').classList.contains('active')) return;
+      if (gamePaused) return;
+      trickActive = true;
+      onio.style.pointerEvents = priorPointer || 'auto';
+      setMsg('resume.');
+    }, 1450);
+  },
+};
+
+function doChaosTick() {
+  const canDisrupt = chaosDisruptReady();
+  const pool = [];
+  for (let i=0; i<CHAOS_MODULES.length; i++) {
+    const mod = CHAOS_MODULES[i];
+    if (level < mod.minLv) continue;
+    if (mod.requiresDisrupt && !canDisrupt) continue;
+    if (mod.allow && !mod.allow()) continue;
+    const w = mod.weight();
+    if (w > 0) pool.push({ id:mod.id, w });
+  }
+  if (!pool.length) return;
 
   const total = pool.reduce((a,c)=>a+c.w, 0);
   let r = Math.random()*total, chosen = pool[0];
   for (let i=0; i<pool.length; i++) { r-=pool[i].w; if(r<=0){chosen=pool[i];break;} }
-
-  switch(chosen.id) {
-    case 'screenShake':
-      document.getElementById('game-screen').classList.add('chaos-shake');
-      scheduleChallengeTimeout(()=>document.getElementById('game-screen').classList.remove('chaos-shake'), 320);
-      break;
-    case 'glitchOnio':
-      onio.classList.add('chaos-glitch');
-      scheduleChallengeTimeout(()=>onio.classList.remove('chaos-glitch'), 420);
-      break;
-    case 'glitchMsg': {
-      const el = document.getElementById('msg-text');
-      const real = el.textContent;
-      const gc = '!@#$%^&*Ω≠∂∆ᵎ⚡';
-      const intensity = chaosVal(5, 35, 0.12, 0.5);
-      el.textContent = real.split('').map(c=>Math.random()<intensity?gc[Math.floor(Math.random()*gc.length)]:c).join('');
-      scheduleChallengeTimeout(()=>el.textContent=real, Math.max(260, chaosVal(5,35,620,240)));
-      break;
-    }
-    case 'hideLevel':
-      if (levelHidden) break;
-      levelHidden = true;
-      document.getElementById('level-pill').textContent = '';
-      document.getElementById('level-pill').classList.add('hidden-lv');
-      scheduleChallengeTimeout(()=>{
-        levelHidden=false;
-        document.getElementById('level-pill').classList.remove('hidden-lv');
-        updateHUD();
-      }, Math.max(1100, chaosVal(6, 35, 4200, 1400)));
-      break;
-    case 'fakeLevel':
-      if (levelHidden) break;
-      const offset = Math.floor(chaosVal(8,40,1,9)) + Math.floor(Math.random()*2);
-      const fake = Math.random()<0.5 ? hits+offset : Math.max(0,hits-offset);
-      document.getElementById('level-pill').textContent='DEPTH '+fake;
-      scheduleChallengeTimeout(()=>{
-        if (!levelHidden) updateHUD();
-      }, 1200+Math.random()*1000);
-      break;
-    case 'invertColors':
-      document.getElementById('game-screen').style.filter='invert(1) hue-rotate(180deg)';
-      scheduleChallengeTimeout(()=>document.getElementById('game-screen').style.filter='', 220+Math.random()*140);
-      break;
-    case 'spinOnio':
-      onio.style.transition='transform .3s ease';
-      onio.style.transform='rotate(360deg)';
-      scheduleChallengeTimeout(()=>{onio.style.transition='';onio.style.transform='';}, 350);
-      break;
-    case 'fakeNotif':
-      showFakeTextBanner();
-      break;
-    case 'ghostTap': {
-      const x = 20 + Math.random()*(gW-40);
-      const y = 80 + Math.random()*(gH-120);
-      spawnRipple(x, y, 'hit-flash');
-      break;
-    }
-    case 'timeSteal':
-      if (deathTimerInterval && deathTimerMs > 0) {
-        const stealPct = 0.08 + Math.random() * 0.10; // 8-18%
-        deathTimerMs = Math.max(120, deathTimerMs * (1 - stealPct));
-        updateDeathTimerUI();
-        sfx('steal');
-        setMsg('⏳ time stolen');
-      }
-      break;
-    case 'teleportPop':
-      moveOnio(true);
-      speech(['here now','blink 😈','teleport!'][Math.floor(Math.random()*3)], 350);
-      break;
-    case 'hitboxShrink':
-      onio.style.transition='font-size .2s';
-      onio.style.fontSize='42px';
-      scheduleChallengeTimeout(()=>{ onio.style.fontSize='72px'; onio.style.transition=''; }, 900);
-      break;
-    case 'gravityPull': {
-      markChaosDisrupt(1400);
-      const targets = [
-        {x:20,y:120},{x:gW-96,y:120},{x:20,y:gH-120},{x:gW-96,y:gH-120},
-      ];
-      const t = targets[Math.floor(Math.random()*targets.length)];
-      const pull = setInterval(()=>{
-        if (!trickActive) { clearInterval(pull); return; }
-        placeOnio(onioX + (t.x - onioX) * 0.18, onioY + (t.y - onioY) * 0.18, true);
-      }, 70);
-      scheduleChallengeTimeout(()=>clearInterval(pull), 880);
-      break;
-    }
-    case 'microLag':
-      markChaosDisrupt(1200);
-      setMsg('lag spike...');
-      onio.style.pointerEvents='none';
-      scheduleChallengeTimeout(()=>{ if (trickActive) onio.style.pointerEvents='auto'; }, 260 + Math.random()*280);
-      break;
-    case 'invertControls':
-      markChaosDisrupt(1600);
-      document.getElementById('game-screen').style.transform='scaleX(-1)';
-      setMsg('controls feel wrong...');
-      scheduleChallengeTimeout(()=>{
-        document.getElementById('game-screen').style.transform='';
-      }, 900 + Math.random()*500);
-      break;
-    case 'fakePauseChaos': {
-      markChaosDisrupt(1700);
-      const fp = document.getElementById('fake-pause');
-      const rb = document.getElementById('resume-btn');
-      rb.style.display='none';
-      fp.classList.add('active');
-      scheduleChallengeTimeout(()=>{
-        fp.classList.remove('active');
-        rb.style.display='';
-      }, 950);
-      break;
-    }
-    case 'batteryLow':
-      showSystemBanner('🪫', 'Battery Low', '1% remaining. performance reduced.', 'danger', 1900);
-      if (deathTimerInterval && deathTimerMs > 0) {
-        deathTimerMs = Math.max(120, deathTimerMs - Math.max(300, deathTimerMax*0.1));
-        updateDeathTimerUI();
-      }
-      break;
-    case 'screenDark':
-      markChaosDisrupt(1000);
-      showDarkScreen(820 + Math.random()*420);
-      break;
-    case 'deadPixels':
-      showDeadPixels(1200 + Math.random()*900);
-      break;
-    case 'chargeNow':
-      showSystemBanner('🔌', 'Charge Required', 'Connect charger to continue chaos mode.', 'cool', 1700);
-      if (deathTimerInterval && deathTimerMs > 0 && Math.random() < 0.7) {
-        deathTimerMs = Math.max(120, deathTimerMs * (0.9 - Math.random()*0.08));
-        updateDeathTimerUI();
-      }
-      break;
-    case 'fakeIncoming':
-      showSystemBanner('📞', 'Incoming Call', 'Unknown chaos caller...', 'default', 1550);
-      break;
-    case 'controlsLock': {
-      if (controlsLockedForChallenge) break;
-      markChaosDisrupt(2200);
-      const priorPointer = onio.style.pointerEvents;
-      setCoreControlsLocked(true);
-      trickActive = false;
-      onio.style.pointerEvents = 'none';
-      showSystemBanner('🚫', 'Controls Locked', 'no pause. no home. win this minigame first.', 'danger', 1900);
-      speech('too easy to pause 😈', 1100);
-      scheduleChallengeTimeout(()=>{
-        if (!document.getElementById('game-screen').classList.contains('active')) return;
-        if (gamePaused) return;
-        trickActive = true;
-        onio.style.pointerEvents = priorPointer || 'auto';
-        setMsg('resume.');
-      }, 1450);
-      break;
-    }
-  }
+  const handler = CHAOS_HANDLERS[chosen.id];
+  if (typeof handler === 'function') handler();
 }
 
 function cleanupChaos() {
@@ -4947,6 +4767,8 @@ function cleanupChaos() {
   document.getElementById('game-screen').style.transform='';
   document.getElementById('resume-btn').style.display='';
   document.getElementById('fake-pause').classList.remove('active');
+  document.getElementById('fake-text').classList.remove('active');
+  document.getElementById('ft-close-wrap').style.display='';
   document.getElementById('game-screen').classList.remove('chaos-shake','chaos-glitch');
   onio.classList.remove('chaos-glitch');
 }
@@ -4959,7 +4781,7 @@ onio.addEventListener('pointerdown', e=>{
   if (gamePaused) return;
   e.stopPropagation(); if (!trickActive) return;
   if ([
-    'tap','hold','drag','shake','blow','swarmAll','swarmFind','swarmMove','swarmSpawn',
+    'tap','hold','drag','shake','blow',
     'swipeCode','tracePath','rhythmTap','pinchTrap','twoFinger','tiltBalance','freeze'
   ].includes(lastChallengeId)) return;
   onHit(false, getActiveFlowId());
