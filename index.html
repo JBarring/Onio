@@ -900,6 +900,12 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
       <div class="instr-sub">Drag Onio into the glowing drop zone</div>
       <div class="instr-tap-hint">tap to start</div>
     </div>
+    <div class="instr-overlay" id="instr-trace">
+      <div class="instr-icon">✍️</div>
+      <div class="instr-title">TRACE PATH</div>
+      <div class="instr-sub">Start on the START dot, then drag through each dot in order</div>
+      <div class="instr-tap-hint">tap to start</div>
+    </div>
     <div class="instr-overlay" id="instr-shake">
       <div class="instr-icon">📱</div>
       <div class="instr-title">SHAKE IT!</div>
@@ -1541,6 +1547,7 @@ let level=1, hits=0, misses=0, trickActive=false;
 let onioX=0, onioY=0, gW=0, gH=0;
 let speechEl=null, decoyEls=[];
 let deathTimerInterval=null, deathTimerMs=0, deathTimerMax=0;
+let deathTimerPaused = false;
 let holdInterval=null, isDragging=false, dragOffX=0, dragOffY=0;
 let micStream=null, micAnalyser=null, micInterval=null, audioCtx=null;
 let lastAx=0, lastAy=0, lastAz=0, shakeCheckInterval=null;
@@ -1586,6 +1593,8 @@ const CHEAT_EVENT_MULTIPLIER = {
   hold_teleport: 1.22,
   hold_bleed: 1.12,
   drag_zone_shift: 1.08,
+  drag_zone_shrink: 1.12,
+  drag_jump_out: 1.16,
   dodge_last_second: 1.15,
   swipe_shuffle: 1.1,
   trace_reroute: 1.08,
@@ -1785,6 +1794,11 @@ function isFlowCurrent(flowId) {
 const onio = document.getElementById('onio');
 const arena = document.getElementById('arena');
 document.addEventListener('pointerdown', () => { ensureSfxContext(); }, { passive:true });
+onio.addEventListener('contextmenu', e => e.preventDefault());
+arena.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('contextmenu', e => {
+  if (document.getElementById('game-screen').classList.contains('active')) e.preventDefault();
+});
 
 function setRootVar(name, value) {
   document.documentElement.style.setProperty(name, value);
@@ -2246,6 +2260,7 @@ function closePM() { document.getElementById('pm-modal').classList.remove('activ
 function startGame() {
   ensureSfxContext().then(()=>sfx('ui'));
   deathSequence++;
+  pauseSnapshot = null;
   gamePaused = false;
   setCoreControlsLocked(false);
   document.getElementById('real-pause').classList.remove('active');
@@ -2257,6 +2272,9 @@ function startGame() {
   playerProfile.lastPlayedTs = Date.now();
   saveProfile(); saveStats();
   showScreen('game-screen');
+  document.querySelectorAll('.instr-overlay').forEach(o=>o.classList.remove('active'));
+  document.getElementById('fake-text').classList.remove('active');
+  document.getElementById('fake-pause').classList.remove('active');
   level=1; hits=0; misses=0;
   comboStreak = 0;
   runBestCombo = 0;
@@ -2423,7 +2441,16 @@ function showChallengeClear(flowId=activeChallengeFlowId, details={}) {
     'OK FINE. YOU GOT ME.',
     'MINIGAME CLEAR',
     'LUCKY. REALLY LUCKY.',
-    'THAT ONE WAS MINE.',
+    'WOW. YOU CAN READ.',
+    'YOU SURVIVED. SOMEHOW.',
+    'CUTE CLEAR.',
+    'YOU DID A THING.',
+    'THAT WAS ANNOYING.',
+    'YOU WIN THIS ONE.',
+    'BRIEF RESPECT.',
+    'ALRIGHT, NICE.',
+    'NOT BAD. FOR YOU.',
+    'FINE. NEXT.',
   ];
   const subs = [
     'oh got me... maybe you finish this run. not.',
@@ -2431,6 +2458,18 @@ function showChallengeClear(flowId=activeChallengeFlowId, details={}) {
     'next one will hurt more.',
     'don\'t celebrate yet.',
     'you\'re still behind, by the way.',
+    'i already have worse planned.',
+    'you got one. i get the next three.',
+    'clip it now, before it gets ugly.',
+    'that confidence will age badly.',
+    'good clear. wrong attitude.',
+    'you earned exactly one breath.',
+    'that was almost skill.',
+    'neat. now do it under chaos.',
+    'depth still owns you.',
+    'congrats. still in danger.',
+    'you popped off for 2 seconds.',
+    'enjoy this. it gets meaner.',
   ];
   const box = document.getElementById('challenge-clear');
   const meta = document.getElementById('cc-meta');
@@ -2526,11 +2565,12 @@ function updateDeathTimerUI() {
 function startDeathTimer(ms) {
   clearDeathTimer();
   deathTimerMax=ms; deathTimerMs=ms;
+  deathTimerPaused = false;
   const chip=document.getElementById('dtimer-chip');
   chip.style.display='block';
   updateDeathTimerUI();
   deathTimerInterval = setInterval(()=>{
-    if (gamePaused) return;
+    if (gamePaused || deathTimerPaused) return;
     deathTimerMs -= 100;
     updateDeathTimerUI();
     if (deathTimerMs<=0) { clearDeathTimer(); triggerDeath('too slow!'); }
@@ -2538,10 +2578,21 @@ function startDeathTimer(ms) {
 }
 function clearDeathTimer() {
   if (deathTimerInterval) { clearInterval(deathTimerInterval); deathTimerInterval=null; }
+  deathTimerPaused = false;
   const chip = document.getElementById('dtimer-chip');
   chip.style.display='none';
   chip.classList.remove('warn','urgent');
   chip.textContent='0.0s';
+}
+
+function pauseDeathTimer() {
+  if (!deathTimerInterval) return;
+  deathTimerPaused = true;
+}
+
+function resumeDeathTimer() {
+  if (!deathTimerInterval) return;
+  deathTimerPaused = false;
 }
 
 // ============================================================
@@ -2852,17 +2903,25 @@ function showInstr(id, cb) {
   el.classList.add('active');
   trickActive=false; onio.style.pointerEvents='none';
   let dismissed = false;
+  const openedAt = Date.now();
   function dismiss(e) {
     if (dismissed) return;
+    if (Date.now() - openedAt < 90) return;
     dismissed = true;
     if (e) e.stopPropagation();
     el.classList.remove('active');
     el.removeEventListener('pointerdown', dismiss);
+    el.removeEventListener('click', dismiss);
+    el.removeEventListener('touchstart', dismiss);
     if (!isFlowCurrent(flowId)) return;
     cb();
   }
-  scheduleChallengeTimeout(()=>el.addEventListener('pointerdown', dismiss), 160);
-  scheduleChallengeTimeout(()=>dismiss(), 2300);
+  scheduleChallengeTimeout(()=>{
+    el.addEventListener('pointerdown', dismiss);
+    el.addEventListener('click', dismiss);
+    el.addEventListener('touchstart', dismiss, { passive:true });
+  }, 20);
+  scheduleChallengeTimeout(()=>dismiss(), 1450);
 }
 
 // ============================================================
@@ -4036,22 +4095,61 @@ function cDrag() {
     const flowId = getActiveFlowId();
     setMsg("Drag me to the zone!");
     onio.style.pointerEvents='auto'; trickActive=true;
-    const zw=120,zh=100; let zx,zy;
-    do{zx=30+Math.random()*(gW-zw-60);zy=120+Math.random()*(gH-zh-140);}
+    let zoneW=120, zoneH=100; let zx,zy;
+    do{zx=30+Math.random()*(gW-zoneW-60);zy=120+Math.random()*(gH-zoneH-140);}
     while(Math.abs(zx-onioX)<150&&Math.abs(zy-onioY)<150);
     const dz=document.getElementById('drag-zone');
-    dz.style.cssText=`left:${zx}px;top:${zy}px;width:${zw}px;height:${zh}px;`;
+    function paintZone() {
+      dz.style.cssText=`left:${zx}px;top:${zy}px;width:${zoneW}px;height:${zoneH}px;`;
+    }
+    paintZone();
     dz.classList.add('active');
     startDeathTimer(challengeLimit(8600, 4000));
+
+    let fakeZone = null;
+    let fx=0, fy=0, fw=96, fh=84;
+    if (level >= 11) {
+      fakeZone = document.createElement('div');
+      fakeZone.style.cssText = 'position:absolute;border:3px dashed #8E37A2;border-radius:18px;background:rgba(142,55,162,.12);z-index:4;pointer-events:none;';
+      fakeZone.innerHTML = '<div class="zone-lbl" style="color:#8E37A2;">DROP HERE? 🤔</div>';
+      fx = 24 + Math.random()*(gW-fw-48);
+      fy = 110 + Math.random()*(gH-fh-170);
+      fakeZone.style.left = fx+'px';
+      fakeZone.style.top = fy+'px';
+      fakeZone.style.width = fw+'px';
+      fakeZone.style.height = fh+'px';
+      arena.appendChild(fakeZone);
+    }
+
     let zoneShiftInt = null;
+    let jumpOutUsed = false;
     if (level >= 9) {
       zoneShiftInt = setInterval(() => {
-        if (!trickActive || gamePaused || !isDragging) return;
-        if (!maybeTriggerCheat('drag_zone_shift', getChaosLevel01()) || Math.random() > 0.42) return;
-        const moved = moveDragZone(dz, zx + (Math.random()-0.5)*96, zy + (Math.random()-0.5)*84, zw, zh);
-        zx = moved.x;
-        zy = moved.y;
-        setMessageTemp('zone shifted.');
+        if (!trickActive || gamePaused) return;
+        const chaos = getChaosLevel01();
+        if (isDragging && maybeTriggerCheat('drag_zone_shift', chaos) && Math.random() < 0.48) {
+          const moved = moveDragZone(dz, zx + (Math.random()-0.5)*96, zy + (Math.random()-0.5)*84, zoneW, zoneH);
+          zx = moved.x;
+          zy = moved.y;
+          paintZone();
+          setMessageTemp('zone shifted.');
+        }
+        if (isDragging && maybeTriggerCheat('drag_zone_shrink', chaos) && Math.random() < 0.34) {
+          zoneW = Math.max(86, zoneW - (8 + Math.floor(Math.random()*10)));
+          zoneH = Math.max(72, zoneH - (6 + Math.floor(Math.random()*8)));
+          const moved = moveDragZone(dz, zx, zy, zoneW, zoneH);
+          zx = moved.x;
+          zy = moved.y;
+          paintZone();
+          setMessageTemp('zone shrinking.');
+        } else if (!isDragging && (zoneW < 120 || zoneH < 100)) {
+          zoneW = Math.min(120, zoneW + 2);
+          zoneH = Math.min(100, zoneH + 2);
+          const moved = moveDragZone(dz, zx, zy, zoneW, zoneH);
+          zx = moved.x;
+          zy = moved.y;
+          paintZone();
+        }
       }, 620);
     }
     function sd(e){
@@ -4089,7 +4187,21 @@ function cDrag() {
       }
     }
     function resolveDrop() {
-      if (onioX+36>zx&&onioX+36<zx+zw&&onioY+36>zy&&onioY+36<zy+zh) {
+      const cx = onioX + 36;
+      const cy = onioY + 36;
+      if (fakeZone && cx>fx && cx<fx+fw && cy>fy && cy<fy+fh) {
+        speech('wrong box 😈', 620);
+        registerMiss(cx, cy);
+        return;
+      }
+      if (cx>zx&&cx<zx+zoneW&&cy>zy&&cy<zy+zoneH) {
+        if (!jumpOutUsed && level >= 10 && maybeTriggerCheat('drag_jump_out', getChaosLevel01()) && Math.random() < 0.5) {
+          jumpOutUsed = true;
+          moveOnio(true);
+          speech('nope. not staying in there.', 720);
+          setMessageTemp('he jumped out.');
+          return;
+        }
         dz.classList.remove('active');
         clearDeathTimer();
         onHit(false, flowId);
@@ -4105,7 +4217,7 @@ function cDrag() {
     }
     arena.addEventListener('pointerdown',sd);arena.addEventListener('pointermove',md);arena.addEventListener('pointerup',ed);
     arena.addEventListener('touchstart',sd,{passive:false});arena.addEventListener('touchmove',md,{passive:true});arena.addEventListener('touchend',ed);
-    currentTrickCleanup=()=>{dz.classList.remove('active');clearDeathTimer();if(zoneShiftInt){clearInterval(zoneShiftInt);zoneShiftInt=null;}arena.removeEventListener('pointerdown',sd);arena.removeEventListener('pointermove',md);arena.removeEventListener('pointerup',ed);arena.removeEventListener('touchstart',sd);arena.removeEventListener('touchmove',md);arena.removeEventListener('touchend',ed);};
+    currentTrickCleanup=()=>{dz.classList.remove('active');clearDeathTimer();if(zoneShiftInt){clearInterval(zoneShiftInt);zoneShiftInt=null;}if(fakeZone&&fakeZone.parentNode)fakeZone.remove();arena.removeEventListener('pointerdown',sd);arena.removeEventListener('pointermove',md);arena.removeEventListener('pointerup',ed);arena.removeEventListener('touchstart',sd);arena.removeEventListener('touchmove',md);arena.removeEventListener('touchend',ed);};
   });
 }
 
@@ -4346,12 +4458,13 @@ function cSwipeCode() {
   let startPt = null;
   let codeLive = false;
   let shuffleUsed = false;
+  const timerLimit = Math.max(3600, timeLimit);
 
   setMsg('MEMORIZE: ' + seq.map(d=>glyph[d]).join(' '));
-  startDeathTimer(Math.max(3600, timeLimit));
 
   scheduleChallengeTimeout(()=>{
     codeLive = true;
+    startDeathTimer(timerLimit);
     setMsg(`Swipe code ${idx}/${len}`);
   }, rememberMs);
 
@@ -4430,160 +4543,171 @@ function cSwipeCode() {
 }
 
 function cTracePath() {
-  const flowId = getActiveFlowId();
-  suppressArenaMiss = true;
-  trickActive = true;
-  onio.style.pointerEvents = 'none';
+  showInstr('instr-trace', ()=>{
+    const flowId = getActiveFlowId();
+    suppressArenaMiss = true;
+    trickActive = true;
+    onio.style.pointerEvents = 'none';
 
-  const count = Math.min(8, 4 + Math.floor(level / 12));
-  const radius = 22;
-  const points = [];
-  const dotEls = [];
-  const layer = document.createElement('div');
-  layer.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:24;';
-  arena.appendChild(layer);
+    const count = Math.min(8, 4 + Math.floor(level / 12));
+    const radius = 22;
+    const points = [];
+    const dotEls = [];
+    const layer = document.createElement('div');
+    layer.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:24;';
+    arena.appendChild(layer);
 
-  for (let i = 0; i < count; i++) {
-    const t = i / (count - 1);
-    const x = 50 + t * (gW - 100) + (Math.random() - 0.5) * 40;
-    const yMid = gH * (0.38 + 0.22 * Math.sin(t * Math.PI * 1.4));
-    const y = Math.max(120, Math.min(gH - 80, yMid + (Math.random() - 0.5) * 40));
-    points.push({x, y});
-  }
-
-  for (let i = 0; i < points.length; i++) {
-    if (i > 0) {
-      const a = points[i - 1], b = points[i];
-      const dx = b.x - a.x, dy = b.y - a.y;
-      const len = Math.sqrt(dx*dx + dy*dy);
-      const ang = Math.atan2(dy, dx) * 180 / Math.PI;
-      const seg = document.createElement('div');
-      seg.style.cssText = `position:absolute;left:${a.x}px;top:${a.y}px;width:${len}px;height:4px;background:rgba(232,160,48,0.35);transform-origin:0 50%;transform:rotate(${ang}deg);border-radius:4px;`;
-      layer.appendChild(seg);
+    for (let i = 0; i < count; i++) {
+      const t = i / (count - 1);
+      const x = 50 + t * (gW - 100) + (Math.random() - 0.5) * 40;
+      const yMid = gH * (0.38 + 0.22 * Math.sin(t * Math.PI * 1.4));
+      const y = Math.max(120, Math.min(gH - 80, yMid + (Math.random() - 0.5) * 40));
+      points.push({x, y});
     }
-    const p = document.createElement('div');
-    p.style.cssText = `position:absolute;left:${points[i].x-radius}px;top:${points[i].y-radius}px;width:${radius*2}px;height:${radius*2}px;border-radius:50%;border:3px solid #E8A030;background:${i===0?'#FFF6E8':'rgba(255,255,255,0.65)'};box-shadow:0 0 0 3px rgba(232,160,48,0.16);`;
-    p.dataset.idx = String(i);
-    layer.appendChild(p);
-    dotEls.push(p);
-  }
 
-  let tracing = false;
-  let next = 0;
-  let failLock = false;
-  let stepLock = false;
-  let rerouteUsed = false;
-  setMsg('Trace the path dots in order');
-  startDeathTimer(Math.max(4200, 11000 - level*120));
-
-  function markDone(idx) {
-    const el = layer.querySelector(`div[data-idx="${idx}"]`);
-    if (el) {
-      el.style.background = '#E8A030';
-      el.style.borderColor = '#C0560A';
-    }
-  }
-
-  function near(p, q, pad=0) {
-    const dx = p.x - q.x, dy = p.y - q.y;
-    return Math.sqrt(dx*dx + dy*dy) <= radius + pad;
-  }
-
-  function onDown(e) {
-    e.stopImmediatePropagation();
-    recordChallengeInputOnce();
-    const p = getEvtPoint(e);
-    if (near(p, points[0], 10)) {
-      tracing = true;
-      next = 1;
-      markDone(0);
-      setMsg(`Trace ${next}/${points.length}`);
-    } else {
-      registerMiss(p.x, p.y);
-    }
-  }
-
-  function onMove(e) {
-    if (!tracing || !trickActive || stepLock) return;
-    e.stopImmediatePropagation();
-    const p = getEvtPoint(e);
-    const target = points[next];
-    if (!target) return;
-
-    if (
-      !rerouteUsed &&
-      next >= Math.max(2, points.length - 2) &&
-      maybeTriggerCheat('trace_reroute', getChaosLevel01()) &&
-      Math.random() < 0.32
-    ) {
-      rerouteUsed = true;
-      target.x = clampOnioX(target.x + (Math.random()-0.5) * 90);
-      target.y = clampOnioY(target.y + (Math.random()-0.5) * 86);
-      const dot = dotEls[next];
-      if (dot) {
-        dot.style.left = (target.x - radius) + 'px';
-        dot.style.top = (target.y - radius) + 'px';
+    for (let i = 0; i < points.length; i++) {
+      if (i > 0) {
+        const a = points[i - 1], b = points[i];
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const len = Math.sqrt(dx*dx + dy*dy);
+        const ang = Math.atan2(dy, dx) * 180 / Math.PI;
+        const seg = document.createElement('div');
+        seg.style.cssText = `position:absolute;left:${a.x}px;top:${a.y}px;width:${len}px;height:4px;background:rgba(232,160,48,0.35);transform-origin:0 50%;transform:rotate(${ang}deg);border-radius:4px;`;
+        layer.appendChild(seg);
       }
-      speech('path moved 😈', 620);
-      setMessageTemp('path rerouted.');
-      return;
+      const p = document.createElement('div');
+      p.style.cssText = `position:absolute;left:${points[i].x-radius}px;top:${points[i].y-radius}px;width:${radius*2}px;height:${radius*2}px;border-radius:50%;border:3px solid #E8A030;background:${i===0?'#FFF6E8':'rgba(255,255,255,0.65)'};box-shadow:0 0 0 3px rgba(232,160,48,0.16);`;
+      p.dataset.idx = String(i);
+      if (i === 0) {
+        p.innerHTML = '<div style="position:absolute;left:50%;top:-18px;transform:translateX(-50%);font-family:\'Fredoka One\',cursive;font-size:10px;color:#C0560A;letter-spacing:.8px;">START</div>';
+      }
+      layer.appendChild(p);
+      dotEls.push(p);
     }
 
-    if (near(p, target, 10)) {
-      stepLock = true;
-      const completeStep = () => {
-        if (!trickActive) { stepLock = false; return; }
-        markDone(next);
-        next++;
-        setMsg(next >= points.length ? 'PATH CLEARED ✅' : `Trace ${next}/${points.length}`);
-        if (next >= points.length) {
-          clearDeathTimer();
-          onHit(false, flowId);
-          return;
+    let tracing = false;
+    let next = 0;
+    let failLock = false;
+    let stepLock = false;
+    let rerouteUsed = false;
+    setMsg('Start on START dot, then drag through dots in order');
+    startDeathTimer(Math.max(4200, 11000 - level*120));
+
+    function markDone(idx) {
+      const el = layer.querySelector(`div[data-idx="${idx}"]`);
+      if (el) {
+        el.style.background = '#E8A030';
+        el.style.borderColor = '#C0560A';
+      }
+      const nextEl = layer.querySelector(`div[data-idx="${idx+1}"]`);
+      if (nextEl) {
+        nextEl.style.boxShadow = '0 0 0 4px rgba(123,45,139,.28)';
+      }
+    }
+
+    function near(p, q, pad=0) {
+      const dx = p.x - q.x, dy = p.y - q.y;
+      return Math.sqrt(dx*dx + dy*dy) <= radius + pad;
+    }
+
+    function onDown(e) {
+      e.stopImmediatePropagation();
+      recordChallengeInputOnce();
+      const p = getEvtPoint(e);
+      if (near(p, points[0], 14)) {
+        tracing = true;
+        next = 1;
+        markDone(0);
+        setMsg(`Trace ${next}/${points.length}`);
+      } else {
+        setMsg('Start on the START dot');
+        registerMiss(p.x, p.y);
+      }
+    }
+
+    function onMove(e) {
+      if (!tracing || !trickActive || stepLock) return;
+      e.stopImmediatePropagation();
+      const p = getEvtPoint(e);
+      const target = points[next];
+      if (!target) return;
+
+      if (
+        !rerouteUsed &&
+        next >= Math.max(2, points.length - 2) &&
+        maybeTriggerCheat('trace_reroute', getChaosLevel01()) &&
+        Math.random() < 0.32
+      ) {
+        rerouteUsed = true;
+        target.x = clampOnioX(target.x + (Math.random()-0.5) * 90);
+        target.y = clampOnioY(target.y + (Math.random()-0.5) * 86);
+        const dot = dotEls[next];
+        if (dot) {
+          dot.style.left = (target.x - radius) + 'px';
+          dot.style.top = (target.y - radius) + 'px';
         }
-        stepLock = false;
-      };
-      if (maybeApplyInputLatency(flowId, 'trace', completeStep, 0.62 + getChaosLevel01()*0.35)) return;
-      completeStep();
-      return;
+        speech('path moved 😈', 620);
+        setMessageTemp('path rerouted.');
+        return;
+      }
+
+      if (near(p, target, 14)) {
+        stepLock = true;
+        const completeStep = () => {
+          if (!trickActive) { stepLock = false; return; }
+          markDone(next);
+          next++;
+          setMsg(next >= points.length ? 'PATH CLEARED ✅' : `Trace ${next}/${points.length}`);
+          if (next >= points.length) {
+            clearDeathTimer();
+            onHit(false, flowId);
+            return;
+          }
+          stepLock = false;
+        };
+        if (maybeApplyInputLatency(flowId, 'trace', completeStep, 0.62 + getChaosLevel01()*0.35)) return;
+        completeStep();
+        return;
+      }
+
+      if (!failLock && !near(p, target, 130)) {
+        failLock = true;
+        tracing = false;
+        next = 0;
+        speech('off path. start again.', 550);
+        registerMiss(p.x, p.y);
+        scheduleChallengeTimeout(()=>{
+          failLock = false;
+          layer.querySelectorAll('div[data-idx]').forEach((el, idx) => {
+            el.style.background = idx===0 ? '#FFF6E8' : 'rgba(255,255,255,0.65)';
+            el.style.borderColor = '#E8A030';
+            el.style.boxShadow = '0 0 0 3px rgba(232,160,48,0.16)';
+          });
+          setMsg('Back to START dot');
+        }, 300);
+      }
     }
 
-    if (!failLock && !near(p, target, 95)) {
-      failLock = true;
+    function onUp(e) {
+      if (!trickActive) return;
+      e.stopImmediatePropagation();
       tracing = false;
-      next = 0;
-      speech('stay on the path!', 550);
-      registerMiss(p.x, p.y);
-      scheduleChallengeTimeout(()=>{
-        failLock = false;
-        layer.querySelectorAll('div[data-idx]').forEach((el, idx) => {
-          el.style.background = idx===0 ? '#FFF6E8' : 'rgba(255,255,255,0.65)';
-          el.style.borderColor = '#E8A030';
-        });
-        setMsg('Start at the first dot');
-      }, 300);
+      if (next > 0 && next < points.length) setMsg(`Trace ${next}/${points.length}`);
     }
-  }
 
-  function onUp(e) {
-    if (!trickActive) return;
-    e.stopImmediatePropagation();
-    tracing = false;
-    if (next > 0 && next < points.length) setMsg(`Trace ${next}/${points.length}`);
-  }
+    arena.addEventListener('pointerdown', onDown, true);
+    arena.addEventListener('pointermove', onMove, true);
+    window.addEventListener('pointerup', onUp, true);
 
-  arena.addEventListener('pointerdown', onDown, true);
-  arena.addEventListener('pointermove', onMove, true);
-  window.addEventListener('pointerup', onUp, true);
-
-  currentTrickCleanup = () => {
-    clearDeathTimer();
-    suppressArenaMiss = false;
-    layer.remove();
-    arena.removeEventListener('pointerdown', onDown, true);
-    arena.removeEventListener('pointermove', onMove, true);
-    window.removeEventListener('pointerup', onUp, true);
-  };
+    currentTrickCleanup = () => {
+      clearDeathTimer();
+      suppressArenaMiss = false;
+      layer.remove();
+      arena.removeEventListener('pointerdown', onDown, true);
+      arena.removeEventListener('pointermove', onMove, true);
+      window.removeEventListener('pointerup', onUp, true);
+    };
+  });
 }
 
 function cRhythmTap() {
@@ -5149,10 +5273,13 @@ function runCloneChaosBurst() {
   }, durationMs + 120);
 }
 
-function showFakeTextChaos(durationMs=1500) {
+function showFakeTextChaos(durationMs=1500, opts={}) {
+  const requireClose = !!opts.requireClose;
+  const onClose = typeof opts.onClose === 'function' ? opts.onClose : null;
   const ftScreen = document.getElementById('fake-text');
   const ftMsgs = document.getElementById('ft-msgs');
   const closeWrap = document.getElementById('ft-close-wrap');
+  const closeBtn = document.getElementById('ft-close');
   const convo = FAKE_TEXT_CONVOS[Math.floor(Math.random()*FAKE_TEXT_CONVOS.length)];
   const rows = convo.slice(0, Math.min(4, convo.length));
   ftMsgs.innerHTML = '';
@@ -5163,12 +5290,24 @@ function showFakeTextChaos(durationMs=1500) {
     ftMsgs.appendChild(row);
   });
   ftMsgs.scrollTop = ftMsgs.scrollHeight;
-  closeWrap.style.display = 'none';
+  if (requireClose) {
+    closeWrap.style.display = '';
+    closeBtn.textContent = 'back to chaos';
+  } else {
+    closeWrap.style.display = 'none';
+  }
   ftScreen.classList.add('active');
-  scheduleChallengeTimeout(() => {
+  const closeNow = () => {
     ftScreen.classList.remove('active');
     closeWrap.style.display = '';
-  }, durationMs);
+    closeBtn.textContent = "ok fine, I'm back 😤";
+    closeBtn.onclick = null;
+    if (onClose) onClose();
+  };
+  closeBtn.onclick = closeNow;
+  if (!requireClose) {
+    scheduleChallengeTimeout(closeNow, durationMs);
+  }
 }
 
 function showFakeoutMoment(title, sub, tone='danger', durationMs=1200) {
@@ -5455,13 +5594,18 @@ const CHAOS_HANDLERS = {
     markChaosDisrupt(1800);
     trickActive = false;
     onio.style.pointerEvents='none';
-    showFakeTextChaos(1200 + Math.random()*650);
-    scheduleChallengeTimeout(()=>{
-      if (!document.getElementById('game-screen').classList.contains('active')) return;
-      if (gamePaused) return;
-      trickActive = true;
-      onio.style.pointerEvents='auto';
-    }, 1000);
+    pauseDeathTimer();
+    showFakeTextChaos(1200 + Math.random()*650, {
+      requireClose:true,
+      onClose: () => {
+        if (!document.getElementById('game-screen').classList.contains('active')) return;
+        if (gamePaused) return;
+        resumeDeathTimer();
+        trickActive = true;
+        onio.style.pointerEvents='auto';
+        setMsg('resume.');
+      },
+    });
   },
   fakeRunOver() {
     markChaosDisrupt(1800);
