@@ -734,6 +734,166 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
   #game-controls{bottom:calc(env(safe-area-inset-bottom,0px) + 8px);padding:7px 9px;gap:8px;}
   .gc-btn{width:44px;height:44px;font-size:20px;}
 }
+
+/* ===== NEW GLOBAL CHAOS EFFECTS ===== */
+
+/* Gravity shift — HUD pills animate to bottom */
+#hud.gravity-shift {
+  transition: none;
+}
+#hud.gravity-shift #level-pill {
+  transform: translateY(calc(100vh - 120px));
+  transition: transform 0.6s cubic-bezier(.4,2,.6,1);
+}
+#hud.gravity-shift #skip-pill {
+  transform: translateY(calc(100vh - 120px));
+  transition: transform 0.65s cubic-bezier(.4,2,.6,1);
+}
+.gravity-pill-clone {
+  position: absolute;
+  font-family: 'Fredoka One', cursive;
+  font-size: 16px;
+  color: white;
+  background: var(--orange-3);
+  padding: 4px 14px;
+  border-radius: 20px;
+  letter-spacing: 1px;
+  z-index: 50;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: top 0.6s cubic-bezier(.4,2,.6,1), left 0.1s;
+  animation: gravPillPop .25s cubic-bezier(.4,2,.6,1);
+}
+@keyframes gravPillPop { from{transform:scale(0.6) rotate(-8deg)} to{transform:scale(1) rotate(0)} }
+
+/* Interface melt — arena CSS filter */
+#arena.melting {
+  filter: blur(1.5px) saturate(1.8) hue-rotate(8deg);
+  transition: filter 0.8s ease;
+}
+#arena.melting-heavy {
+  filter: blur(3px) saturate(2.4) hue-rotate(18deg) contrast(1.2);
+  transition: filter 0.5s ease;
+}
+
+/* Fake app update overlay */
+.chaos-update-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.82);
+  z-index: 95;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: popIn .2s ease;
+}
+.chaos-update-box {
+  background: #F2F2F7;
+  border-radius: 14px;
+  width: min(82vw, 300px);
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+.chaos-update-header {
+  background: #F2F2F7;
+  padding: 20px 18px 10px;
+  text-align: center;
+}
+.chaos-update-icon {
+  font-size: 44px;
+  display: block;
+  margin-bottom: 8px;
+}
+.chaos-update-title {
+  font-family: -apple-system, 'Helvetica Neue', sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: #000;
+  margin-bottom: 4px;
+}
+.chaos-update-body {
+  font-family: -apple-system, 'Helvetica Neue', sans-serif;
+  font-size: 13px;
+  color: #555;
+  line-height: 1.4;
+  padding: 0 18px 14px;
+  text-align: center;
+}
+.chaos-update-divider {
+  height: 0.5px;
+  background: #C6C6C8;
+}
+.chaos-update-btn {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  text-align: center;
+  font-family: -apple-system, 'Helvetica Neue', sans-serif;
+  font-size: 17px;
+  color: #007AFF;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.chaos-update-btn.primary {
+  font-weight: 600;
+}
+.chaos-update-btn:active {
+  background: rgba(0,0,0,0.06);
+}
+
+/* Volume / brightness prankoverlay */
+.chaos-volume-hud {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0,0,0,0.72);
+  border-radius: 14px;
+  padding: 14px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 88;
+  pointer-events: none;
+  animation: popIn .15s ease;
+  min-width: 180px;
+}
+.chaos-volume-icon {
+  font-size: 28px;
+}
+.chaos-volume-label {
+  font-family: -apple-system, 'Helvetica Neue', sans-serif;
+  font-size: 13px;
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 0.5px;
+}
+.chaos-volume-bar {
+  width: 140px;
+  height: 5px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.chaos-volume-fill {
+  height: 100%;
+  background: white;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+.chaos-brightness-overlay {
+  position: absolute;
+  inset: 0;
+  background: black;
+  z-index: 87;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.chaos-brightness-overlay.dim {
+  opacity: 0.72;
+}
 </style>
 </head>
 <body>
@@ -5443,6 +5603,11 @@ const CHAOS_MODULES = [
   { id:'chargeNow',     minLv:15, weight:()=>chaosVal(15, 40, 0.2, 1.0) },
   { id:'fakeIncoming',  minLv:17, weight:()=>chaosVal(17, 45, 0.2, 1.0) },
   { id:'controlsLock',  minLv:10, requiresDisrupt:true, weight:()=>chaosVal(10, 35, 0.1, 1.0) },
+  // ── NEW GLOBAL CHAOS EVENTS ──
+  { id:'gravityShift',   minLv:8,  requiresDisrupt:true, weight:()=>chaosVal(8, 30, 0.15, 1.2) },
+  { id:'interfaceMelt',  minLv:12, weight:()=>chaosVal(12, 40, 0.1, 1.0) },
+  { id:'fakeAppUpdate',  minLv:10, requiresDisrupt:true, allow:()=>canUseFakeouts(), weight:()=>chaosVal(10, 40, 0.1, 0.9) },
+  { id:'volumePrank',    minLv:7,  weight:()=>chaosVal(7, 28, 0.2, 1.3) },
 ];
 
 const CHAOS_EFFECT_WINDOW = {
@@ -5473,6 +5638,10 @@ const CHAOS_EFFECT_WINDOW = {
   chargeNow: 1700,
   fakeIncoming: 1550,
   controlsLock: 1900,
+  gravityShift: 2200,
+  interfaceMelt: 2800,
+  fakeAppUpdate: 4000,
+  volumePrank: 2400,
 };
 
 const CHAOS_HANDLERS = {
@@ -5672,6 +5841,199 @@ const CHAOS_HANDLERS = {
       onio.style.pointerEvents = priorPointer || 'auto';
       setMsg('resume.');
     }, 1450);
+  },
+
+  gravityShift() {
+    // HUD pills fall to bottom as if gravity inverted
+    markChaosDisrupt(2200);
+    const hud = document.getElementById('hud');
+
+    // Clone the pills visually and animate them falling
+    const levelPill = document.getElementById('level-pill');
+    const skipPill  = document.getElementById('skip-pill');
+
+    // Create floating clones that drop to bottom
+    function dropPill(srcEl, offsetX=0) {
+      if (!srcEl || srcEl.style.display === 'none') return null;
+      const rect = srcEl.getBoundingClientRect();
+      const arenaRect = arena.getBoundingClientRect();
+      const clone = document.createElement('div');
+      clone.className = 'gravity-pill-clone';
+      clone.textContent = srcEl.textContent;
+      clone.style.cssText += `top:${rect.top - arenaRect.top}px;left:${rect.left - arenaRect.left + offsetX}px;`;
+      arena.appendChild(clone);
+      // Animate down
+      const targetY = gH - 90 - Math.random()*40;
+      requestAnimationFrame(()=>{
+        clone.style.top = targetY + 'px';
+      });
+      return clone;
+    }
+
+    speech('gravity? what gravity 😈', 800);
+    setMsg('everything is falling...');
+
+    const c1 = dropPill(levelPill);
+    const c2 = dropPill(skipPill, 60);
+
+    // Hide originals briefly
+    levelPill.style.opacity = '0';
+    skipPill.style.opacity  = '0';
+
+    scheduleChallengeTimeout(()=>{
+      if (c1) c1.remove();
+      if (c2) c2.remove();
+      levelPill.style.opacity = '';
+      skipPill.style.opacity  = '';
+      setMsg('tap me.');
+    }, 2000);
+  },
+
+  interfaceMelt() {
+    // Arena blurs and color-shifts like it's melting — gets worse near high scores
+    const depth = hits;
+    const heavy = depth >= 20;
+    arena.classList.add(heavy ? 'melting-heavy' : 'melting');
+    setMsg(heavy ? 'something is wrong.' : 'is it hot in here...');
+    const holdMs = 1400 + Math.random()*1000;
+    scheduleChallengeTimeout(()=>{
+      arena.classList.remove('melting', 'melting-heavy');
+    }, holdMs);
+  },
+
+  fakeAppUpdate() {
+    // Fake iOS-style "App Update Required" dialog — blocks screen until dismissed
+    markChaosDisrupt(4000);
+    trickActive = false;
+    onio.style.pointerEvents = 'none';
+    pauseDeathTimer();
+
+    const overlay = document.createElement('div');
+    overlay.className = 'chaos-update-overlay';
+
+    const updateMessages = [
+      { title: 'Update Required', body: 'ONIO v2.0.0 includes critical fixes. You must update before continuing.', btn1: 'Later', btn2: 'Update Now' },
+      { title: 'App Update', body: 'A new version of ONIO is available. Update to get new levels and improved chaos.', btn1: 'Not Now', btn2: 'Install' },
+      { title: 'Action Required', body: 'ONIO needs your attention before you can continue playing.', btn1: 'Ignore', btn2: 'OK' },
+    ];
+    const msg = updateMessages[Math.floor(Math.random()*updateMessages.length)];
+
+    overlay.innerHTML = `
+      <div class="chaos-update-box">
+        <div class="chaos-update-header">
+          <span class="chaos-update-icon">😈</span>
+          <div class="chaos-update-title">${msg.title}</div>
+        </div>
+        <div class="chaos-update-body">${msg.body}</div>
+        <div class="chaos-update-divider"></div>
+        <button class="chaos-update-btn" id="update-later">${msg.btn1}</button>
+        <div class="chaos-update-divider"></div>
+        <button class="chaos-update-btn primary" id="update-now">${msg.btn2}</button>
+      </div>
+    `;
+    arena.appendChild(overlay);
+
+    function dismissUpdate(wasNow) {
+      overlay.style.animation = 'missO .2s ease forwards';
+      setTimeout(()=>overlay.remove(), 220);
+      resumeDeathTimer();
+      if (!document.getElementById('game-screen').classList.contains('active')) return;
+      if (gamePaused) return;
+      trickActive = true;
+      onio.style.pointerEvents = 'auto';
+      // Troll response based on which button they picked
+      if (wasNow) {
+        speech('updating... jk 😈', 800);
+        setMsg('nothing changed.');
+      } else {
+        speech('coward.', 600);
+        setMsg('tap me.');
+      }
+    }
+
+    overlay.querySelector('#update-later').addEventListener('pointerdown', e=>{
+      e.stopPropagation(); dismissUpdate(false);
+    });
+    overlay.querySelector('#update-now').addEventListener('pointerdown', e=>{
+      e.stopPropagation(); dismissUpdate(true);
+    });
+    // Auto-dismiss after 4s in case player ignores
+    scheduleChallengeTimeout(()=>{ if (overlay.parentNode) dismissUpdate(false); }, 4000);
+  },
+
+  volumePrank() {
+    // Simulates volume going to 0 or screen brightness dropping
+    const isBrightness = Math.random() < 0.45;
+
+    if (isBrightness) {
+      // Brightness prank — screen dims dramatically
+      const dim = document.createElement('div');
+      dim.className = 'chaos-brightness-overlay';
+      arena.appendChild(dim);
+
+      // Show fake brightness HUD
+      const hud = document.createElement('div');
+      hud.className = 'chaos-volume-hud';
+      hud.innerHTML = `
+        <div class="chaos-volume-icon">☀️</div>
+        <div class="chaos-volume-label">BRIGHTNESS</div>
+        <div class="chaos-volume-bar"><div class="chaos-volume-fill" id="bright-fill" style="width:100%"></div></div>
+      `;
+      arena.appendChild(hud);
+
+      // Animate brightness dropping
+      requestAnimationFrame(()=>{
+        dim.classList.add('dim');
+        const fill = hud.querySelector('#bright-fill');
+        if (fill) fill.style.width = '3%';
+      });
+
+      speech('oops. lights out 😈', 700);
+      setMsg('...hello?');
+
+      const holdMs = 1400 + Math.random()*600;
+      scheduleChallengeTimeout(()=>{
+        dim.style.transition = 'opacity .5s ease';
+        dim.style.opacity = '0';
+        if (hud.querySelector('#bright-fill')) hud.querySelector('#bright-fill').style.width='100%';
+        setTimeout(()=>{ dim.remove(); hud.remove(); }, 520);
+      }, holdMs);
+
+    } else {
+      // Volume prank — show volume going to 0
+      const hud = document.createElement('div');
+      hud.className = 'chaos-volume-hud';
+      hud.innerHTML = `
+        <div class="chaos-volume-icon" id="vol-icon">🔊</div>
+        <div class="chaos-volume-label">VOLUME</div>
+        <div class="chaos-volume-bar"><div class="chaos-volume-fill" id="vol-fill" style="width:85%"></div></div>
+      `;
+      arena.appendChild(hud);
+
+      // Animate volume dropping
+      let vol = 85;
+      const drain = setInterval(()=>{
+        vol = Math.max(0, vol - 12);
+        const fill = hud.querySelector('#vol-fill');
+        const icon = hud.querySelector('#vol-icon');
+        if (fill) fill.style.width = vol + '%';
+        if (icon) icon.textContent = vol === 0 ? '🔇' : vol < 30 ? '🔈' : '🔊';
+        if (vol === 0) clearInterval(drain);
+      }, 80);
+
+      speech('sound? what sound 😈', 700);
+      setMsg('check your phone...');
+
+      scheduleChallengeTimeout(()=>{
+        clearInterval(drain);
+        const fill = hud.querySelector('#vol-fill');
+        const icon = hud.querySelector('#vol-icon');
+        if (fill) fill.style.width = '85%';
+        if (icon) icon.textContent = '🔊';
+        setTimeout(()=>hud.remove(), 400);
+        setMsg('tap me.');
+      }, 2200);
+    }
   },
 };
 
