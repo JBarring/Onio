@@ -464,6 +464,8 @@ html,body{
   font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:400;white-space:nowrap;}
 #toast.show{opacity:1;}
 /* ===== CHAOS SYSTEM ===== */
+
+/* Glitch — one-shot burst (Onio element only) */
 @keyframes glitch {
   0%   { transform: translate(0,0) skew(0deg); filter: none; }
   10%  { transform: translate(-3px,1px) skew(-1deg); filter: hue-rotate(40deg); }
@@ -474,20 +476,62 @@ html,body{
   60%  { transform: translate(0,0); filter: hue-rotate(20deg); }
   100% { transform: translate(0,0); filter: none; }
 }
+/* Ambient continuous glitch — game-screen level, loops forever, intensity driven by --shake-amp */
+@keyframes ambientGlitch {
+  0%   { transform: translate(0,0) skewX(0deg); filter: none; }
+  8%   { transform: translate(calc(var(--shake-amp,2px) * -0.8), calc(var(--shake-amp,2px) * 0.4)) skewX(calc(var(--shake-amp,2px) * -0.15deg)); filter: hue-rotate(30deg) saturate(1.4); }
+  16%  { transform: translate(calc(var(--shake-amp,2px) * 0.9), calc(var(--shake-amp,2px) * -0.5)); filter: none; }
+  24%  { transform: translate(calc(var(--shake-amp,2px) * -0.5), calc(var(--shake-amp,2px) * 0.6)); filter: hue-rotate(-20deg); }
+  35%  { transform: translate(calc(var(--shake-amp,2px) * 0.4), 0); filter: saturate(1.6) brightness(1.04); }
+  48%  { transform: translate(0, calc(var(--shake-amp,2px) * -0.3)); filter: none; }
+  60%  { transform: translate(calc(var(--shake-amp,2px) * -0.3), calc(var(--shake-amp,2px) * 0.2)); filter: hue-rotate(15deg); }
+  76%  { transform: translate(calc(var(--shake-amp,2px) * 0.6), calc(var(--shake-amp,2px) * -0.4)); filter: none; }
+  88%  { transform: translate(calc(var(--shake-amp,2px) * -0.2), 0); }
+  100% { transform: translate(0,0); filter: none; }
+}
+/* Ambient continuous shake — separate from glitch so they can stack */
+@keyframes ambientShake {
+  0%,100% { transform: translate(0,0) rotate(0deg); }
+  10% { transform: translate(calc(var(--shake-amp,2px) * -1), calc(var(--shake-amp,2px) * 0.5)) rotate(calc(var(--shake-amp,2px) * -0.04deg)); }
+  22% { transform: translate(calc(var(--shake-amp,2px) * 1.1), calc(var(--shake-amp,2px) * -0.6)) rotate(calc(var(--shake-amp,2px) * 0.05deg)); }
+  33% { transform: translate(calc(var(--shake-amp,2px) * -0.8), calc(var(--shake-amp,2px) * -0.3)); }
+  45% { transform: translate(calc(var(--shake-amp,2px) * 0.7), calc(var(--shake-amp,2px) * 0.8)); }
+  57% { transform: translate(calc(var(--shake-amp,2px) * -1.2), calc(var(--shake-amp,2px) * 0.2)) rotate(calc(var(--shake-amp,2px) * -0.03deg)); }
+  68% { transform: translate(calc(var(--shake-amp,2px) * 0.9), calc(var(--shake-amp,2px) * -0.7)); }
+  80% { transform: translate(calc(var(--shake-amp,2px) * -0.4), calc(var(--shake-amp,2px) * 0.5)); }
+  91% { transform: translate(calc(var(--shake-amp,2px) * 0.5), calc(var(--shake-amp,2px) * -0.3)); }
+}
+/* One-shot screen shake (quick hit, still used for tap events) */
 @keyframes screenShake {
   0%,100% { transform: translate(0,0); }
-  15%  { transform: translate(-4px, 2px); }
-  30%  { transform: translate(4px, -2px); }
-  45%  { transform: translate(-3px, -1px); }
-  60%  { transform: translate(3px, 1px); }
-  75%  { transform: translate(-2px, 2px); }
+  15%  { transform: translate(calc(var(--shake-amp,4px) * -1), calc(var(--shake-amp,4px) * 0.5)); }
+  30%  { transform: translate(calc(var(--shake-amp,4px) * 1), calc(var(--shake-amp,4px) * -0.5)); }
+  45%  { transform: translate(calc(var(--shake-amp,4px) * -0.75), calc(var(--shake-amp,4px) * -0.25)); }
+  60%  { transform: translate(calc(var(--shake-amp,4px) * 0.75), calc(var(--shake-amp,4px) * 0.25)); }
+  75%  { transform: translate(calc(var(--shake-amp,4px) * -0.5), calc(var(--shake-amp,4px) * 0.5)); }
 }
 @keyframes chromaShift {
   0%,100%{text-shadow: 2px 0 #f00, -2px 0 #00f;}
   50%{text-shadow: -2px 0 #f00, 2px 0 #00f;}
 }
+
+/* One-shot classes */
 .chaos-glitch { animation: glitch 0.4s steps(1) !important; }
-.chaos-shake  { animation: screenShake 0.3s ease !important; }
+.chaos-shake  { animation: screenShake 0.35s ease !important; }
+
+/* Ambient classes — applied to #game-screen for the duration of the minigame */
+/* --shake-amp and --shake-speed are set inline by JS based on depth */
+.ambient-shake {
+  animation: ambientShake var(--shake-speed, 0.55s) ease-in-out infinite !important;
+}
+.ambient-glitch {
+  animation: ambientGlitch var(--glitch-speed, 0.8s) steps(1) infinite !important;
+}
+.ambient-shake.ambient-glitch {
+  /* Both active — glitch wins on transform, shake adds via chained animation */
+  animation: ambientShake var(--shake-speed, 0.55s) ease-in-out infinite,
+             ambientGlitch var(--glitch-speed, 0.8s) steps(1) infinite !important;
+}
 
 /* chaos tint overlay */
 #chaos-tint {
@@ -497,12 +541,12 @@ html,body{
 }
 #chaos-tint.active { opacity:1; }
 
-/* glitch lines overlay */
+/* glitch lines overlay — continuous, intensity via opacity */
 #glitch-lines {
   position:absolute; inset:0; pointer-events:none; z-index:9;
   opacity:0;
 }
-#glitch-lines.active { opacity:1; animation: glitchLines .15s steps(1) infinite; }
+#glitch-lines.active { opacity:1; animation: glitchLines var(--glitch-line-speed,.15s) steps(1) infinite; }
 @keyframes glitchLines {
   0%  { background: linear-gradient(transparent 47%, rgba(255,0,0,.06) 48%, rgba(255,0,0,.06) 49%, transparent 50%); }
   33% { background: linear-gradient(transparent 28%, rgba(0,0,255,.05) 29%, rgba(0,0,255,.05) 30%, transparent 31%, transparent 65%, rgba(255,0,0,.06) 66%, transparent 67%); }
@@ -1962,8 +2006,9 @@ function chaosApplyBatteryLow() {
   }
 }
 
-function chaosApplyVolumePrank() {
+function chaosApplyVolumePrank(stayMs=820) {
   const isBrightness = Math.random() < 0.45;
+  const hold = Math.max(420, stayMs);
   if (isBrightness) {
     const dim = document.createElement('div');
     dim.className = 'chaos-brightness-overlay';
@@ -1990,7 +2035,7 @@ function chaosApplyVolumePrank() {
       const fill = hud.querySelector('#bright-fill');
       if (fill) fill.style.width = '100%';
       setTimeout(() => { dim.remove(); hud.remove(); }, 380);
-    }, 420 + Math.random()*520);
+    }, hold);
     return;
   }
 
@@ -2020,7 +2065,7 @@ function chaosApplyVolumePrank() {
     if (fill) fill.style.width = '85%';
     if (icon) icon.textContent = '🔊';
     setTimeout(() => hud.remove(), 250);
-  }, 420 + Math.random()*520);
+  }, hold);
 }
 
 function chaosApplyGravityShift() {
@@ -2057,9 +2102,27 @@ function chaosApplyGravityShift() {
 }
 
 function chaosApplyInterfaceMelt() {
+  const t = getChaosLevel01();
+  // Blur 1.5px→4px, saturate 1.8→3.0, duration 420ms→3000ms
+  const blur = (1.5 + t * 2.5).toFixed(1);
+  const sat  = (1.8 + t * 1.2).toFixed(1);
+  const hue  = Math.round(8 + t * 22);
+  const hold = Math.round(420 + t * 2580);
   const heavy = hits >= 20;
-  arena.classList.add(heavy ? 'melting-heavy' : 'melting');
-  scheduleChallengeTimeout(() => arena.classList.remove('melting', 'melting-heavy'), 420 + Math.random()*520);
+  const filter = heavy
+    ? `blur(${blur}px) saturate(${sat}) hue-rotate(${hue}deg) contrast(${(1 + t*0.25).toFixed(2)})`
+    : `blur(${blur}px) saturate(${sat}) hue-rotate(${hue}deg)`;
+  arena.style.filter = filter;
+  arena.style.transition = 'filter 0.5s ease';
+  if (t > 0.5) {
+    const meltComments = ['is it melting in here?', 'reality is optional 😈', 'INTERFACE MELT 😈', 'everything\'s fine'];
+    speech(meltComments[Math.floor(Math.random()*meltComments.length)], Math.min(1800, hold - 200));
+  }
+  scheduleChallengeTimeout(() => {
+    arena.style.filter = '';
+    arena.style.transition = 'filter 0.4s ease';
+    scheduleChallengeTimeout(() => { arena.style.transition = ''; }, 420);
+  }, hold);
 }
 
 function chaosApplyFakeUpdate() {
@@ -2070,44 +2133,146 @@ function chaosApplyFakeUpdate() {
   showFloatingChaosBanner('📲', major ? 'system hijack' : 'update available', major ? 'overlay takeover in progress' : 'update queued. maybe.', major ? 'danger' : 'default', major ? 960 : 620);
 }
 
+// ── Ambient environmental chaos ───────────────────────────────────────────────
+// shakeAmp: 2px (depth 1) → 28px (depth 90). Speed: 0.55s → 0.22s.
+function getShakeAmp() {
+  const t = Math.max(0, Math.min(1, getChaosLevel01()));
+  return Math.round(2 + t * 26); // px
+}
+function getShakeSpeed() {
+  const t = Math.max(0, Math.min(1, getChaosLevel01()));
+  return (0.55 - t * 0.33).toFixed(2) + 's'; // 0.55s → 0.22s
+}
+function getGlitchSpeed() {
+  const t = Math.max(0, Math.min(1, getChaosLevel01()));
+  return (0.80 - t * 0.52).toFixed(2) + 's'; // 0.80s → 0.28s
+}
+function getGlitchLineSpeed() {
+  const t = Math.max(0, Math.min(1, getChaosLevel01()));
+  return (0.15 - t * 0.08).toFixed(3) + 's'; // 0.15s → 0.07s
+}
+
+// Called once per challenge start to apply ambient environmental effects
+// that last for the whole minigame. Clears itself on cleanupAll.
+let ambientShakeActive = false;
+let ambientGlitchActive = false;
+
+function startAmbientChaos() {
+  const gs = document.getElementById('game-screen');
+  const cl = chaosState.level;
+  const amp = getShakeAmp();
+  gs.style.setProperty('--shake-amp', amp + 'px');
+  gs.style.setProperty('--shake-speed', getShakeSpeed());
+  gs.style.setProperty('--glitch-speed', getGlitchSpeed());
+
+  // Shake: starts at chaos level 1, always on once unlocked
+  if (cl >= 1) {
+    gs.classList.add('ambient-shake');
+    ambientShakeActive = true;
+    // Onio comments based on depth
+    const comments = amp <= 4
+      ? ['earthquake! 😈', 'oops, my bad', 'slight tremor 😬']
+      : amp <= 10
+      ? ['EARTHQUAKE! 😈', 'is it hot in here?', 'magnitude rising 😈', 'hold on tight']
+      : amp <= 18
+      ? ['MAGNITUDE 6 😈', 'i may have broken physics', 'SEISMIC EVENT', 'still shaking btw 😈']
+      : ['MAGNITUDE 10. YOU\'RE WELCOME. 😈', 'sorry about your hands', 'THE GROUND IS MINE 😈', 'CATASTROPHIC CHAOS'];
+    speech(comments[Math.floor(Math.random()*comments.length)], 2200);
+  }
+
+  // Glitch: starts at chaos level 3
+  if (cl >= 3) {
+    gs.classList.add('ambient-glitch');
+    ambientGlitchActive = true;
+  }
+
+  // Update glitch lines speed
+  const glitchEl = document.getElementById('glitch-lines');
+  if (glitchEl && glitchEl.classList.contains('active')) {
+    glitchEl.style.setProperty('--glitch-line-speed', getGlitchLineSpeed());
+  }
+}
+
+function stopAmbientChaos() {
+  const gs = document.getElementById('game-screen');
+  gs.classList.remove('ambient-shake', 'ambient-glitch');
+  ambientShakeActive = false;
+  ambientGlitchActive = false;
+}
+
+// Mid-minigame Onio commentary on the ongoing shake — fires once per challenge at high depth
+function maybeCommentOnShake() {
+  const amp = getShakeAmp();
+  if (amp <= 6 || !ambientShakeActive) return;
+  const midComments = [
+    'still shaking btw 😈',
+    'yeah this is your life now.',
+    'getting worse. on purpose.',
+    'magnitude: you can\'t win.',
+    'earthquake simulator 3000 😈',
+  ];
+  scheduleChallengeTimeout(() => {
+    if (!trickActive || gamePaused) return;
+    speech(midComments[Math.floor(Math.random()*midComments.length)], 1800);
+  }, 2800 + Math.random()*1400);
+}
+
 function applyChaosEffect(effect, context={}) {
   const pt = context.point || lastInputPoint || { x:onioX+36, y:onioY+36 };
   switch (effect) {
     case 'visual': {
       const visualPicks = [
+        // One-shot screen jolt — on top of ambient, feels like an aftershock
         () => {
           document.getElementById('game-screen').classList.add('chaos-shake');
-          scheduleChallengeTimeout(() => document.getElementById('game-screen').classList.remove('chaos-shake'), 320);
+          scheduleChallengeTimeout(() => document.getElementById('game-screen').classList.remove('chaos-shake'), 360);
+          speech(['aftershock! 😈','boom.','oops again'][Math.floor(Math.random()*3)], 500);
         },
+        // Onio glitch burst — one-shot on Onio element
         () => {
           onio.classList.add('chaos-glitch');
           scheduleChallengeTimeout(() => onio.classList.remove('chaos-glitch'), 420);
         },
-        () => showDeadPixels(360 + Math.random()*420),
+        // Dead pixels — ambient duration (stays rest of minigame if deep)
+        () => {
+          const dur = chaosState.level >= 6
+            ? 99999 // until cleanup clears it
+            : 360 + Math.random()*420;
+          showDeadPixels(dur);
+        },
       ];
-      if (chaosState.level >= 3) visualPicks.push(() => chaosApplyInterfaceMelt());
-      if (chaosState.level >= 4) visualPicks.push(() => showDarkScreen(360 + Math.random()*420));
+      if (chaosState.level >= 3) visualPicks.push(
+        // Interface melt — ambient duration at high depth
+        () => chaosApplyInterfaceMelt()
+      );
+      if (chaosState.level >= 4) visualPicks.push(
+        // Dark screen — longer at depth, player has to play through it
+        () => showDarkScreen()
+      );
       if (chaosState.level >= 5) visualPicks.push(() => chaosApplyGravityShift());
       visualPicks[Math.floor(Math.random()*visualPicks.length)]();
       markChaosStateEffect('visual', 460);
       break;
     }
     case 'overlay': {
+      // Duration scales with depth: shallow = brief annoyance, deep = you play through it
+      const baseOverlayMs = 800 + chaosState.level * 260; // 800ms lv0 → ~3500ms lv10
+      const overlayMs = Math.min(5000, baseOverlayMs + Math.random()*600);
       const overlayPicks = [
-        () => showFakeTextChaos(360 + Math.random()*540, { point:pt }),
-        () => showFloatingChaosBanner('💬', 'interrupt', 'focus, maybe.', 'default', 360 + Math.random()*520),
+        () => showFakeTextChaos(overlayMs, { point:pt, overOnio:true }),
+        () => showFloatingChaosBanner('💬', 'interrupt', 'focus, maybe.', 'default', overlayMs),
       ];
       if (chaosState.level >= 3) overlayPicks.push(
-        () => showSystemBanner('📞', 'Incoming Call', 'unknown chaos caller...', 'default', 380 + Math.random()*480),
-        () => showFakeCall(() => {}),
+        () => showSystemBanner('📞', 'Incoming Call', 'unknown chaos caller...', 'default', overlayMs),
+        () => showFakeCall(() => {}, overlayMs),
       );
       if (chaosState.level >= 4) overlayPicks.push(
-        () => chaosApplyVolumePrank(),
+        () => chaosApplyVolumePrank(overlayMs),
         () => chaosApplyBatteryLow(),
       );
       if (chaosState.level >= 6) overlayPicks.push(() => chaosApplyFakeUpdate());
       overlayPicks[Math.floor(Math.random()*overlayPicks.length)]();
-      markChaosStateEffect('overlay', 620);
+      markChaosStateEffect('overlay', Math.min(overlayMs + 200, 5200));
       break;
     }
     case 'input': {
@@ -2290,11 +2455,14 @@ function showFloatingChaosBanner(icon, title, text, tone='default', stayMs=780) 
       ? 'linear-gradient(180deg,#152335 0%,#0F1A28 100%)'
       : 'linear-gradient(180deg,#1a1a2e 0%,#141425 100%)';
   b.className = 'chaos-system-banner';
+  // Position: try to overlap the active interaction area (near Onio)
+  const bTop = Math.max(56, Math.min(gH - 90, onioY - 64));
+  const bLeft = Math.max(8, Math.min(gW - 220, onioX - 60));
   b.style.cssText = [
     'position:absolute',
-    'top:56px',
-    'left:10px',
-    'right:10px',
+    `top:${bTop}px`,
+    `left:${bLeft}px`,
+    `right:${Math.max(8, gW - bLeft - 210)}px`,
     `background:${bg}`,
     'border-radius:14px',
     'padding:10px 12px',
@@ -2305,6 +2473,7 @@ function showFloatingChaosBanner(icon, title, text, tone='default', stayMs=780) 
     'box-shadow:0 10px 24px rgba(0,0,0,.35)',
     'pointer-events:none',
     'animation:popIn .14s ease',
+    'max-width:220px',
   ].join(';');
   b.innerHTML = `<div style="font-size:20px;line-height:1;">${icon}</div>
     <div style="flex:1;min-width:0;">
@@ -2312,7 +2481,8 @@ function showFloatingChaosBanner(icon, title, text, tone='default', stayMs=780) 
       <div style="font-family:'Nunito',sans-serif;font-size:13px;color:white;font-weight:800;line-height:1.25;">${text}</div>
     </div>`;
   arena.appendChild(b);
-  const hold = Math.max(300, Math.min(780, stayMs));
+  // No artificial cap — honour the full stayMs so deep-run banners actually persist
+  const hold = Math.max(300, stayMs);
   setTimeout(() => {
     b.style.transition = 'opacity .18s ease, transform .18s ease';
     b.style.opacity = '0';
@@ -3550,6 +3720,7 @@ function doDeathScreen() {
 // CLEANUP
 // ============================================================
 function cleanupAll() {
+  stopAmbientChaos();
   if (behaviorReactionUnsavedCount > 0) {
     saveProfile();
     behaviorReactionUnsavedCount = 0;
@@ -3758,7 +3929,10 @@ function runNextChallenge() {
       if (shouldTriggerChaos(timeToNextAction)) {
         triggerChaos({ timeToNextAction, source:'target_spawn', minigame:'tap', point:{ x:onioX+36, y:onioY+36 } });
       }
-      trickActive=true; onio.style.pointerEvents='auto'; cTap();
+      trickActive=true; onio.style.pointerEvents='auto';
+      startAmbientChaos();
+      maybeCommentOnShake();
+      cTap();
     }, 220);
     return;
   }
@@ -3780,7 +3954,10 @@ function runNextChallenge() {
     if (shouldTriggerChaos(timeToNextAction)) {
       triggerChaos({ timeToNextAction, source:'target_spawn', minigame:chosen.id, point:{ x:onioX+36, y:onioY+36 } });
     }
-    trickActive=true; onio.style.pointerEvents='auto'; chosen.fn();
+    trickActive=true; onio.style.pointerEvents='auto';
+    startAmbientChaos();
+    maybeCommentOnShake();
+    chosen.fn();
   }, 220);
 }
 
@@ -4114,14 +4291,16 @@ function getSignDisplay(trueRemaining) {
   return trueRemaining;
 }
 
-// Fake incoming call overlay
-function showFakeCall(cb=()=>{}) {
-  // Non-blocking floating call card; gameplay continues underneath.
+// Fake incoming call overlay — non-blocking, gameplay continues underneath.
+// Duration now matches the overlay chaos window so it persists at high depth.
+function showFakeCall(cb=()=>{}, stayMs=820) {
   const overlay = document.createElement('div');
   overlay.className = 'chaos-call-overlay';
+  // Position: float just above Onio so it directly occludes the target
+  const callTop = Math.max(52, Math.min(gH - 100, onioY - 80));
   overlay.style.cssText = [
     'position:absolute',
-    'top:58px',
+    `top:${callTop}px`,
     'left:10px',
     'right:10px',
     'z-index:46',
@@ -4157,12 +4336,13 @@ function showFakeCall(cb=()=>{}) {
     overlay.style.transform = 'translateY(-8px)';
     setTimeout(()=>{ overlay.remove(); cb(); }, 180);
   }
-  const hold = 320 + Math.random()*500; // auto-dismiss under 1s including fade
+  // Honour the full overlay window — no artificial 1s cap
+  const hold = Math.max(320, stayMs);
   setTimeout(()=>{ if (overlay.parentNode) dismiss(); }, hold);
 }
 
-// Fake text notification banner (non-blocking)
-function showFakeTextBanner() {
+// Fake text notification banner (non-blocking, positions near Onio)
+function showFakeTextBanner(stayMs) {
   const banners = [
     "Onio: u ok? (i know the answer)",
     "Mom: are you playing that game again",
@@ -4175,10 +4355,13 @@ function showFakeTextBanner() {
     : banners[Math.floor(Math.random()*banners.length)];
   const b = document.createElement('div');
   b.className = 'chaos-text-banner';
-  b.style.cssText = `position:absolute;top:60px;left:12px;right:12px;background:#1a1a2e;border-radius:14px;padding:10px 13px;z-index:40;display:flex;gap:10px;align-items:center;animation:popIn .12s ease;box-shadow:0 4px 20px rgba(0,0,0,0.4);pointer-events:none;`;
+  // Sit just above Onio so it occludes the target area
+  const bTop = Math.max(56, Math.min(gH - 80, onioY - 72));
+  b.style.cssText = `position:absolute;top:${bTop}px;left:12px;right:12px;background:#1a1a2e;border-radius:14px;padding:10px 13px;z-index:40;display:flex;gap:10px;align-items:center;animation:popIn .12s ease;box-shadow:0 4px 20px rgba(0,0,0,0.4);pointer-events:none;`;
   b.innerHTML = `<div style="font-size:28px;">💬</div><div><div style="font-family:'Fredoka One',cursive;font-size:12px;color:rgba(255,255,255,0.5);">MESSAGES</div><div style="font-family:'Nunito',sans-serif;font-size:14px;color:white;font-weight:700;">${bannerText}</div></div>`;
   arena.appendChild(b);
-  setTimeout(()=>{ b.style.transition='opacity .16s ease, transform .16s ease'; b.style.opacity='0'; b.style.transform='translateY(-8px)'; setTimeout(()=>b.remove(),190); }, 320 + Math.random()*500);
+  const hold = stayMs != null ? Math.max(300, stayMs) : 320 + Math.random()*500;
+  setTimeout(()=>{ b.style.transition='opacity .16s ease, transform .16s ease'; b.style.opacity='0'; b.style.transform='translateY(-8px)'; setTimeout(()=>b.remove(),190); }, hold);
 }
 
 function showSystemBanner(icon, title, text, tone='default', stayMs=820) {
@@ -4189,9 +4372,11 @@ function showSystemBanner(icon, title, text, tone='default', stayMs=820) {
     : tone === 'cool'
       ? 'linear-gradient(180deg,#152335 0%,#0F1A28 100%)'
       : 'linear-gradient(180deg,#1a1a2e 0%,#141425 100%)';
+  // Try to land over the active interaction area
+  const bTop = Math.max(52, Math.min(gH - 80, onioY - 70));
   b.style.cssText = [
     'position:absolute',
-    'top:56px',
+    `top:${bTop}px`,
     'left:10px',
     'right:10px',
     `background:${bg}`,
@@ -4211,7 +4396,7 @@ function showSystemBanner(icon, title, text, tone='default', stayMs=820) {
       <div style="font-family:'Nunito',sans-serif;font-size:14px;color:white;font-weight:800;line-height:1.3;">${text}</div>
     </div>`;
   arena.appendChild(b);
-  const hold = Math.max(300, Math.min(800, stayMs));
+  const hold = Math.max(300, stayMs);
   setTimeout(()=>{
     b.style.transition = 'opacity .16s ease, transform .16s ease';
     b.style.opacity = '0';
@@ -4220,16 +4405,25 @@ function showSystemBanner(icon, title, text, tone='default', stayMs=820) {
   }, hold);
 }
 
-function showDarkScreen(ms=760) {
-  const hold = Math.max(300, Math.min(700, ms));
+function showDarkScreen() {
+  // Opacity and duration both scale with depth
+  const t = getChaosLevel01();
+  const opacity = 0.38 + t * 0.48; // 0.38 → 0.86
+  const hold = Math.round(400 + t * 2800); // 400ms → 3200ms
   const d = document.createElement('div');
   d.className = 'chaos-dark';
-  d.style.cssText = 'position:absolute;inset:0;background:rgba(0,0,0,.86);z-index:34;pointer-events:none;animation:popIn .12s ease;';
+  d.style.cssText = `position:absolute;inset:0;background:rgba(0,0,0,${opacity.toFixed(2)});z-index:34;pointer-events:none;animation:popIn .12s ease;`;
   arena.appendChild(d);
+  const darkComments = opacity < 0.55
+    ? ['lights out 😈', 'oops, dark now', 'can you still see me?']
+    : opacity < 0.72
+    ? ['DARKNESS. 😈', 'where\'d you go', 'blackout incoming']
+    : ['LIGHTS OFF. GOOD LUCK. 😈', 'you don\'t need to see', 'pitch black. still counting.'];
+  speech(darkComments[Math.floor(Math.random()*darkComments.length)], Math.min(2000, hold - 200));
   setTimeout(()=>{
-    d.style.transition = 'opacity .26s ease';
+    d.style.transition = 'opacity .32s ease';
     d.style.opacity = '0';
-    setTimeout(()=>d.remove(), 280);
+    setTimeout(()=>d.remove(), 340);
   }, hold);
 }
 
@@ -4617,17 +4811,11 @@ function cTap() {
           spawnTapChaosSwarm(1500 + Math.random()*800);
           speech(['too many me','good luck 👀','find me now'][Math.floor(Math.random()*3)], 480);
           break;
-        case 'flipFn':
-          document.getElementById('game-screen').style.transform='scaleX(-1)';
-          setMsg("something feels off... 😏");
-          scheduleChallengeTimeout(()=>{ applyGameScreenTransform(); setMsg('tap me.'); },
-            Math.max(1000, 800+level*50));
-          break;
         case 'textBannerFn':
-          showFakeTextBanner();
+          showFakeTextBanner(400 + chaosState.level * 200 + Math.random()*300);
           break;
         case 'callFn':
-          showFakeCall(()=>{});
+          showFakeCall(()=>{}, 800 + chaosState.level * 220);
           applyChaosGameplayModifier('fake_call');
           break;
         case 'shakeFn':
@@ -4642,6 +4830,15 @@ function cTap() {
             scheduleChallengeTimeout(()=>onio.style.transition='', 300);
           }, 800+Math.random()*400);
           break;
+        case 'flipFn': {
+          // Duration scales hard with depth — at high levels you play half the challenge mirrored
+          const flipDur = Math.max(1000, 800 + level*80);
+          document.getElementById('game-screen').style.transform='scaleX(-1)';
+          setMsg("something feels off... 😏");
+          speech('mirror world 😈', 1200);
+          scheduleChallengeTimeout(()=>{ applyGameScreenTransform(); setMsg('tap me.'); }, flipDur);
+          break;
+        }
       }
     };
 
@@ -6288,16 +6485,16 @@ function startChaosSystem() {
     }
   }, 230);
 
-  // Continuous visual overlays — opacity scales with level
-  const tintOpacity  = chaosVal(5, 25, 0, 0.18);   // red vignette: fades in lv5→25
-  const glitchOpacity= chaosVal(8, 30, 0, 1);       // scanlines: fades in lv8→30
-  const tintEl = document.getElementById('chaos-tint');
+  // Continuous visual overlays — opacity and speed scale with depth
+  const tintOpacity   = chaosVal(5, 25, 0, 0.26);    // red vignette: fades in lv5→25, stronger than before
+  const glitchOpacity = chaosVal(8, 30, 0, 1);        // scanlines: fades in lv8→30
+  const tintEl   = document.getElementById('chaos-tint');
   const glitchEl = document.getElementById('glitch-lines');
   tintEl.style.opacity = tintOpacity;
   tintEl.style.display = tintOpacity > 0 ? 'block' : 'none';
   glitchEl.style.opacity = glitchOpacity;
   glitchEl.style.display = glitchOpacity > 0 ? 'block' : 'none';
-  // enable animation only when visible enough
+  glitchEl.style.setProperty('--glitch-line-speed', getGlitchLineSpeed());
   if (glitchOpacity > 0.1) glitchEl.classList.add('active');
   else glitchEl.classList.remove('active');
 }
@@ -6337,6 +6534,7 @@ function doChaosTick() {
 
 function cleanupChaos() {
   stopChaosSystem();
+  stopAmbientChaos();
   document.getElementById('game-screen').style.filter='';
   clearPersistentGameScreenTransform();
   document.getElementById('resume-btn').style.display='';
