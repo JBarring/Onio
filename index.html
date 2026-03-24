@@ -464,8 +464,6 @@ html,body{
   font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:400;white-space:nowrap;}
 #toast.show{opacity:1;}
 /* ===== CHAOS SYSTEM ===== */
-
-/* Glitch — one-shot burst (Onio element only) */
 @keyframes glitch {
   0%   { transform: translate(0,0) skew(0deg); filter: none; }
   10%  { transform: translate(-3px,1px) skew(-1deg); filter: hue-rotate(40deg); }
@@ -476,62 +474,20 @@ html,body{
   60%  { transform: translate(0,0); filter: hue-rotate(20deg); }
   100% { transform: translate(0,0); filter: none; }
 }
-/* Ambient continuous glitch — game-screen level, loops forever, intensity driven by --shake-amp */
-@keyframes ambientGlitch {
-  0%   { transform: translate(0,0) skewX(0deg); filter: none; }
-  8%   { transform: translate(calc(var(--shake-amp,2px) * -0.8), calc(var(--shake-amp,2px) * 0.4)) skewX(calc(var(--shake-amp,2px) * -0.15deg)); filter: hue-rotate(30deg) saturate(1.4); }
-  16%  { transform: translate(calc(var(--shake-amp,2px) * 0.9), calc(var(--shake-amp,2px) * -0.5)); filter: none; }
-  24%  { transform: translate(calc(var(--shake-amp,2px) * -0.5), calc(var(--shake-amp,2px) * 0.6)); filter: hue-rotate(-20deg); }
-  35%  { transform: translate(calc(var(--shake-amp,2px) * 0.4), 0); filter: saturate(1.6) brightness(1.04); }
-  48%  { transform: translate(0, calc(var(--shake-amp,2px) * -0.3)); filter: none; }
-  60%  { transform: translate(calc(var(--shake-amp,2px) * -0.3), calc(var(--shake-amp,2px) * 0.2)); filter: hue-rotate(15deg); }
-  76%  { transform: translate(calc(var(--shake-amp,2px) * 0.6), calc(var(--shake-amp,2px) * -0.4)); filter: none; }
-  88%  { transform: translate(calc(var(--shake-amp,2px) * -0.2), 0); }
-  100% { transform: translate(0,0); filter: none; }
-}
-/* Ambient continuous shake — separate from glitch so they can stack */
-@keyframes ambientShake {
-  0%,100% { transform: translate(0,0) rotate(0deg); }
-  10% { transform: translate(calc(var(--shake-amp,2px) * -1), calc(var(--shake-amp,2px) * 0.5)) rotate(calc(var(--shake-amp,2px) * -0.04deg)); }
-  22% { transform: translate(calc(var(--shake-amp,2px) * 1.1), calc(var(--shake-amp,2px) * -0.6)) rotate(calc(var(--shake-amp,2px) * 0.05deg)); }
-  33% { transform: translate(calc(var(--shake-amp,2px) * -0.8), calc(var(--shake-amp,2px) * -0.3)); }
-  45% { transform: translate(calc(var(--shake-amp,2px) * 0.7), calc(var(--shake-amp,2px) * 0.8)); }
-  57% { transform: translate(calc(var(--shake-amp,2px) * -1.2), calc(var(--shake-amp,2px) * 0.2)) rotate(calc(var(--shake-amp,2px) * -0.03deg)); }
-  68% { transform: translate(calc(var(--shake-amp,2px) * 0.9), calc(var(--shake-amp,2px) * -0.7)); }
-  80% { transform: translate(calc(var(--shake-amp,2px) * -0.4), calc(var(--shake-amp,2px) * 0.5)); }
-  91% { transform: translate(calc(var(--shake-amp,2px) * 0.5), calc(var(--shake-amp,2px) * -0.3)); }
-}
-/* One-shot screen shake (quick hit, still used for tap events) */
 @keyframes screenShake {
   0%,100% { transform: translate(0,0); }
-  15%  { transform: translate(calc(var(--shake-amp,4px) * -1), calc(var(--shake-amp,4px) * 0.5)); }
-  30%  { transform: translate(calc(var(--shake-amp,4px) * 1), calc(var(--shake-amp,4px) * -0.5)); }
-  45%  { transform: translate(calc(var(--shake-amp,4px) * -0.75), calc(var(--shake-amp,4px) * -0.25)); }
-  60%  { transform: translate(calc(var(--shake-amp,4px) * 0.75), calc(var(--shake-amp,4px) * 0.25)); }
-  75%  { transform: translate(calc(var(--shake-amp,4px) * -0.5), calc(var(--shake-amp,4px) * 0.5)); }
+  15%  { transform: translate(-4px, 2px); }
+  30%  { transform: translate(4px, -2px); }
+  45%  { transform: translate(-3px, -1px); }
+  60%  { transform: translate(3px, 1px); }
+  75%  { transform: translate(-2px, 2px); }
 }
 @keyframes chromaShift {
   0%,100%{text-shadow: 2px 0 #f00, -2px 0 #00f;}
   50%{text-shadow: -2px 0 #f00, 2px 0 #00f;}
 }
-
-/* One-shot classes */
 .chaos-glitch { animation: glitch 0.4s steps(1) !important; }
-.chaos-shake  { animation: screenShake 0.35s ease !important; }
-
-/* Ambient classes — applied to #game-screen for the duration of the minigame */
-/* --shake-amp and --shake-speed are set inline by JS based on depth */
-.ambient-shake {
-  animation: ambientShake var(--shake-speed, 0.55s) ease-in-out infinite !important;
-}
-.ambient-glitch {
-  animation: ambientGlitch var(--glitch-speed, 0.8s) steps(1) infinite !important;
-}
-.ambient-shake.ambient-glitch {
-  /* Both active — glitch wins on transform, shake adds via chained animation */
-  animation: ambientShake var(--shake-speed, 0.55s) ease-in-out infinite,
-             ambientGlitch var(--glitch-speed, 0.8s) steps(1) infinite !important;
-}
+.chaos-shake  { animation: screenShake 0.3s ease !important; }
 
 /* chaos tint overlay */
 #chaos-tint {
@@ -541,12 +497,12 @@ html,body{
 }
 #chaos-tint.active { opacity:1; }
 
-/* glitch lines overlay — continuous, intensity via opacity */
+/* glitch lines overlay */
 #glitch-lines {
   position:absolute; inset:0; pointer-events:none; z-index:9;
   opacity:0;
 }
-#glitch-lines.active { opacity:1; animation: glitchLines var(--glitch-line-speed,.15s) steps(1) infinite; }
+#glitch-lines.active { opacity:1; animation: glitchLines .15s steps(1) infinite; }
 @keyframes glitchLines {
   0%  { background: linear-gradient(transparent 47%, rgba(255,0,0,.06) 48%, rgba(255,0,0,.06) 49%, transparent 50%); }
   33% { background: linear-gradient(transparent 28%, rgba(0,0,255,.05) 29%, rgba(0,0,255,.05) 30%, transparent 31%, transparent 65%, rgba(255,0,0,.06) 66%, transparent 67%); }
@@ -1095,31 +1051,31 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
     <div class="instr-overlay" id="instr-hold">
       <div class="instr-icon">☝️</div>
       <div class="instr-title">HOLD IT!</div>
-      <div class="instr-sub">Press and hold Onio until the ring fills completely</div>
+      <div class="instr-sub">hold me until the ring fills. don't let go.</div>
       <div class="instr-tap-hint">tap to start</div>
     </div>
     <div class="instr-overlay" id="instr-drag">
       <div class="instr-icon">👆</div>
       <div class="instr-title">DRAG ME!</div>
-      <div class="instr-sub">Drag Onio into the glowing drop zone</div>
+      <div class="instr-sub">drag me into the glowing zone. drop me in it.</div>
       <div class="instr-tap-hint">tap to start</div>
     </div>
     <div class="instr-overlay" id="instr-trace">
       <div class="instr-icon">✍️</div>
       <div class="instr-title">TRACE PATH</div>
-      <div class="instr-sub">Start on the START dot, then drag through each dot in order</div>
+      <div class="instr-sub">drag from the start dot through each one in order.</div>
       <div class="instr-tap-hint">tap to start</div>
     </div>
     <div class="instr-overlay" id="instr-shake">
       <div class="instr-icon">📱</div>
       <div class="instr-title">SHAKE IT!</div>
-      <div class="instr-sub">Shake your phone hard to bonk Onio</div>
+      <div class="instr-sub">shake your phone hard. bonk me.</div>
       <div class="instr-tap-hint">tap to start</div>
     </div>
     <div class="instr-overlay" id="instr-blow">
       <div class="instr-icon">💨</div>
       <div class="instr-title">BLOW!</div>
-      <div class="instr-sub">Blow into your mic — watch the meter fill up</div>
+      <div class="instr-sub">blow into the mic. fill the meter.</div>
       <div class="instr-tap-hint">tap to start</div>
     </div>
 
@@ -2006,9 +1962,8 @@ function chaosApplyBatteryLow() {
   }
 }
 
-function chaosApplyVolumePrank(stayMs=820) {
+function chaosApplyVolumePrank() {
   const isBrightness = Math.random() < 0.45;
-  const hold = Math.max(420, stayMs);
   if (isBrightness) {
     const dim = document.createElement('div');
     dim.className = 'chaos-brightness-overlay';
@@ -2035,7 +1990,7 @@ function chaosApplyVolumePrank(stayMs=820) {
       const fill = hud.querySelector('#bright-fill');
       if (fill) fill.style.width = '100%';
       setTimeout(() => { dim.remove(); hud.remove(); }, 380);
-    }, hold);
+    }, 420 + Math.random()*520);
     return;
   }
 
@@ -2065,7 +2020,7 @@ function chaosApplyVolumePrank(stayMs=820) {
     if (fill) fill.style.width = '85%';
     if (icon) icon.textContent = '🔊';
     setTimeout(() => hud.remove(), 250);
-  }, hold);
+  }, 420 + Math.random()*520);
 }
 
 function chaosApplyGravityShift() {
@@ -2102,27 +2057,9 @@ function chaosApplyGravityShift() {
 }
 
 function chaosApplyInterfaceMelt() {
-  const t = getChaosLevel01();
-  // Blur 1.5px→4px, saturate 1.8→3.0, duration 420ms→3000ms
-  const blur = (1.5 + t * 2.5).toFixed(1);
-  const sat  = (1.8 + t * 1.2).toFixed(1);
-  const hue  = Math.round(8 + t * 22);
-  const hold = Math.round(420 + t * 2580);
   const heavy = hits >= 20;
-  const filter = heavy
-    ? `blur(${blur}px) saturate(${sat}) hue-rotate(${hue}deg) contrast(${(1 + t*0.25).toFixed(2)})`
-    : `blur(${blur}px) saturate(${sat}) hue-rotate(${hue}deg)`;
-  arena.style.filter = filter;
-  arena.style.transition = 'filter 0.5s ease';
-  if (t > 0.5) {
-    const meltComments = ['is it melting in here?', 'reality is optional 😈', 'INTERFACE MELT 😈', 'everything\'s fine'];
-    speech(meltComments[Math.floor(Math.random()*meltComments.length)], Math.min(1800, hold - 200));
-  }
-  scheduleChallengeTimeout(() => {
-    arena.style.filter = '';
-    arena.style.transition = 'filter 0.4s ease';
-    scheduleChallengeTimeout(() => { arena.style.transition = ''; }, 420);
-  }, hold);
+  arena.classList.add(heavy ? 'melting-heavy' : 'melting');
+  scheduleChallengeTimeout(() => arena.classList.remove('melting', 'melting-heavy'), 420 + Math.random()*520);
 }
 
 function chaosApplyFakeUpdate() {
@@ -2133,146 +2070,44 @@ function chaosApplyFakeUpdate() {
   showFloatingChaosBanner('📲', major ? 'system hijack' : 'update available', major ? 'overlay takeover in progress' : 'update queued. maybe.', major ? 'danger' : 'default', major ? 960 : 620);
 }
 
-// ── Ambient environmental chaos ───────────────────────────────────────────────
-// shakeAmp: 2px (depth 1) → 28px (depth 90). Speed: 0.55s → 0.22s.
-function getShakeAmp() {
-  const t = Math.max(0, Math.min(1, getChaosLevel01()));
-  return Math.round(2 + t * 26); // px
-}
-function getShakeSpeed() {
-  const t = Math.max(0, Math.min(1, getChaosLevel01()));
-  return (0.55 - t * 0.33).toFixed(2) + 's'; // 0.55s → 0.22s
-}
-function getGlitchSpeed() {
-  const t = Math.max(0, Math.min(1, getChaosLevel01()));
-  return (0.80 - t * 0.52).toFixed(2) + 's'; // 0.80s → 0.28s
-}
-function getGlitchLineSpeed() {
-  const t = Math.max(0, Math.min(1, getChaosLevel01()));
-  return (0.15 - t * 0.08).toFixed(3) + 's'; // 0.15s → 0.07s
-}
-
-// Called once per challenge start to apply ambient environmental effects
-// that last for the whole minigame. Clears itself on cleanupAll.
-let ambientShakeActive = false;
-let ambientGlitchActive = false;
-
-function startAmbientChaos() {
-  const gs = document.getElementById('game-screen');
-  const cl = chaosState.level;
-  const amp = getShakeAmp();
-  gs.style.setProperty('--shake-amp', amp + 'px');
-  gs.style.setProperty('--shake-speed', getShakeSpeed());
-  gs.style.setProperty('--glitch-speed', getGlitchSpeed());
-
-  // Shake: starts at chaos level 1, always on once unlocked
-  if (cl >= 1) {
-    gs.classList.add('ambient-shake');
-    ambientShakeActive = true;
-    // Onio comments based on depth
-    const comments = amp <= 4
-      ? ['earthquake! 😈', 'oops, my bad', 'slight tremor 😬']
-      : amp <= 10
-      ? ['EARTHQUAKE! 😈', 'is it hot in here?', 'magnitude rising 😈', 'hold on tight']
-      : amp <= 18
-      ? ['MAGNITUDE 6 😈', 'i may have broken physics', 'SEISMIC EVENT', 'still shaking btw 😈']
-      : ['MAGNITUDE 10. YOU\'RE WELCOME. 😈', 'sorry about your hands', 'THE GROUND IS MINE 😈', 'CATASTROPHIC CHAOS'];
-    speech(comments[Math.floor(Math.random()*comments.length)], 2200);
-  }
-
-  // Glitch: starts at chaos level 3
-  if (cl >= 3) {
-    gs.classList.add('ambient-glitch');
-    ambientGlitchActive = true;
-  }
-
-  // Update glitch lines speed
-  const glitchEl = document.getElementById('glitch-lines');
-  if (glitchEl && glitchEl.classList.contains('active')) {
-    glitchEl.style.setProperty('--glitch-line-speed', getGlitchLineSpeed());
-  }
-}
-
-function stopAmbientChaos() {
-  const gs = document.getElementById('game-screen');
-  gs.classList.remove('ambient-shake', 'ambient-glitch');
-  ambientShakeActive = false;
-  ambientGlitchActive = false;
-}
-
-// Mid-minigame Onio commentary on the ongoing shake — fires once per challenge at high depth
-function maybeCommentOnShake() {
-  const amp = getShakeAmp();
-  if (amp <= 6 || !ambientShakeActive) return;
-  const midComments = [
-    'still shaking btw 😈',
-    'yeah this is your life now.',
-    'getting worse. on purpose.',
-    'magnitude: you can\'t win.',
-    'earthquake simulator 3000 😈',
-  ];
-  scheduleChallengeTimeout(() => {
-    if (!trickActive || gamePaused) return;
-    speech(midComments[Math.floor(Math.random()*midComments.length)], 1800);
-  }, 2800 + Math.random()*1400);
-}
-
 function applyChaosEffect(effect, context={}) {
   const pt = context.point || lastInputPoint || { x:onioX+36, y:onioY+36 };
   switch (effect) {
     case 'visual': {
       const visualPicks = [
-        // One-shot screen jolt — on top of ambient, feels like an aftershock
         () => {
           document.getElementById('game-screen').classList.add('chaos-shake');
-          scheduleChallengeTimeout(() => document.getElementById('game-screen').classList.remove('chaos-shake'), 360);
-          speech(['aftershock! 😈','boom.','oops again'][Math.floor(Math.random()*3)], 500);
+          scheduleChallengeTimeout(() => document.getElementById('game-screen').classList.remove('chaos-shake'), 320);
         },
-        // Onio glitch burst — one-shot on Onio element
         () => {
           onio.classList.add('chaos-glitch');
           scheduleChallengeTimeout(() => onio.classList.remove('chaos-glitch'), 420);
         },
-        // Dead pixels — ambient duration (stays rest of minigame if deep)
-        () => {
-          const dur = chaosState.level >= 6
-            ? 99999 // until cleanup clears it
-            : 360 + Math.random()*420;
-          showDeadPixels(dur);
-        },
+        () => showDeadPixels(360 + Math.random()*420),
       ];
-      if (chaosState.level >= 3) visualPicks.push(
-        // Interface melt — ambient duration at high depth
-        () => chaosApplyInterfaceMelt()
-      );
-      if (chaosState.level >= 4) visualPicks.push(
-        // Dark screen — longer at depth, player has to play through it
-        () => showDarkScreen()
-      );
+      if (chaosState.level >= 3) visualPicks.push(() => chaosApplyInterfaceMelt());
+      if (chaosState.level >= 4) visualPicks.push(() => showDarkScreen(360 + Math.random()*420));
       if (chaosState.level >= 5) visualPicks.push(() => chaosApplyGravityShift());
       visualPicks[Math.floor(Math.random()*visualPicks.length)]();
       markChaosStateEffect('visual', 460);
       break;
     }
     case 'overlay': {
-      // Duration scales with depth: shallow = brief annoyance, deep = you play through it
-      const baseOverlayMs = 800 + chaosState.level * 260; // 800ms lv0 → ~3500ms lv10
-      const overlayMs = Math.min(5000, baseOverlayMs + Math.random()*600);
       const overlayPicks = [
-        () => showFakeTextChaos(overlayMs, { point:pt, overOnio:true }),
-        () => showFloatingChaosBanner('💬', 'interrupt', 'focus, maybe.', 'default', overlayMs),
+        () => showFakeTextChaos(360 + Math.random()*540, { point:pt }),
+        () => showFloatingChaosBanner('💬', 'interrupt', 'focus, maybe.', 'default', 360 + Math.random()*520),
       ];
       if (chaosState.level >= 3) overlayPicks.push(
-        () => showSystemBanner('📞', 'Incoming Call', 'unknown chaos caller...', 'default', overlayMs),
-        () => showFakeCall(() => {}, overlayMs),
+        () => showSystemBanner('📞', 'Incoming Call', 'unknown chaos caller...', 'default', 380 + Math.random()*480),
+        () => showFakeCall(() => {}),
       );
       if (chaosState.level >= 4) overlayPicks.push(
-        () => chaosApplyVolumePrank(overlayMs),
+        () => chaosApplyVolumePrank(),
         () => chaosApplyBatteryLow(),
       );
       if (chaosState.level >= 6) overlayPicks.push(() => chaosApplyFakeUpdate());
       overlayPicks[Math.floor(Math.random()*overlayPicks.length)]();
-      markChaosStateEffect('overlay', Math.min(overlayMs + 200, 5200));
+      markChaosStateEffect('overlay', 620);
       break;
     }
     case 'input': {
@@ -2455,14 +2290,11 @@ function showFloatingChaosBanner(icon, title, text, tone='default', stayMs=780) 
       ? 'linear-gradient(180deg,#152335 0%,#0F1A28 100%)'
       : 'linear-gradient(180deg,#1a1a2e 0%,#141425 100%)';
   b.className = 'chaos-system-banner';
-  // Position: try to overlap the active interaction area (near Onio)
-  const bTop = Math.max(56, Math.min(gH - 90, onioY - 64));
-  const bLeft = Math.max(8, Math.min(gW - 220, onioX - 60));
   b.style.cssText = [
     'position:absolute',
-    `top:${bTop}px`,
-    `left:${bLeft}px`,
-    `right:${Math.max(8, gW - bLeft - 210)}px`,
+    'top:56px',
+    'left:10px',
+    'right:10px',
     `background:${bg}`,
     'border-radius:14px',
     'padding:10px 12px',
@@ -2473,7 +2305,6 @@ function showFloatingChaosBanner(icon, title, text, tone='default', stayMs=780) 
     'box-shadow:0 10px 24px rgba(0,0,0,.35)',
     'pointer-events:none',
     'animation:popIn .14s ease',
-    'max-width:220px',
   ].join(';');
   b.innerHTML = `<div style="font-size:20px;line-height:1;">${icon}</div>
     <div style="flex:1;min-width:0;">
@@ -2481,8 +2312,7 @@ function showFloatingChaosBanner(icon, title, text, tone='default', stayMs=780) 
       <div style="font-family:'Nunito',sans-serif;font-size:13px;color:white;font-weight:800;line-height:1.25;">${text}</div>
     </div>`;
   arena.appendChild(b);
-  // No artificial cap — honour the full stayMs so deep-run banners actually persist
-  const hold = Math.max(300, stayMs);
+  const hold = Math.max(300, Math.min(780, stayMs));
   setTimeout(() => {
     b.style.transition = 'opacity .18s ease, transform .18s ease';
     b.style.opacity = '0';
@@ -2665,7 +2495,7 @@ function maybeTriggerBehaviorChaos(reason='pre_input') {
   if (pick === 'near_text') showFloatingFakeTextNear(px, py, 420 + Math.random()*420);
   else if (pick === 'tap_bait') spawnTapBaitNear(px, py, 420 + Math.random()*520);
   else if (pick === 'safe_zone') showFakeSafeZoneHazard(420 + Math.random()*520);
-  else showFloatingChaosBanner('⚠️', 'Instruction Patch', getWrongInstructionLine(), 'cool', 420 + Math.random()*420);
+  else showFloatingChaosBanner('⚠️', 'instruction patch', getWrongInstructionLine(), 'cool', 420 + Math.random()*420);
 
   applyChaosGameplayModifier(reason);
   return true;
@@ -3648,7 +3478,7 @@ function triggerDeath(reason) {
   updateComboChip();
   cleanupAll();
   if (clutchState.isClutch) {
-    setMsg('ALMOST.');
+    setMsg('almost.');
     speech('that was close 😈', 0);
   } else {
     speech('hehe... '+reason, 0);
@@ -3720,7 +3550,6 @@ function doDeathScreen() {
 // CLEANUP
 // ============================================================
 function cleanupAll() {
-  stopAmbientChaos();
   if (behaviorReactionUnsavedCount > 0) {
     saveProfile();
     behaviorReactionUnsavedCount = 0;
@@ -3929,10 +3758,7 @@ function runNextChallenge() {
       if (shouldTriggerChaos(timeToNextAction)) {
         triggerChaos({ timeToNextAction, source:'target_spawn', minigame:'tap', point:{ x:onioX+36, y:onioY+36 } });
       }
-      trickActive=true; onio.style.pointerEvents='auto';
-      startAmbientChaos();
-      maybeCommentOnShake();
-      cTap();
+      trickActive=true; onio.style.pointerEvents='auto'; cTap();
     }, 220);
     return;
   }
@@ -3954,10 +3780,7 @@ function runNextChallenge() {
     if (shouldTriggerChaos(timeToNextAction)) {
       triggerChaos({ timeToNextAction, source:'target_spawn', minigame:chosen.id, point:{ x:onioX+36, y:onioY+36 } });
     }
-    trickActive=true; onio.style.pointerEvents='auto';
-    startAmbientChaos();
-    maybeCommentOnShake();
-    chosen.fn();
+    trickActive=true; onio.style.pointerEvents='auto'; chosen.fn();
   }, 220);
 }
 
@@ -4291,16 +4114,14 @@ function getSignDisplay(trueRemaining) {
   return trueRemaining;
 }
 
-// Fake incoming call overlay — non-blocking, gameplay continues underneath.
-// Duration now matches the overlay chaos window so it persists at high depth.
-function showFakeCall(cb=()=>{}, stayMs=820) {
+// Fake incoming call overlay
+function showFakeCall(cb=()=>{}) {
+  // Non-blocking floating call card; gameplay continues underneath.
   const overlay = document.createElement('div');
   overlay.className = 'chaos-call-overlay';
-  // Position: float just above Onio so it directly occludes the target
-  const callTop = Math.max(52, Math.min(gH - 100, onioY - 80));
   overlay.style.cssText = [
     'position:absolute',
-    `top:${callTop}px`,
+    'top:58px',
     'left:10px',
     'right:10px',
     'z-index:46',
@@ -4336,13 +4157,12 @@ function showFakeCall(cb=()=>{}, stayMs=820) {
     overlay.style.transform = 'translateY(-8px)';
     setTimeout(()=>{ overlay.remove(); cb(); }, 180);
   }
-  // Honour the full overlay window — no artificial 1s cap
-  const hold = Math.max(320, stayMs);
+  const hold = 320 + Math.random()*500; // auto-dismiss under 1s including fade
   setTimeout(()=>{ if (overlay.parentNode) dismiss(); }, hold);
 }
 
-// Fake text notification banner (non-blocking, positions near Onio)
-function showFakeTextBanner(stayMs) {
+// Fake text notification banner (non-blocking)
+function showFakeTextBanner() {
   const banners = [
     "Onio: u ok? (i know the answer)",
     "Mom: are you playing that game again",
@@ -4355,13 +4175,10 @@ function showFakeTextBanner(stayMs) {
     : banners[Math.floor(Math.random()*banners.length)];
   const b = document.createElement('div');
   b.className = 'chaos-text-banner';
-  // Sit just above Onio so it occludes the target area
-  const bTop = Math.max(56, Math.min(gH - 80, onioY - 72));
-  b.style.cssText = `position:absolute;top:${bTop}px;left:12px;right:12px;background:#1a1a2e;border-radius:14px;padding:10px 13px;z-index:40;display:flex;gap:10px;align-items:center;animation:popIn .12s ease;box-shadow:0 4px 20px rgba(0,0,0,0.4);pointer-events:none;`;
+  b.style.cssText = `position:absolute;top:60px;left:12px;right:12px;background:#1a1a2e;border-radius:14px;padding:10px 13px;z-index:40;display:flex;gap:10px;align-items:center;animation:popIn .12s ease;box-shadow:0 4px 20px rgba(0,0,0,0.4);pointer-events:none;`;
   b.innerHTML = `<div style="font-size:28px;">💬</div><div><div style="font-family:'Fredoka One',cursive;font-size:12px;color:rgba(255,255,255,0.5);">MESSAGES</div><div style="font-family:'Nunito',sans-serif;font-size:14px;color:white;font-weight:700;">${bannerText}</div></div>`;
   arena.appendChild(b);
-  const hold = stayMs != null ? Math.max(300, stayMs) : 320 + Math.random()*500;
-  setTimeout(()=>{ b.style.transition='opacity .16s ease, transform .16s ease'; b.style.opacity='0'; b.style.transform='translateY(-8px)'; setTimeout(()=>b.remove(),190); }, hold);
+  setTimeout(()=>{ b.style.transition='opacity .16s ease, transform .16s ease'; b.style.opacity='0'; b.style.transform='translateY(-8px)'; setTimeout(()=>b.remove(),190); }, 320 + Math.random()*500);
 }
 
 function showSystemBanner(icon, title, text, tone='default', stayMs=820) {
@@ -4372,11 +4189,9 @@ function showSystemBanner(icon, title, text, tone='default', stayMs=820) {
     : tone === 'cool'
       ? 'linear-gradient(180deg,#152335 0%,#0F1A28 100%)'
       : 'linear-gradient(180deg,#1a1a2e 0%,#141425 100%)';
-  // Try to land over the active interaction area
-  const bTop = Math.max(52, Math.min(gH - 80, onioY - 70));
   b.style.cssText = [
     'position:absolute',
-    `top:${bTop}px`,
+    'top:56px',
     'left:10px',
     'right:10px',
     `background:${bg}`,
@@ -4396,7 +4211,7 @@ function showSystemBanner(icon, title, text, tone='default', stayMs=820) {
       <div style="font-family:'Nunito',sans-serif;font-size:14px;color:white;font-weight:800;line-height:1.3;">${text}</div>
     </div>`;
   arena.appendChild(b);
-  const hold = Math.max(300, stayMs);
+  const hold = Math.max(300, Math.min(800, stayMs));
   setTimeout(()=>{
     b.style.transition = 'opacity .16s ease, transform .16s ease';
     b.style.opacity = '0';
@@ -4405,25 +4220,16 @@ function showSystemBanner(icon, title, text, tone='default', stayMs=820) {
   }, hold);
 }
 
-function showDarkScreen() {
-  // Opacity and duration both scale with depth
-  const t = getChaosLevel01();
-  const opacity = 0.38 + t * 0.48; // 0.38 → 0.86
-  const hold = Math.round(400 + t * 2800); // 400ms → 3200ms
+function showDarkScreen(ms=760) {
+  const hold = Math.max(300, Math.min(700, ms));
   const d = document.createElement('div');
   d.className = 'chaos-dark';
-  d.style.cssText = `position:absolute;inset:0;background:rgba(0,0,0,${opacity.toFixed(2)});z-index:34;pointer-events:none;animation:popIn .12s ease;`;
+  d.style.cssText = 'position:absolute;inset:0;background:rgba(0,0,0,.86);z-index:34;pointer-events:none;animation:popIn .12s ease;';
   arena.appendChild(d);
-  const darkComments = opacity < 0.55
-    ? ['lights out 😈', 'oops, dark now', 'can you still see me?']
-    : opacity < 0.72
-    ? ['DARKNESS. 😈', 'where\'d you go', 'blackout incoming']
-    : ['LIGHTS OFF. GOOD LUCK. 😈', 'you don\'t need to see', 'pitch black. still counting.'];
-  speech(darkComments[Math.floor(Math.random()*darkComments.length)], Math.min(2000, hold - 200));
   setTimeout(()=>{
-    d.style.transition = 'opacity .32s ease';
+    d.style.transition = 'opacity .26s ease';
     d.style.opacity = '0';
-    setTimeout(()=>d.remove(), 340);
+    setTimeout(()=>d.remove(), 280);
   }, hold);
 }
 
@@ -4716,7 +4522,7 @@ function cTap() {
         scheduleChallengeTimeout(()=>{ onio.style.transform=''; onio.style.transition=''; }, 200);
         const hitLines = modeLines('hit');
         speech(hitLines[Math.floor(Math.random()*hitLines.length)], 0);
-        setMsg('GOT HIM! ✓');
+        setMsg('got him. ✓');
         scheduleChallengeTimeout(()=>{ clearSpeech(); onHit(true, flowId); }, 380);
         return;
       }
@@ -4811,11 +4617,17 @@ function cTap() {
           spawnTapChaosSwarm(1500 + Math.random()*800);
           speech(['too many me','good luck 👀','find me now'][Math.floor(Math.random()*3)], 480);
           break;
+        case 'flipFn':
+          document.getElementById('game-screen').style.transform='scaleX(-1)';
+          setMsg("something feels off... 😏");
+          scheduleChallengeTimeout(()=>{ applyGameScreenTransform(); setMsg('tap me.'); },
+            Math.max(1000, 800+level*50));
+          break;
         case 'textBannerFn':
-          showFakeTextBanner(400 + chaosState.level * 200 + Math.random()*300);
+          showFakeTextBanner();
           break;
         case 'callFn':
-          showFakeCall(()=>{}, 800 + chaosState.level * 220);
+          showFakeCall(()=>{});
           applyChaosGameplayModifier('fake_call');
           break;
         case 'shakeFn':
@@ -4830,15 +4642,6 @@ function cTap() {
             scheduleChallengeTimeout(()=>onio.style.transition='', 300);
           }, 800+Math.random()*400);
           break;
-        case 'flipFn': {
-          // Duration scales hard with depth — at high levels you play half the challenge mirrored
-          const flipDur = Math.max(1000, 800 + level*80);
-          document.getElementById('game-screen').style.transform='scaleX(-1)';
-          setMsg("something feels off... 😏");
-          speech('mirror world 😈', 1200);
-          scheduleChallengeTimeout(()=>{ applyGameScreenTransform(); setMsg('tap me.'); }, flipDur);
-          break;
-        }
       }
     };
 
@@ -4876,10 +4679,11 @@ function cDodge() {
   let tiredTimeout = null;
 
   const msgs = [
-    "Tap me! (if you dare)",
-    "Try to tap me 😏",
-    "Go on then...",
-    "I dare you.",
+    "catch me if you can.",
+    "try to tap me. i dare you.",
+    "go on then. 😏",
+    "you can't catch me.",
+    "i'm right here. sort of.",
   ];
   setMsg(msgs[Math.floor(Math.random()*msgs.length)]);
   startDeathTimer(challengeLimit(12500, 4200));
@@ -4903,14 +4707,14 @@ function cDodge() {
     arena.removeEventListener('touchmove', dodge);
 
     const tiredMsgs = [
-      "ugh FINE 🏳️",
-      "ok ok ok you got me 🏳️",
+      "ugh. fine. 🏳️",
+      "ok ok. you got me. 🏳️",
       "...fine. 🏳️",
-      "i'm tired 🏳️",
-      "ok I give up (for now) 🏳️",
+      "i'm tired. 🏳️",
+      "ok, i give up. (for now) 🏳️",
     ];
     speech(tiredMsgs[Math.floor(Math.random()*tiredMsgs.length)], 0);
-    setMsg("NOW! TAP NOW!");
+    setMsg("now. tap me. now.");
     onio.style.transition = 'left .8s ease, top .8s ease';
 
     const windowMs = level <= 5 ? 2500
@@ -4929,8 +4733,8 @@ function cDodge() {
         onio.style.transition = '';
         resumeDodge();
       } else {
-        speech("ok I'm back 😈", 700);
-        setMsg("Tap me!");
+        speech("ok i'm back 😈", 700);
+        setMsg("tap me.");
         isTired = false;
         nearMisses = 0;
         onio.style.transition = '';
@@ -4982,8 +4786,8 @@ function cDodge() {
       nearMisses = Math.max(0, Math.floor(nearMisses * 0.65));
       onio.style.transition = '';
       moveOnio(true);
-      speech('not yet 😈', 620);
-      setMsg('almost, but no.');
+      speech('not yet. 😈', 620);
+      setMsg('almost. but no.');
       if (maybeApplyInputLatency(flowId, 'dodge', () => {
         if (!trickActive) return;
         resumeDodge();
@@ -5020,7 +4824,7 @@ function cHold() {
     holdEscapeInterval = null;
     holdStartHandler = null;
     holdStopHandler = null;
-    setMsg("Hold me! Don't. Let. Go.");
+    setMsg("hold me. don't. let. go.");
     onio.style.pointerEvents='auto'; trickActive=true;
     startDeathTimer(challengeLimit(9800, 4200));
 
@@ -5062,7 +4866,7 @@ function cHold() {
       arc.style.stroke = '#E84030';
       onio.style.transform='';
       if (showLine && trickActive && progress > 0) {
-        speech(["don't let go!","SO CLOSE","lol bye","almost! (not really)"][Math.floor(Math.random()*4)], 600);
+        speech(["don't let go!","so close...","lol bye 👋","almost. (not really)"][Math.floor(Math.random()*4)], 600);
       }
     }
 
@@ -5086,7 +4890,7 @@ function cHold() {
           onio.style.transition='left .08s, top .08s';
           onio.style.left=nx+'px'; onio.style.top=ny+'px';
           onioX=nx; onioY=ny;
-          speech(['nope!','let go!','stop!','escape!'][Math.floor(Math.random()*4)], 400);
+          speech(['nope!','let go!','stop that.','escaping!'][Math.floor(Math.random()*4)], 400);
           haptic(15);
           progress = Math.max(0, progress - needed * (0.11 + Math.min(0.11, level*0.0035)));
         }
@@ -5103,7 +4907,7 @@ function cHold() {
       if (isHolding) {
         if (!pointerInsideOnio(holdClientX, holdClientY)) {
           dropHold(false);
-          speech("stay ON me 😈", 500);
+          speech("stay on me 😈", 500);
           return;
         }
         const inputProfile = getInputChaosProfile();
@@ -5168,7 +4972,7 @@ function cHold() {
       holdClientY = e.clientY ?? holdClientY;
       if (isHolding && !pointerInsideOnio(holdClientX, holdClientY)) {
         dropHold(false);
-        speech("stay ON me 😈", 500);
+        speech("stay on me 😈", 500);
       }
     }
     function stopH(e) {
@@ -5224,7 +5028,7 @@ function spawnOnioEl(emoji, x, y, opts={}) {
 function cDrag() {
   showInstr('instr-drag', ()=>{
     const flowId = getActiveFlowId();
-    setMsg("Drag me to the zone!");
+    setMsg(["drag me in there.","drop zone. that one.","in the zone. not near it.","get me in there."][Math.floor(Math.random()*4)]);
     onio.style.pointerEvents='auto'; trickActive=true;
     let zoneW=120, zoneH=100; let zx,zy;
     do{zx=30+Math.random()*(gW-zoneW-60);zy=120+Math.random()*(gH-zoneH-140);}
@@ -5263,7 +5067,7 @@ function cDrag() {
           zx = moved.x;
           zy = moved.y;
           paintZone();
-          setMessageTemp('zone shifted.');
+          setMessageTemp("zone shifted. 😈");
         }
         if (isDragging && maybeTriggerCheat('drag_zone_shrink', chaos) && Math.random() < 0.34) {
           zoneW = Math.max(86, zoneW - (8 + Math.floor(Math.random()*10)));
@@ -5272,7 +5076,7 @@ function cDrag() {
           zx = moved.x;
           zy = moved.y;
           paintZone();
-          setMessageTemp('zone shrinking.');
+          setMessageTemp("zone shrinking... 😈");
         } else if (!isDragging && (zoneW < 120 || zoneH < 100)) {
           zoneW = Math.min(120, zoneW + 2);
           zoneH = Math.min(100, zoneH + 2);
@@ -5321,7 +5125,7 @@ function cDrag() {
       const cx = onioX + 36;
       const cy = onioY + 36;
       if (fakeZone && cx>fx && cx<fx+fw && cy>fy && cy<fy+fh) {
-        speech('wrong box 😈', 620);
+        speech(["wrong box 😈","lol nope","nice try though"][Math.floor(Math.random()*3)], 620);
         registerMiss(cx, cy);
         return;
       }
@@ -5329,7 +5133,7 @@ function cDrag() {
         if (!jumpOutUsed && level >= 10 && maybeTriggerCheat('drag_jump_out', getChaosLevel01()) && Math.random() < 0.5) {
           jumpOutUsed = true;
           moveOnio(true);
-          speech('nope. not staying in there.', 720);
+          speech('nope. not in there. 😈', 720);
           setMessageTemp('he jumped out.');
           return;
         }
@@ -5337,7 +5141,7 @@ function cDrag() {
         clearDeathTimer();
         onHit(false, flowId);
       } else {
-        speech("not there! 🎯",500);
+        speech(["not there 😈","wrong spot","that's not it"][Math.floor(Math.random()*3)], 500);
       }
     }
     function ed(){
@@ -5355,7 +5159,7 @@ function cDrag() {
 function cShake() {
   showInstr('instr-shake', ()=>{
     const flowId = getActiveFlowId();
-    setMsg("SHAKE YOUR PHONE! 📳");
+    setMsg(["shake it.","shake your phone.","physically shake me.","vibrate. now."][Math.floor(Math.random()*4)]);
     trickActive=true; onio.style.pointerEvents='none';
     document.getElementById('shake-ind').classList.add('active');
     const needed=Math.max(3,6-Math.floor(level/2));
@@ -5377,7 +5181,7 @@ function cShake() {
         const now=Date.now();
         if (delta>16&&now-lastSh>220){
           lastSh=now; count++; haptic(20);
-          speech(['shake!','yeah!','more!','keep going!'][Math.min(count-1,3)],400);
+          speech(['yeah!','more!','keep going!','there we go!'][Math.min(count-1,3)], 400);
           onio.style.transform=`rotate(${(Math.random()-.5)*30}deg)`;
           setTimeout(()=>{onio.style.transform='';},200);
           updateShakeCount(count);
@@ -5395,9 +5199,9 @@ function cShake() {
 
 function fallbackShake(needed, flowId=getActiveFlowId()) {
   document.getElementById('shake-ind').classList.remove('active');
-  setMsg(`Tap Onio ${needed}× fast! 🤙`);
+  setMsg(`tap me ${needed}× fast.`);
   onio.style.pointerEvents='auto'; let taps=0;
-  function onTap(e){e.stopPropagation();taps++;speech(['shake!','yes!','more!'][Math.min(taps-1,2)],300);onio.style.transform=`rotate(${(Math.random()-.5)*20}deg)`;setTimeout(()=>{onio.style.transform='';},150);if(taps>=needed){onio.removeEventListener('pointerdown',onTap);onHit(false, flowId);}}
+  function onTap(e){e.stopPropagation();taps++;speech(['yes!','more!','keep going!'][Math.min(taps-1,2)], 300);onio.style.transform=`rotate(${(Math.random()-.5)*20}deg)`;setTimeout(()=>{onio.style.transform='';},150);if(taps>=needed){onio.removeEventListener('pointerdown',onTap);onHit(false, flowId);}}
   onio.addEventListener('pointerdown',onTap);
   currentTrickCleanup=()=>{onio.removeEventListener('pointerdown',onTap);clearDeathTimer();};
 }
@@ -5408,7 +5212,7 @@ function fallbackShake(needed, flowId=getActiveFlowId()) {
 function cBlow() {
   showInstr('instr-blow', ()=>{
     const flowId = getActiveFlowId();
-    setMsg("BLOW into the mic! 💨");
+    setMsg(["blow into the mic.","blow harder.","keep blowing. 💨","use your lungs."][Math.floor(Math.random()*4)]);
     trickActive=true; onio.style.pointerEvents='none';
     document.getElementById('mic-challenge').classList.add('active');
     document.getElementById('mic-onio').textContent='😈';
@@ -5451,7 +5255,7 @@ async function startMicChallenge(flowId=getActiveFlowId()) {
     clearInterval(calInterval);
     const baseline = ambientSum / ambientSamples;
     const threshold = baseline + 18; // blow must be this far above ambient
-    document.getElementById('mic-status').textContent='now BLOW! 💨';
+    document.getElementById('mic-status').textContent='now blow. 💨';
 
     let blowProgress=0, needed=3;
     micInterval = setInterval(()=>{
@@ -5465,10 +5269,10 @@ async function startMicChallenge(flowId=getActiveFlowId()) {
       if (pct > 0.1) {
         const lean = Math.min(pct*35, 35);
         document.getElementById('mic-onio').style.transform = `rotate(${lean}deg) translateX(${lean*.8}px)`;
-        document.getElementById('mic-status').textContent = pct>0.6 ? 'harder!! 💨💨' : 'keep blowing...';
+        document.getElementById('mic-status').textContent = pct > 0.6 ? 'harder. 💨💨' : 'keep blowing...';
       } else {
         document.getElementById('mic-onio').style.transform = '';
-        document.getElementById('mic-status').textContent = 'blow into the mic 💨';
+        document.getElementById('mic-status').textContent = 'blow. 💨';
       }
 
       if (avg > threshold) {
@@ -5478,7 +5282,7 @@ async function startMicChallenge(flowId=getActiveFlowId()) {
         arena.appendChild(r); setTimeout(()=>r.remove(),500);
         if (blowProgress>=needed) {
           document.getElementById('mic-onio').style.transform='rotate(90deg) translateX(20px)';
-          document.getElementById('mic-status').textContent='💀 knocked over!';
+          document.getElementById('mic-status').textContent='💀 knocked over.';
           setTimeout(()=>{
             document.getElementById('mic-challenge').classList.remove('active');
             stopMic(); clearDeathTimer(); onHit(false, flowId);
@@ -5491,7 +5295,7 @@ async function startMicChallenge(flowId=getActiveFlowId()) {
 
 function fallbackBlow(flowId=getActiveFlowId()) {
   document.getElementById('mic-challenge').classList.remove('active');
-  setMsg("No mic? Tap Onio 3× fast! 💨");
+  setMsg("no mic. tap me 3× fast instead.");
   onio.style.pointerEvents='auto'; let taps=0;
   function onTap(e){e.stopPropagation();taps++;const r=document.createElement('div');r.className='mic-ripple';r.style.cssText=`width:80px;height:80px;left:${onioX-4}px;top:${onioY-4}px;`;arena.appendChild(r);setTimeout(()=>r.remove(),500);if(taps>=3){onio.removeEventListener('pointerdown',onTap);onHit(false, flowId);}}
   onio.addEventListener('pointerdown',onTap);
@@ -5506,7 +5310,7 @@ function stopMic() {
 
 function cTimer() {
   const flowId = getActiveFlowId();
-  setMsg("TAP ME — HURRY! ⏰");
+  setMsg(["tap me. quickly.","hurry up.","tick tick tick. 😈","tap. now.","you're running out."][Math.floor(Math.random()*5)]);
   const limit=Math.max(2000,5000-level*200);
   startDeathTimer(limit);
   const stealsPlanned = level < 10 ? 1 : level < 22 ? 2 : 3;
@@ -5522,8 +5326,8 @@ function cTimer() {
     if (!isFlowCurrent(flowId) || !trickActive || !deathTimerInterval || deathTimerMs <= 180) return;
     trickActive = false;
     onio.style.pointerEvents='none';
-    setMsg("UNFAIR. YOU HAVE TOO MUCH TIME.");
-    speech("pause. i'm taking some 😈", 900);
+    setMsg("that's too much time. let me fix that.");
+    speech("hold on. borrowing some of that. 😈", 900);
 
     scheduleChallengeTimeout(() => {
       if (!isFlowCurrent(flowId) || !deathTimerInterval || deathTimerMs <= 0) return;
@@ -5531,7 +5335,7 @@ function cTimer() {
       deathTimerMs = Math.max(120, deathTimerMs * (1 - stealPct));
       updateDeathTimerUI();
       sfx('steal');
-      setMsg(`TIME STOLEN ${Math.round(stealPct*100)}%`);
+      setMsg(`stolen: ${Math.round(stealPct*100)}% of your time. 😈`);
       trickActive = true;
       onio.style.pointerEvents='auto';
       stealsDone++;
@@ -5592,7 +5396,7 @@ function cSwipeCode() {
   let confuseInterval = null;
   const timerLimit = Math.max(3600, timeLimit);
 
-  setMsg('MEMORIZE: ' + seq.map(d=>glyph[d]).join(' '));
+  setMsg('memorize: ' + seq.map(d=>glyph[d]).join(' '));
 
   function buildConfuseLine() {
     const a = glyph[seq[Math.max(0, Math.min(seq.length-1, idx-1))]];
@@ -5611,7 +5415,7 @@ function cSwipeCode() {
   scheduleChallengeTimeout(()=>{
     codeLive = true;
     startDeathTimer(timerLimit);
-    setMsg(`Swipe code ${idx}/${len} • don't overthink it`);
+    setMsg(`swipe ${idx}/${len} • don't overthink it.`);
     if (hits >= 14) {
       confuseInterval = setInterval(() => {
         if (!trickActive || !codeLive || gamePaused) return;
@@ -5641,7 +5445,7 @@ function cSwipeCode() {
     seq[b] = tmp;
     shuffleUsed = true;
     speech('code changed 😈', 620);
-    setMessageTemp('code changed.');
+    setMessageTemp('code changed. 😈');
   }
 
   function onDown(e) {
@@ -5663,8 +5467,8 @@ function cSwipeCode() {
       const want = seq[idx];
       if (got === want) {
         idx++;
-        speech(['ok','nice','good','keep going'][Math.floor(Math.random()*4)], 350);
-        setMsg(idx >= len ? 'CODE CRACKED ✅' : `Swipe code ${idx}/${len}`);
+        speech(['ok.','nice.','keep going.','one more.'][Math.floor(Math.random()*4)], 350);
+        setMsg(idx >= len ? 'cracked it. ✓' : `swipe ${idx}/${len}`);
         maybeShuffleRemainingCode();
         if (idx >= len) {
           clearDeathTimer();
@@ -5674,8 +5478,8 @@ function cSwipeCode() {
       }
 
       idx = 0;
-      speech(['wrong swipe','nope','start over 😈'][Math.floor(Math.random()*3)], 550);
-      setMsg(`Wrong order — ${idx}/${len} • ${buildConfuseLine()}`);
+      speech(['wrong swipe.','nope.','start over 😈'][Math.floor(Math.random()*3)], 550);
+      setMsg(`wrong order. back to start. ${buildConfuseLine()}`);
       registerMiss(end.x, end.y);
     };
 
@@ -5746,7 +5550,7 @@ function cTracePath() {
     let failLock = false;
     let stepLock = false;
     let rerouteUsed = false;
-    setMsg('Start on START dot, then drag through dots in order');
+    setMsg('start on the start dot, then drag through each dot in order.');
     startDeathTimer(Math.max(4200, 11000 - level*120));
 
     function markDone(idx) {
@@ -5774,9 +5578,9 @@ function cTracePath() {
         tracing = true;
         next = 1;
         markDone(0);
-        setMsg(`Trace ${next}/${points.length}`);
+        setMsg(`trace ${next}/${points.length}`);
       } else {
-        setMsg('Start on the START dot');
+        setMsg('start on the start dot.');
         registerMiss(p.x, p.y);
       }
     }
@@ -5802,7 +5606,7 @@ function cTracePath() {
           dot.style.left = (target.x - radius) + 'px';
           dot.style.top = (target.y - radius) + 'px';
         }
-        speech('path moved 😈', 620);
+        speech('path moved. 😈', 620);
         setMessageTemp('path rerouted.');
         return;
       }
@@ -5813,7 +5617,7 @@ function cTracePath() {
           if (!trickActive) { stepLock = false; return; }
           markDone(next);
           next++;
-          setMsg(next >= points.length ? 'PATH CLEARED ✅' : `Trace ${next}/${points.length}`);
+          setMsg(next >= points.length ? 'path cleared. ✓' : `trace ${next}/${points.length}`);
           if (next >= points.length) {
             clearDeathTimer();
             onHit(false, flowId);
@@ -5830,7 +5634,7 @@ function cTracePath() {
         failLock = true;
         tracing = false;
         next = 0;
-        speech('off path. start again.', 550);
+        speech('off path. again.', 550);
         registerMiss(p.x, p.y);
         scheduleChallengeTimeout(()=>{
           failLock = false;
@@ -5839,7 +5643,7 @@ function cTracePath() {
             el.style.borderColor = '#E8A030';
             el.style.boxShadow = '0 0 0 3px rgba(232,160,48,0.16)';
           });
-          setMsg('Back to START dot');
+          setMsg('back to start.');
         }, 300);
       }
     }
@@ -5848,7 +5652,7 @@ function cTracePath() {
       if (!trickActive) return;
       e.stopImmediatePropagation();
       tracing = false;
-      if (next > 0 && next < points.length) setMsg(`Trace ${next}/${points.length}`);
+      if (next > 0 && next < points.length) setMsg(`trace ${next}/${points.length}`);
     }
 
     arena.addEventListener('pointerdown', onDown, true);
@@ -5879,7 +5683,7 @@ function cRhythmTap() {
   let beatsElapsed = 0;
   let beatShiftUsed = false;
 
-  setMsg(`Listen + tap on beat: ${scored}/${needed}`);
+  setMsg(`tap on beat: ${scored}/${needed}`);
   startDeathTimer(Math.max(3800, 10500 - level*100));
 
   function spawnPulse() {
@@ -5904,7 +5708,7 @@ function cRhythmTap() {
     ) {
       beatShiftUsed = true;
       shift = (Math.random() < 0.5 ? -1 : 1) * grace * (0.18 + Math.random()*0.2);
-      setMessageTemp('tempo drift.');
+      setMessageTemp('tempo shifted. 😈');
       speech('off beat 😈', 500);
     }
     beatWindowStart = now - grace * 0.4 + shift;
@@ -5931,8 +5735,8 @@ function cRhythmTap() {
       if (now >= beatWindowStart && now <= beatWindowEnd) {
         scored++;
         sfx('beatHit');
-        speech(['nice timing','on beat','clean'][Math.floor(Math.random()*3)], 320);
-        setMsg(`Listen + tap on beat: ${scored}/${needed}`);
+        speech(['nice timing.','on beat.','clean.'][Math.floor(Math.random()*3)], 320);
+        setMsg(`tap on beat: ${scored}/${needed}`);
         if (scored >= needed) {
           clearInterval(beatInterval);
           clearDeathTimer();
@@ -5957,7 +5761,7 @@ function cRhythmTap() {
 function cPinchTrap() {
   const flowId = getActiveFlowId();
   if ((navigator.maxTouchPoints || 0) < 2) {
-    setMsg('No multi-touch here. Hold challenge fallback!');
+    setMsg('no multi-touch. doing hold instead.');
     return cHold();
   }
 
@@ -5967,7 +5771,7 @@ function cPinchTrap() {
   const pointerMap = new Map();
   let startDist = 0;
   let fakeoutUsed = false;
-  setMsg('Pinch Onio with 2 fingers');
+  setMsg("pinch me. two fingers.");
   startDeathTimer(Math.max(5000, 9800 - level*90));
 
   function dist() {
@@ -5985,7 +5789,7 @@ function cPinchTrap() {
     pointerMap.set(e.pointerId, {x:e.clientX, y:e.clientY});
     if (pointerMap.size === 2 && !startDist) {
       startDist = Math.max(18, dist());
-      setMsg('Now pinch inward!');
+      setMsg("now pinch inward.");
     }
   }
 
@@ -5995,7 +5799,7 @@ function cPinchTrap() {
     if (pointerMap.size < 2 || !startDist) return;
     const ratio = dist() / startDist;
     const pct = Math.max(0, Math.min(100, Math.round((1 - ratio) * 100)));
-    setMsg(`Pinch ${pct}%`);
+    setMsg(`pinch ${pct}%`);
     if (
       !fakeoutUsed &&
       level >= 14 &&
@@ -6005,8 +5809,8 @@ function cPinchTrap() {
     ) {
       fakeoutUsed = true;
       startDist = Math.max(18, dist() * (1.1 + Math.random()*0.16));
-      speech('harder 😈', 620);
-      setMessageTemp('not enough pinch.');
+      speech('not enough. harder. 😈', 620);
+      setMessageTemp('need more pinch.');
       return;
     }
     if (ratio <= needRatio) {
@@ -6043,7 +5847,7 @@ function cPinchTrap() {
 function cTwoFingerLock() {
   const flowId = getActiveFlowId();
   if ((navigator.maxTouchPoints || 0) < 2) {
-    setMsg('No multi-touch. Hold challenge fallback!');
+    setMsg('no multi-touch. hold challenge instead.');
     return cHold();
   }
 
@@ -6054,7 +5858,7 @@ function cTwoFingerLock() {
   let held = 0;
   let jamCooldown = false;
   let finishing = false;
-  setMsg('Hold Onio with TWO fingers');
+  setMsg("two fingers. hold them both.");
   startDeathTimer(Math.max(5000, 9600 - level*85));
 
   function onDown(e) {
@@ -6080,12 +5884,12 @@ function cTwoFingerLock() {
     ) {
       jamCooldown = true;
       held = Math.max(0, held - needMs * (0.18 + Math.min(0.16, level*0.002)));
-      speech('one finger slipped 😈', 620);
+      speech('one slipped. 😈', 620);
       setMessageTemp('lock destabilized.');
       scheduleChallengeTimeout(() => { jamCooldown = false; }, 760);
     }
     const pct = Math.round((held / needMs) * 100);
-    setMsg(`Two-finger lock ${pct}%`);
+    setMsg(`two-finger lock ${pct}%`);
     if (held >= needMs) {
       if (finishing) return;
       finishing = true;
@@ -6137,7 +5941,7 @@ function cTiltBalance() {
   zone.innerHTML = '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:\'Fredoka One\',cursive;font-size:13px;color:#4CAF50;">BALANCE ZONE</div>';
   arena.appendChild(zone);
 
-  setMsg('Tilt to keep Onio in the zone');
+  setMsg("tilt to stay in the zone.");
   startDeathTimer(Math.max(5600, 11000 - level*95));
 
   function inZone() {
@@ -6154,7 +5958,7 @@ function cTiltBalance() {
 
   function enableDragFallback() {
     dragMode = true;
-    setMsg('No tilt permission: drag + keep in zone');
+    setMsg("no tilt on this device. drag me into the zone.");
     function down(e) {
       if (!trickActive || e.target !== onio) return;
       e.stopPropagation();
@@ -6249,7 +6053,7 @@ function cFreezeTest() {
   const needMs = Math.max(1400, 3000 - level * 35);
   let remain = needMs;
 
-  setMsg(`DON'T TOUCH ${Math.ceil(remain/1000)}s`);
+  setMsg(`don't touch. \${Math.ceil(remain/1000)}s`);
   startDeathTimer(needMs + 2000);
 
   function spawnBait() {
@@ -6274,7 +6078,7 @@ function cFreezeTest() {
       onHit(false, flowId);
       return;
     }
-    setMsg(`DON'T TOUCH ${Math.ceil(remain/1000)}s`);
+    setMsg(`don't touch. \${Math.ceil(remain/1000)}s`);
   }, 100);
 
   function punish(e) {
@@ -6282,7 +6086,7 @@ function cFreezeTest() {
     e.stopImmediatePropagation();
     const p = getEvtPoint(e);
     remain = Math.min(needMs, remain + 650);
-    speech("hands off 😈", 450);
+    speech("hands off. 😈", 450);
     registerMiss(p.x, p.y);
   }
 
@@ -6485,16 +6289,16 @@ function startChaosSystem() {
     }
   }, 230);
 
-  // Continuous visual overlays — opacity and speed scale with depth
-  const tintOpacity   = chaosVal(5, 25, 0, 0.26);    // red vignette: fades in lv5→25, stronger than before
-  const glitchOpacity = chaosVal(8, 30, 0, 1);        // scanlines: fades in lv8→30
-  const tintEl   = document.getElementById('chaos-tint');
+  // Continuous visual overlays — opacity scales with level
+  const tintOpacity  = chaosVal(5, 25, 0, 0.18);   // red vignette: fades in lv5→25
+  const glitchOpacity= chaosVal(8, 30, 0, 1);       // scanlines: fades in lv8→30
+  const tintEl = document.getElementById('chaos-tint');
   const glitchEl = document.getElementById('glitch-lines');
   tintEl.style.opacity = tintOpacity;
   tintEl.style.display = tintOpacity > 0 ? 'block' : 'none';
   glitchEl.style.opacity = glitchOpacity;
   glitchEl.style.display = glitchOpacity > 0 ? 'block' : 'none';
-  glitchEl.style.setProperty('--glitch-line-speed', getGlitchLineSpeed());
+  // enable animation only when visible enough
   if (glitchOpacity > 0.1) glitchEl.classList.add('active');
   else glitchEl.classList.remove('active');
 }
@@ -6534,7 +6338,6 @@ function doChaosTick() {
 
 function cleanupChaos() {
   stopChaosSystem();
-  stopAmbientChaos();
   document.getElementById('game-screen').style.filter='';
   clearPersistentGameScreenTransform();
   document.getElementById('resume-btn').style.display='';
