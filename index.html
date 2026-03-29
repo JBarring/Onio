@@ -20,6 +20,8 @@
   --violet-2:#62236F;
   --ink:#3B2A1D;
   --onio-sprite-url:none;
+  --onio-color-filter:none;
+  --home-onio-filter:none;
   --home-screen-bg:linear-gradient(180deg,#FFF9EE 0%,#FFF1DA 52%,#FFE9CA 100%);
   --home-pattern:
     radial-gradient(circle at 20% 22%,rgba(128,76,35,.08) 0 2px,transparent 2px 100%),
@@ -53,84 +55,99 @@ html,body{
 /* ===== HOME ===== */
 #home-screen{
   background:var(--home-screen-bg);
-  align-items:center;justify-content:center;
-  padding:calc(env(safe-area-inset-top,0px) + 10px) 16px calc(env(safe-area-inset-bottom,0px) + 12px);
+  align-items:center;justify-content:flex-start;
+  padding:0;
 }
 #home-screen::before{content:'';position:absolute;inset:0;pointer-events:none;
   background:var(--home-pattern);
-  opacity:.72;
+  opacity:.92;
 }
 #home-screen::after{content:'';position:absolute;inset:0;pointer-events:none;opacity:.85;background:var(--home-glow);}
 .home-stage{
   position:relative;z-index:5;
-  width:min(100%,460px);
-  border-radius:30px;
-  border:4px solid var(--home-stage-border);
-  background:var(--home-stage-bg);
-  box-shadow:0 18px 42px var(--home-stage-shadow),inset 0 1px 0 rgba(255,255,255,.7);
-  display:flex;flex-direction:column;align-items:center;
-  padding:26px 18px 16px;
-  overflow:hidden;
+  width:min(100%,1100px);
+  height:100%;
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  padding:calc(env(safe-area-inset-top,0px) + 14px) 14px calc(env(safe-area-inset-bottom,0px) + 16px);
+  overflow:hidden;background:transparent;border:none;box-shadow:none;
 }
-.home-stage::before{
-  content:'';
-  position:absolute;inset:10px;
-  border-radius:22px;
-  border:2px dashed rgba(84,43,16,.25);
-  pointer-events:none;
-}
-.home-stage::after{
-  content:'';
-  position:absolute;left:-28%;right:-28%;top:-22%;height:46%;
-  background:radial-gradient(ellipse at center,rgba(255,255,255,.5) 0%,transparent 66%);
-  pointer-events:none;
-}
+.home-stage::before,.home-stage::after{content:none;}
 .home-ornaments{
-  position:absolute;inset:0;pointer-events:none;z-index:2;
+  position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden;
 }
-.home-dot{
-  position:absolute;border-radius:999px;display:flex;align-items:center;justify-content:center;
-  font-family:'Fredoka One',cursive;font-size:clamp(12px,2.9vw,18px);
-  color:#43220B;border:2px solid rgba(76,38,12,.58);
-  box-shadow:0 6px 16px rgba(85,40,10,.2);
-  background:linear-gradient(180deg,#FFB85B 0%,#F07E22 100%);
-  animation:bgFloat linear infinite;
-  opacity:.95;
-}
+.home-dot{display:none;}
 .home-dot.alt{background:linear-gradient(180deg,#7FE2F0 0%,#4EA2D8 100%);color:#1E3554;}
 .home-dot.pink{background:linear-gradient(180deg,#FF9BCC 0%,#E05C98 100%);color:#4B1833;}
 .bg-monster{
-  position:absolute;opacity:.11;pointer-events:none;animation:bgFloat linear infinite;
+  position:absolute;pointer-events:none;animation:bgFloat linear infinite;z-index:2;
+  filter:drop-shadow(0 10px 16px rgba(76,33,6,.22));
 }
-@keyframes bgFloat{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-16px) rotate(8deg)}}
+@keyframes bgFloat{0%,100%{transform:translate3d(0,0,0) rotate(0deg)}50%{transform:translate3d(0,-12px,0) rotate(4deg)}}
+.bg-monster .onio-sprite{display:block;width:100%;height:100%;filter:var(--home-onio-filter,var(--onio-color-filter));}
+.home-hero{
+  position:relative;z-index:6;width:100%;
+  display:flex;flex-direction:column;align-items:center;
+  margin-top:clamp(42px,9vh,96px);padding:0 10px;
+}
 .home-monster{
   font-size:clamp(88px,25vw,128px);
   animation:wiggle 1s ease-in-out infinite;
-  display:block;position:relative;z-index:7;margin-bottom:-8px;
+  display:block;position:relative;z-index:7;margin-top:8px;
+  filter:drop-shadow(0 12px 10px rgba(102,44,11,.2));
+}
+#home-monster-face .onio-sprite{filter:var(--home-onio-filter,var(--onio-color-filter));}
+.home-character-art{
+  display:none;
+  width:min(100%,180px);
+  max-height:180px;
+  object-fit:contain;
+  position:relative;
+  z-index:7;
+  margin-top:8px;
   filter:drop-shadow(0 12px 10px rgba(102,44,11,.2));
 }
 @keyframes wiggle{0%,100%{transform:rotate(-8deg) scale(1)}50%{transform:rotate(8deg) scale(1.06)}}
 .home-logo{
-  font-family:'Fredoka One',cursive;font-size:clamp(72px,20vw,108px);
+  font-family:'Fredoka One',cursive;font-size:clamp(92px,24vw,190px);
   color:transparent;
   background:var(--home-logo-fill);
   -webkit-background-clip:text;background-clip:text;
-  text-shadow:0 0 0 var(--home-logo-outline),4px 4px 0 var(--home-logo-outline),9px 9px 0 var(--home-logo-shadow),0 0 28px rgba(255,171,94,.28);
-  letter-spacing:4px;line-height:1;
-  -webkit-text-stroke:2px var(--home-logo-outline);
-  animation:logoBob 2s ease-in-out infinite;position:relative;z-index:7;
+  text-shadow:0 0 0 var(--home-logo-outline),5px 5px 0 var(--home-logo-outline),12px 12px 0 var(--home-logo-shadow),0 0 28px rgba(255,171,94,.28);
+  letter-spacing:4px;line-height:.92;
+  -webkit-text-stroke:3px var(--home-logo-outline);
+  animation:logoBob 2s ease-in-out infinite;position:relative;z-index:7;margin-top:clamp(58px,11vh,118px);
+}
+.home-title-art{
+  display:none;
+  width:min(96vw,760px);
+  max-height:380px;
+  object-fit:contain;
+  position:relative;
+  z-index:7;
+  margin-top:clamp(56px,10vh,112px);
+  filter:drop-shadow(0 16px 22px rgba(60,28,8,.22));
 }
 @keyframes logoBob{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-7px) rotate(1deg)}}
 .home-sub{font-family:'Nunito',sans-serif;font-size:clamp(12px,3.2vw,16px);color:#A07040;font-weight:700;
-  letter-spacing:2.5px;text-transform:uppercase;margin-top:5px;z-index:7;color:var(--home-sub-text);}
+  letter-spacing:2.5px;text-transform:uppercase;margin-top:8px;z-index:7;color:var(--home-sub-text);
+  background:rgba(255,255,255,.72);padding:6px 12px;border-radius:999px;border:2px solid rgba(85,41,12,.14);}
 #snark-bubble{font-family:'Nunito',sans-serif;font-size:clamp(12px,3.2vw,15px);color:#C0560A;
-  background:var(--home-snark-bg);border:2px solid var(--home-snark-border);border-radius:20px;padding:8px 18px;
-  margin-top:14px;z-index:7;text-align:center;max-width:86vw;font-weight:700;
+  background:rgba(255,255,255,.88);border:2px solid rgba(255,232,195,.88);border-radius:20px;padding:10px 18px;
+  margin-top:0;z-index:7;text-align:center;max-width:min(84vw,520px);font-weight:700;
   min-height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;
   animation:snarkFade .4s ease;color:var(--home-snark-text);
-  box-shadow:0 5px 14px rgba(84,36,8,.12);}
+  box-shadow:0 8px 22px rgba(84,36,8,.14);backdrop-filter:blur(6px);}
 @keyframes snarkFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 #snark-bubble:active{transform:scale(.97);}
+.home-bottom-ui{
+  position:relative;z-index:7;width:min(100%,760px);
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+  margin-top:auto;padding-bottom:clamp(4px,1vh,12px);
+}
+.home-action-dock{
+  width:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(210px,1.35fr) minmax(0,1fr);
+  gap:12px;align-items:end;
+}
 .home-btn-row{display:flex;gap:12px;margin-top:20px;z-index:7;width:100%;}
 
 /* ===== BUTTONS ===== */
@@ -164,6 +181,21 @@ html,body{
   box-shadow:0 2px 0 rgba(186,107,27,.45), inset 0 1px 0 rgba(255,255,255,.85);
 }
 .home-btn-row .big-btn.secondary{flex:1;}
+.home-side-btn{
+  min-height:58px;
+  font-size:clamp(16px,4vw,20px);
+  padding:13px 14px;
+  letter-spacing:1.2px;
+}
+.home-play-btn{
+  min-height:72px;
+  font-size:clamp(24px,6vw,30px);
+}
+.home-play-btn::after{
+  left:20px;
+  width:32px;
+  height:32px;
+}
 
 /* ===== PROFILE ===== */
 #profile-screen{background:linear-gradient(180deg,#FFF9EF 0%,#FFF0D9 100%);}
@@ -317,7 +349,9 @@ html,body{
   background-repeat:no-repeat;
   background-position:center;
   background-size:contain;
+  filter:var(--onio-color-filter);
 }
+#home-monster-face.monster-sprite{filter:var(--home-onio-filter,var(--onio-color-filter));}
 @keyframes decoyFloat{from{transform:translateY(0)}to{transform:translateY(-7px)}}
 
 /* speech */
@@ -725,12 +759,17 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
 @media (max-width:560px){
   #dtimer-chip{top:calc(env(safe-area-inset-top,0px) + 118px);font-size:14px;padding:4px 10px;min-width:74px;}
   #combo-chip{top:calc(env(safe-area-inset-top,0px) + 118px);font-size:12px;padding:3px 8px;}
-  #home-screen{padding-left:10px;padding-right:10px;}
-  .home-stage{border-width:3px;border-radius:24px;padding:18px 12px 12px;}
-  .home-logo{font-size:clamp(62px,19vw,86px);letter-spacing:2px;}
-  .home-btn-row{gap:8px;}
+  #home-screen{padding-left:0;padding-right:0;}
+  .home-stage{padding:calc(env(safe-area-inset-top,0px) + 10px) 10px calc(env(safe-area-inset-bottom,0px) + 14px);}
+  .home-hero{margin-top:clamp(26px,7vh,54px);}
+  .home-title-art{width:min(98vw,560px);max-height:270px;margin-top:clamp(42px,9vh,72px);}
+  .home-logo{font-size:clamp(72px,20vw,112px);margin-top:clamp(38px,10vh,76px);letter-spacing:2px;}
+  .home-bottom-ui{width:min(100%,94vw);gap:10px;}
+  .home-action-dock{grid-template-columns:minmax(0,1fr) minmax(148px,1.2fr) minmax(0,1fr);gap:8px;}
+  .home-side-btn{min-height:52px;font-size:clamp(13px,3.6vw,16px);padding:11px 8px;}
+  .home-play-btn{min-height:62px;font-size:clamp(22px,6vw,26px);}
   .play-cta{padding-left:52px;}
-  .home-dot{display:none;}
+  #snark-bubble{max-width:92vw;padding:9px 14px;font-size:13px;}
   #game-controls{bottom:calc(env(safe-area-inset-bottom,0px) + 8px);padding:7px 9px;gap:8px;}
   .gc-btn{width:44px;height:44px;font-size:20px;}
 }
@@ -905,6 +944,7 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
   display: inline-block;
   width: 1em; height: 1em;
   pointer-events: none;  /* hit detection on parent */
+  filter: var(--onio-color-filter);
 }
 
 /* Each layer fills the container */
@@ -987,12 +1027,7 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
 
 <!-- HOME -->
 <div id="home-screen" class="screen active">
-  <div class="home-ornaments" aria-hidden="true">
-    <span class="home-dot" style="left:8%;top:10%;width:48px;height:48px;animation-duration:5s;">😈</span>
-    <span class="home-dot alt" style="right:6%;top:14%;width:44px;height:44px;animation-duration:4.4s;">👾</span>
-    <span class="home-dot pink" style="left:10%;bottom:14%;width:42px;height:42px;animation-duration:5.8s;">✨</span>
-    <span class="home-dot alt" style="right:9%;bottom:12%;width:46px;height:46px;animation-duration:4.8s;">🎮</span>
-  </div>
+  <div class="home-ornaments" aria-hidden="true"></div>
   <div id="mood-indicator"></div>
   <div id="return-greeting">
     <div class="rg-emoji" style="width:clamp(72px,20vw,108px);height:clamp(72px,20vw,108px);display:inline-block;font-size:0;"></div>
@@ -1001,15 +1036,21 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
     <button class="big-btn" onclick="dismissReturnGreeting()" style="margin-top:8px;">let's go 😤</button>
   </div>
   <div class="home-stage">
-    <span id="home-monster-face" class="home-monster" style="display:inline-block;width:clamp(72px,20vw,108px);height:clamp(72px,20vw,108px);font-size:0;"></span>
-    <div class="home-logo">ONIO</div>
-    <div class="home-sub">the little menace</div>
-    <div id="snark-bubble" onclick="nextSnark()">Loading sass...</div>
-    <div class="home-btn-row">
-      <button class="big-btn play-cta" onclick="startGame()">PLAY</button>
-      <button class="big-btn secondary" onclick="showScreen('profile-screen')">👤 ME</button>
+    <div class="home-hero">
+      <img id="home-character-art" class="home-character-art" alt="Onio character art">
+      <span id="home-monster-face" class="home-monster" style="display:inline-block;width:clamp(72px,20vw,108px);height:clamp(72px,20vw,108px);font-size:0;"></span>
+      <img id="home-title-art" class="home-title-art" alt="ONIO title art">
+      <div id="home-logo-text" class="home-logo">ONIO</div>
+      <div id="home-sub-text" class="home-sub">the little menace</div>
     </div>
-    <button class="big-btn secondary" onclick="showScreen('store-screen')" style="margin-top:10px;z-index:7;font-size:clamp(16px,4.5vw,19px);padding:11px 30px;min-width:min(92%,250px);">🛒 STORE</button>
+    <div class="home-bottom-ui">
+      <div id="snark-bubble" onclick="nextSnark()">Loading sass...</div>
+      <div class="home-action-dock">
+        <button class="big-btn secondary home-side-btn" onclick="showScreen('store-screen')">🛒 STORE</button>
+        <button class="big-btn play-cta home-play-btn" onclick="startGame()">PLAY</button>
+        <button class="big-btn secondary home-side-btn" onclick="showScreen('profile-screen')">👤 ME</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1322,13 +1363,177 @@ const DEBUG = {
 // ============================================================
 // ART + THEME CONFIG
 // ============================================================
+function buildHomeDoodleBackground({
+  paper = '#F2E3CB',
+  line = '#8C6A46',
+  accent = '#E9D7BB',
+  accent2 = '#D7C0A0',
+} = {}) {
+  const placements = [
+    ['spiral',72,76,1.2,-6],['ghost',238,86,1,2],['rainbow',392,54,1.08,4],['monster',572,82,1.04,-8],['eye',766,62,1,8],
+    ['flower',92,258,1.08,6],['candy',256,232,1.02,-6],['spiral',404,246,1.16,12],['ghost',596,242,0.96,-2],['mushroom',792,246,1.02,4],
+    ['triangle',954,236,0.92,10],['monster',120,430,1.06,-10],['rainbow',316,418,1.04,0],['flower',516,432,1,-12],['eye',708,418,0.98,0],
+    ['candy',894,430,1.04,8],['spiral',164,620,1.24,8],['mushroom',386,616,1.08,-2],['ghost',588,626,1.02,2],['monster',812,624,1,-8],
+    ['triangle',972,602,0.9,-6],['flower',74,816,1.04,-4],['candy',266,820,1.02,4],['rainbow',470,818,1.02,0],['spiral',676,826,1.22,-10],
+    ['eye',862,820,1.04,4],['ghost',994,816,0.94,-6]
+  ];
+  const uses = placements.map(([ref, x, y, scale, rotate]) =>
+    `<use href="#${ref}" transform="translate(${x} ${y}) scale(${scale}) rotate(${rotate})"/>`
+  ).join('');
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+      <defs>
+        <pattern id="grain" width="72" height="72" patternUnits="userSpaceOnUse">
+          <circle cx="14" cy="18" r="3" fill="${accent2}" opacity=".18"/>
+          <circle cx="52" cy="16" r="2.2" fill="${accent}" opacity=".2"/>
+          <circle cx="22" cy="52" r="2.8" fill="${accent2}" opacity=".16"/>
+          <circle cx="58" cy="48" r="2.4" fill="${accent}" opacity=".15"/>
+        </pattern>
+        <g id="spiral">
+          <path d="M92 46c28-26 78-20 78 22 0 36-44 58-76 42-28-14-34-55-7-77 30-25 80-21 105 9 29 35 20 91-18 118-45 33-111 16-143-27-34-46-25-113 22-153"/>
+          <path d="M148 150c-8 26-34 49-62 56"/>
+        </g>
+        <g id="ghost">
+          <path d="M34 118V62c0-31 25-56 56-56s56 25 56 56v56l-18-12-18 12-18-12-18 12-18-12z"/>
+          <circle cx="76" cy="58" r="5"/><circle cx="104" cy="58" r="5"/>
+          <path d="M72 84c10 11 26 11 36 0"/>
+        </g>
+        <g id="rainbow">
+          <path d="M22 112c0-40 31-72 69-72s69 32 69 72"/>
+          <path d="M38 112c0-30 24-54 53-54s53 24 53 54"/>
+          <path d="M56 112c0-20 16-36 35-36s35 16 35 36"/>
+          <path d="M46 130h90"/>
+        </g>
+        <g id="monster">
+          <path d="M28 114V54c0-28 22-50 50-50h18c28 0 50 22 50 50v60l-14-10-16 10-16-10-16 10-16-10-16 10z"/>
+          <circle cx="76" cy="58" r="6"/><circle cx="110" cy="58" r="6"/>
+          <path d="M70 86c12 10 34 10 46 0"/>
+          <path d="M58 24l8 14M120 24l-8 14"/>
+        </g>
+        <g id="eye">
+          <path d="M18 74c18-22 42-34 70-34s52 12 70 34c-18 22-42 34-70 34S36 96 18 74z"/>
+          <circle cx="88" cy="74" r="16"/>
+          <circle cx="88" cy="74" r="6" fill="${line}"/>
+        </g>
+        <g id="flower">
+          <circle cx="88" cy="88" r="18"/>
+          <circle cx="88" cy="46" r="18"/><circle cx="88" cy="130" r="18"/>
+          <circle cx="46" cy="88" r="18"/><circle cx="130" cy="88" r="18"/>
+          <circle cx="58" cy="58" r="15"/><circle cx="118" cy="58" r="15"/>
+          <circle cx="58" cy="118" r="15"/><circle cx="118" cy="118" r="15"/>
+        </g>
+        <g id="candy">
+          <path d="M26 70l24-18 26 18M26 106l24 18 26-18"/>
+          <path d="M76 54h28c22 0 40 18 40 40s-18 40-40 40H76c-22 0-40-18-40-40s18-40 40-40z"/>
+          <path d="M94 72c12 0 22 10 22 22s-10 22-22 22-22-10-22-22 10-22 22-22z"/>
+        </g>
+        <g id="mushroom">
+          <path d="M28 78c8-34 36-56 70-56s62 22 70 56H28z"/>
+          <path d="M72 78v48c0 14 12 26 26 26h0c14 0 26-12 26-26V78"/>
+          <circle cx="70" cy="62" r="8"/><circle cx="98" cy="52" r="7"/><circle cx="124" cy="64" r="8"/>
+        </g>
+        <g id="triangle">
+          <path d="M92 20l70 122H22L92 20z"/>
+          <circle cx="92" cy="96" r="7"/>
+          <path d="M92 52v24"/>
+        </g>
+      </defs>
+      <rect width="1024" height="1024" fill="${paper}"/>
+      <rect width="1024" height="1024" fill="url(#grain)"/>
+      <g opacity=".22">
+        <circle cx="164" cy="150" r="124" fill="${accent}"/>
+        <circle cx="822" cy="224" r="108" fill="${accent}"/>
+        <circle cx="318" cy="640" r="132" fill="${accent2}"/>
+        <circle cx="782" cy="776" r="146" fill="${accent}"/>
+      </g>
+      <g fill="none" stroke="${line}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+        ${uses}
+      </g>
+      <g fill="${line}" opacity=".9">
+        <circle cx="214" cy="526" r="6"/><circle cx="484" cy="140" r="5"/><circle cx="654" cy="356" r="5"/>
+        <circle cx="938" cy="516" r="6"/><circle cx="152" cy="946" r="6"/><circle cx="598" cy="934" r="5"/>
+      </g>
+    </svg>
+  `.trim();
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
+const HOME_DOODLE_BACKGROUNDS = {
+  parchment: buildHomeDoodleBackground({ paper:'#F2E3CB', line:'#8C6A46', accent:'#E7D2B2', accent2:'#D7BF99' }),
+  rose: buildHomeDoodleBackground({ paper:'#F5E4DD', line:'#8E5F64', accent:'#F0C7D6', accent2:'#DDB0C2' }),
+  sky: buildHomeDoodleBackground({ paper:'#E6F0F4', line:'#5C738A', accent:'#D0E3EE', accent2:'#B8D0DE' }),
+};
+
 // Drop your files into the project and set these URLs, e.g. "./assets/onio.png"
 const ART_PACK = {
   onioSpriteUrl: '',
-  homeBackgroundUrl: '',
-  homePatternUrl: '',
   gameBackgroundUrl: '',
 };
+
+// Home screen assets are intentionally split into independent option pools.
+// The matrix below decides which background/title/animation combinations are allowed.
+const HOME_BACKGROUND_OPTIONS = {
+  background1: {
+    id: 'background1',
+    url: './background1.png',
+    overlay: 'linear-gradient(180deg,rgba(255,248,236,.08) 0%,rgba(255,240,215,.18) 100%)',
+    patternCss: 'none',
+  },
+  paper_doodle: {
+    id: 'paper_doodle',
+    url: HOME_DOODLE_BACKGROUNDS.parchment,
+    overlay: 'linear-gradient(180deg,rgba(255,248,236,.22) 0%,rgba(255,240,215,.46) 100%)',
+    patternCss: 'none',
+  },
+};
+
+const HOME_TITLE_OPTIONS = {
+  onio_logo_png: {
+    id: 'onio_logo_png',
+    imageUrl: './Onio_title.png',
+    titleText: 'ONIO',
+    subtitleText: '',
+    hideHeroMonster: true,
+  },
+  onio_text: {
+    id: 'onio_text',
+    imageUrl: '',
+    titleText: 'ONIO',
+    subtitleText: 'the little menace',
+    hideHeroMonster: false,
+  },
+};
+
+const HOME_ANIMATION_OPTIONS = {
+  none: {
+    id: 'none',
+    type: 'none',
+  },
+  orange_crowd: {
+    id: 'orange_crowd',
+    type: 'crowd',
+    previewColorway: 'classic',
+    expressions: ['happy','round','idle','happy','smug'],
+    crowdSlots: [
+      { x:-1, y:-2, size:94 }, { x:14, y:11, size:98 }, { x:35, y:21, size:82 }, { x:60, y:14, size:94 },
+      { x:87, y:18, size:86 }, { x:8, y:30, size:74 }, { x:3, y:51, size:72 }, { x:32, y:54, size:62 },
+      { x:68, y:57, size:70 }, { x:86, y:59, size:80 }, { x:17, y:66, size:108 }, { x:50, y:70, size:78 },
+      { x:77, y:76, size:102 }, { x:21, y:93, size:94 }, { x:67, y:94, size:86 }
+    ],
+  },
+};
+
+// Add future allowed scenes here.
+// Each entry picks one background option, one title option, and one animation option.
+const HOME_SCREEN_MATRIX = [
+  {
+    id: 'poster_orange_crowd',
+    backgroundId: 'background1',
+    titleId: 'onio_logo_png',
+    animationId: 'orange_crowd',
+    previewColorway: 'classic',
+  },
+];
 
 const HOME_THEMES = [
   {
@@ -1381,6 +1586,24 @@ const HOME_THEMES = [
   },
 ];
 let homeThemeIdx = Math.floor(Math.random() * HOME_THEMES.length);
+let homeSceneIdx = -1;
+let currentHomeScene = null;
+
+const ONIO_COLORWAYS = {
+  classic: { filter: 'none' },
+  berry: { filter: 'hue-rotate(292deg) saturate(1.28) brightness(1.03)' },
+  ocean: { filter: 'hue-rotate(146deg) saturate(1.18) brightness(1.04)' },
+  mint: { filter: 'hue-rotate(104deg) saturate(1.12) brightness(1.05)' },
+};
+let cosmeticState = JSON.parse(localStorage.getItem('onio_cosmetics') || '{"equippedColorway":"classic","ownedColorways":["classic"]}');
+if (!cosmeticState || typeof cosmeticState !== 'object') cosmeticState = { equippedColorway:'classic', ownedColorways:['classic'] };
+if (!Array.isArray(cosmeticState.ownedColorways) || !cosmeticState.ownedColorways.length) cosmeticState.ownedColorways = ['classic'];
+if (!cosmeticState.ownedColorways.includes('classic')) cosmeticState.ownedColorways.unshift('classic');
+if (!ONIO_COLORWAYS[cosmeticState.equippedColorway]) cosmeticState.equippedColorway = 'classic';
+function saveCosmetics() {
+  localStorage.setItem('onio_cosmetics', JSON.stringify(cosmeticState));
+}
+saveCosmetics();
 
 
 // ============================================================
@@ -2165,9 +2388,23 @@ function setMessageTemp(text, ms=520) {
   }, ms);
 }
 
+function hasActiveInstructionOverlay() {
+  return !!document.querySelector('.instr-overlay.active');
+}
+
+function isChaosGameplayLive() {
+  const gameScreen = document.getElementById('game-screen');
+  return !!gameScreen
+    && gameScreen.classList.contains('active')
+    && trickActive
+    && !gamePaused
+    && !hasActiveInstructionOverlay();
+}
+
 function shouldTriggerChaos(timeToNextAction) {
   const now = Date.now();
   chaosState.level = Math.floor(Math.max(0, hits) / 5);
+  if (!isChaosGameplayLive()) return false;
   if (now - chaosState.lastTriggerTime < chaosState.cooldown) return false;
   if (timeToNextAction > 300) return false;
   const probability = Math.min(0.15 + chaosState.level * 0.05, 0.6);
@@ -2394,6 +2631,7 @@ function applyChaosEffect(effect, context={}) {
 }
 
 function triggerChaos(context={}) {
+  if (!isChaosGameplayLive()) return;
   chaosState.lastTriggerTime = Date.now();
   pruneChaosStateEffects();
   const weakness = getPlayerWeakness();
@@ -2715,7 +2953,7 @@ function getWrongInstructionLine() {
 }
 
 function maybeTriggerBehaviorChaos(reason='pre_input') {
-  if (!trickActive || gamePaused) return false;
+  if (!isChaosGameplayLive()) return false;
   const now = Date.now();
   if (now < behaviorChaosCooldownUntil) return false;
   const baseChance = 0.16 + getChaosLevel01() * 0.38 + (isPlayerPerformingWell() ? 0.12 : 0);
@@ -2912,13 +3150,109 @@ function pickNextHomeTheme() {
   applyHomeTheme(HOME_THEMES[homeThemeIdx]);
 }
 
+function pickNextHomeScene() {
+  const pool = Array.isArray(HOME_SCREEN_MATRIX) ? HOME_SCREEN_MATRIX.filter(Boolean) : [];
+  if (!pool.length) return null;
+  let nextIdx = Math.floor(Math.random() * pool.length);
+  if (pool.length > 1 && nextIdx === homeSceneIdx) {
+    nextIdx = (nextIdx + 1) % pool.length;
+  }
+  homeSceneIdx = nextIdx;
+  return pool[homeSceneIdx];
+}
+
+function getColorwayFilter(colorwayId='classic') {
+  return (ONIO_COLORWAYS[colorwayId] || ONIO_COLORWAYS.classic || { filter:'none' }).filter || 'none';
+}
+
+function applyOnioColorway(colorwayId='classic') {
+  setRootVar('--onio-color-filter', getColorwayFilter(colorwayId));
+}
+
 function applySpriteToElement(el) {
   if (!el) return;
   if (ART_PACK.onioSpriteUrl) el.classList.add('monster-sprite');
   else el.classList.remove('monster-sprite');
 }
 
+function setHomeImageAsset(el, url, alt) {
+  if (!el) return;
+  if (url) {
+    el.src = url;
+    if (alt) el.alt = alt;
+    el.style.display = 'block';
+  } else {
+    el.removeAttribute('src');
+    el.style.display = 'none';
+  }
+}
+
+function resolveHomeConfigOption(optionMap, optionId) {
+  if (!optionId) return null;
+  return optionMap && optionMap[optionId] ? optionMap[optionId] : null;
+}
+
+function applyHomeScene(scene=null) {
+  currentHomeScene = scene || pickNextHomeScene();
+  const background = resolveHomeConfigOption(HOME_BACKGROUND_OPTIONS, currentHomeScene && currentHomeScene.backgroundId);
+  const title = resolveHomeConfigOption(HOME_TITLE_OPTIONS, currentHomeScene && currentHomeScene.titleId);
+  const animation = resolveHomeConfigOption(HOME_ANIMATION_OPTIONS, currentHomeScene && currentHomeScene.animationId) || HOME_ANIMATION_OPTIONS.none;
+  const titleArtEl = document.getElementById('home-title-art');
+  const titleTextEl = document.getElementById('home-logo-text');
+  const subTextEl = document.getElementById('home-sub-text');
+  const characterArtEl = document.getElementById('home-character-art');
+  const monsterEl = document.getElementById('home-monster-face');
+  const titleImageUrl = (currentHomeScene && currentHomeScene.titleImageUrl) || (title && title.imageUrl) || '';
+  const characterImageUrl = (currentHomeScene && currentHomeScene.characterImageUrl) || (title && title.characterImageUrl) || '';
+  const backgroundUrl = (currentHomeScene && currentHomeScene.backgroundUrl) || (background && background.url) || '';
+  const backgroundOverlay = (currentHomeScene && currentHomeScene.backgroundOverlay) || (background && background.overlay) || 'linear-gradient(180deg,rgba(255,250,240,.72) 0%,rgba(255,246,225,.78) 100%)';
+  const patternUrl = (currentHomeScene && currentHomeScene.patternUrl) || (background && background.patternUrl) || '';
+  const hasPatternCss = !!currentHomeScene && Object.prototype.hasOwnProperty.call(currentHomeScene, 'patternCss')
+    ? true
+    : !!background && Object.prototype.hasOwnProperty.call(background, 'patternCss');
+  const patternCss = !!currentHomeScene && Object.prototype.hasOwnProperty.call(currentHomeScene, 'patternCss')
+    ? currentHomeScene.patternCss
+    : (background ? background.patternCss : null);
+  const subText = (!!currentHomeScene && Object.prototype.hasOwnProperty.call(currentHomeScene, 'subtitleText'))
+    ? (currentHomeScene.subtitleText || '')
+    : ((title && Object.prototype.hasOwnProperty.call(title, 'subtitleText')) ? (title.subtitleText || '') : 'the little menace');
+  const hideHeroMonster = !!characterImageUrl || !!(currentHomeScene && currentHomeScene.hideHeroMonster) || !!(title && title.hideHeroMonster);
+
+  if (backgroundUrl) {
+    const bg = `${backgroundOverlay},url("${backgroundUrl}") center/cover no-repeat`;
+    setRootVar('--home-screen-bg', bg);
+  }
+  if (hasPatternCss) {
+    setRootVar('--home-pattern', patternCss || 'none');
+  } else if (patternUrl) {
+    setRootVar('--home-pattern', `url("${patternUrl}") center/cover no-repeat`);
+  } else if (backgroundUrl) {
+    setRootVar('--home-pattern', 'none');
+  }
+
+  if (titleTextEl) {
+    titleTextEl.textContent = (currentHomeScene && currentHomeScene.titleText) || (title && title.titleText) || 'ONIO';
+    titleTextEl.style.display = titleImageUrl ? 'none' : '';
+  }
+  if (subTextEl) {
+    subTextEl.textContent = subText;
+    subTextEl.style.display = subText ? '' : 'none';
+  }
+  setHomeImageAsset(titleArtEl, titleImageUrl, 'ONIO title art');
+  setHomeImageAsset(characterArtEl, characterImageUrl, 'Onio character art');
+  if (monsterEl) monsterEl.style.display = hideHeroMonster ? 'none' : 'inline-block';
+
+  const previewColorway = (currentHomeScene && currentHomeScene.previewColorway)
+    || (title && title.previewColorway)
+    || (animation && animation.previewColorway)
+    || cosmeticState.equippedColorway
+    || 'classic';
+  setRootVar('--home-onio-filter', getColorwayFilter(previewColorway));
+  spawnBgMonsters(animation);
+}
+
 function applyArtPack() {
+  applyOnioColorway(cosmeticState.equippedColorway || 'classic');
   if (ART_PACK.onioSpriteUrl) {
     setRootVar('--onio-sprite-url', `url("${ART_PACK.onioSpriteUrl}")`);
   } else {
@@ -2935,15 +3269,7 @@ function applyArtPack() {
     document.querySelector('.rg-emoji'),
   ].forEach(applySpriteToElement);
 
-  // Optional home background overrides for your own assets.
-  if (ART_PACK.homeBackgroundUrl) {
-    const bg = `linear-gradient(180deg,rgba(255,250,240,.72) 0%,rgba(255,246,225,.78) 100%),url("${ART_PACK.homeBackgroundUrl}") center/cover no-repeat`;
-    setRootVar('--home-screen-bg', bg);
-  }
-  if (ART_PACK.homePatternUrl) {
-    const pattern = `url("${ART_PACK.homePatternUrl}") center/cover no-repeat`;
-    setRootVar('--home-pattern', pattern);
-  }
+  applyHomeScene(pickNextHomeScene());
 
   const gameScreen = document.getElementById('game-screen');
   if (gameScreen) {
@@ -2974,7 +3300,6 @@ function showScreen(id) {
     updateEmotionalMode();
     refreshHomeVisuals();
     nextSnark();
-    spawnBgMonsters();
   }
   if (id === 'profile-screen') loadProfile();
   if (id === 'store-screen') { openStoreView(); }
@@ -3226,38 +3551,32 @@ function nextSnark() {
 }
 setInterval(() => { if (document.getElementById('home-screen').classList.contains('active')) nextSnark(); }, 3800);
 
-function spawnBgMonsters() {
-  const h = document.getElementById('home-screen');
-  h.querySelectorAll('.bg-monster').forEach(m => m.remove());
-  const emojis = ['😈','👾','👹','🎮','⭐','💥','👻','🤖','✨','🛸'];
-  const chipPalettes = [
-    'linear-gradient(180deg,#FFB85B 0%,#F07E22 100%)',
-    'linear-gradient(180deg,#83E7F5 0%,#4AAAD6 100%)',
-    'linear-gradient(180deg,#FFC5E1 0%,#E774AF 100%)',
-    'linear-gradient(180deg,#B9F5A4 0%,#5BCF73 100%)',
-  ];
-  for (let i=0; i<13; i++) {
+function spawnBgMonsters(animationOption=null) {
+  const layer = document.querySelector('#home-screen .home-ornaments');
+  if (!layer) return;
+  layer.querySelectorAll('.bg-monster').forEach(m => m.remove());
+  const chosenAnimation = animationOption || resolveHomeConfigOption(HOME_ANIMATION_OPTIONS, currentHomeScene && currentHomeScene.animationId) || HOME_ANIMATION_OPTIONS.none;
+  if (!chosenAnimation || chosenAnimation.type === 'none') return;
+  const crowdSlots = chosenAnimation.crowdSlots || [];
+  const expressions = chosenAnimation.expressions || ['happy','round','idle','happy','smug'];
+  crowdSlots.forEach((slot, idx) => {
     const m = document.createElement('div');
-    m.className = 'bg-monster home-dot';
-    const useAlt = i%3===1;
-    const usePink = i%3===2;
-    if (useAlt) m.classList.add('alt');
-    if (usePink) m.classList.add('pink');
-    m.textContent = emojis[Math.floor(Math.random()*emojis.length)];
-    const size = 24 + Math.random()*26;
+    const size = Math.round(slot.size * (0.94 + Math.random()*0.12));
+    const jitterX = (Math.random() - 0.5) * 3.5;
+    const jitterY = (Math.random() - 0.5) * 3.5;
+    m.className = 'bg-monster';
+    m.innerHTML = buildOnioHTML(expressions[idx % expressions.length]);
     m.style.cssText = [
-      `left:${Math.random()*92}%`,
-      `top:${Math.random()*88}%`,
+      `left:calc(${slot.x + jitterX}% - ${size/2}px)`,
+      `top:calc(${slot.y + jitterY}% - ${size/2}px)`,
       `width:${size}px`,
       `height:${size}px`,
-      `font-size:${Math.max(12, size*0.42)}px`,
-      `animation-duration:${3 + Math.random()*3}s`,
-      `animation-delay:${Math.random()*1.7}s`,
-      `background:${chipPalettes[Math.floor(Math.random()*chipPalettes.length)]}`,
-      `opacity:${0.86 + Math.random()*0.12}`,
+      `opacity:${0.92 + Math.random()*0.06}`,
+      `animation-duration:${4.6 + Math.random()*2.4}s`,
+      `animation-delay:${Math.random()*1.8}s`,
     ].join(';');
-    h.appendChild(m);
-  }
+    layer.appendChild(m);
+  });
 }
 
 // ============================================================
@@ -6638,14 +6957,12 @@ function startChaosSystem() {
       : Math.max(900, 2250 - (depth - 40) * 28);
 
   chaosInterval = setInterval(() => {
-    if (!document.getElementById('game-screen').classList.contains('active')) return;
-    if (!trickActive) return;
+    if (!isChaosGameplayLive()) return;
     doChaosTick();
   }, tickMs + Math.random() * tickMs * 0.4);
 
   behaviorChaosInterval = setInterval(() => {
-    if (!document.getElementById('game-screen').classList.contains('active')) return;
-    if (!trickActive || gamePaused) return;
+    if (!isChaosGameplayLive()) return;
     const now = Date.now();
     const timeToNextAction = nextExpectedInputTs ? Math.max(0, nextExpectedInputTs - now) : 999;
     if (shouldTriggerChaos(timeToNextAction)) {
@@ -6697,6 +7014,7 @@ function stopChaosSystem() {
 }
 
 function doChaosTick() {
+  if (!isChaosGameplayLive()) return;
   const now = Date.now();
   chaosState.level = Math.floor(Math.max(0, hits) / 5);
   const timeToNextAction = nextExpectedInputTs ? Math.max(0, nextExpectedInputTs - now) : 999;
@@ -6819,7 +7137,6 @@ initOnioSprites();
 updateEmotionalMode();
 refreshHomeVisuals();
 nextSnark();
-spawnBgMonsters();
 updateHUD();
 updateSkipPill();
 updateSoundBtn();
