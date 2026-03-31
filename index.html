@@ -146,8 +146,27 @@ html,body{
   margin-top:auto;padding-bottom:clamp(18px,3vh,28px);
 }
 .home-action-dock{
-  width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
-  gap:14px;align-items:end;
+  width:min(100%,560px);
+  min-height:94px;
+  position:relative;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  padding-bottom:4px;
+}
+.home-side-rail{
+  width:100%;
+  min-height:72px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  padding:10px 18px;
+  border-radius:999px;
+  background:rgba(255,250,243,.9);
+  border:2px solid rgba(255,232,195,.92);
+  box-shadow:0 16px 34px rgba(84,36,8,.14);
+  backdrop-filter:blur(6px);
 }
 .home-btn-row{display:flex;gap:12px;margin-top:20px;z-index:7;width:100%;}
 
@@ -183,38 +202,61 @@ html,body{
 }
 .home-btn-row .big-btn.secondary{flex:1;}
 .home-side-btn{
-  min-height:58px;
-  font-size:clamp(16px,4vw,20px);
-  padding:13px 14px;
-  letter-spacing:1.2px;
+  min-height:54px;
+  border:none;
+  background:linear-gradient(180deg,#FFF9EE 0%,#FFE9C7 100%);
+  color:#7A3F10;
+  box-shadow:0 5px 0 #E8C070,inset 0 1px 0 rgba(255,255,255,.7);
+  transition:transform .1s, box-shadow .1s;
+  cursor:pointer;
 }
+.home-side-btn:active{transform:translateY(3px);box-shadow:0 2px 0 #E8C070;}
 .home-icon-btn{
   width:64px;
   min-width:64px;
   min-height:64px;
   padding:0;
-  border-radius:999px;
+  border-radius:18px;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:28px;
-  line-height:1;
+}
+.home-icon-glyph{
+  width:26px;
+  height:26px;
+  display:block;
+  color:currentColor;
+}
+.home-icon-glyph svg{
+  width:100%;
+  height:100%;
+  display:block;
+  stroke:currentColor;
+  fill:none;
+  stroke-width:2.2;
+  stroke-linecap:round;
+  stroke-linejoin:round;
 }
 .home-play-btn{
+  position:absolute;
+  left:50%;
+  bottom:0;
+  transform:translateX(-50%);
   min-height:0;
   padding:0;
   border:none;
   background:transparent;
   box-shadow:none;
-  animation:btnpulse 2.2s ease-in-out infinite;
+  animation:dockPlayFloat 2.2s ease-in-out infinite;
   overflow:visible;
   display:flex;
   align-items:flex-end;
   justify-content:center;
   cursor:pointer;
+  z-index:2;
 }
 .home-play-btn::before,.home-play-btn::after{content:none;}
-.home-play-btn:active{transform:translateY(4px) scale(.98)!important;box-shadow:none!important;}
+.home-play-btn:active{transform:translateX(-50%) translateY(4px) scale(.98)!important;box-shadow:none!important;}
 .home-play-image{
   display:block;
   width:clamp(96px,18vw,128px);
@@ -227,6 +269,10 @@ html,body{
     drop-shadow(0 -2px 0 #301103)
     drop-shadow(2px 2px 0 #301103)
     drop-shadow(-2px 2px 0 #301103);
+}
+@keyframes dockPlayFloat{
+  0%,100%{transform:translateX(-50%) translateY(0) scale(1);}
+  50%{transform:translateX(-50%) translateY(-3px) scale(1.04);}
 }
 
 /* ===== PROFILE ===== */
@@ -278,6 +324,241 @@ html,body{
 .store-price{font-family:'Fredoka One',cursive;font-size:20px;color:#7B2D8B;}
 .store-stock{font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;color:#BFAB8A;margin-top:2px;}
 .store-stock.owned{color:#7B2D8B;}
+.store-color-card{
+  background:linear-gradient(180deg,#FFFFFF 0%,#FFF9EE 100%);
+  border-radius:20px;
+  border:2px dashed #F0D8A0;
+  padding:10px;
+  box-shadow:0 10px 24px rgba(0,0,0,.06);
+  transition:opacity .15s ease;
+}
+.store-color-card.locked{
+  opacity:.74;
+}
+.store-color-launch{
+  width:100%;
+  border:none;
+  background:none;
+  padding:0;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  text-align:left;
+  cursor:pointer;
+}
+.store-color-launch:disabled{
+  cursor:not-allowed;
+}
+.store-color-launch:active:not(:disabled){
+  transform:scale(.99);
+}
+.store-color-preview-wrap{
+  width:56px;
+  height:56px;
+  border-radius:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(180deg,#FFFDF7 0%,#FFF1D6 100%);
+  border:2px solid rgba(122,63,16,.12);
+  flex-shrink:0;
+}
+.store-color-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.store-color-meta{
+  flex:1;
+  min-width:0;
+}
+.store-color-title{
+  font-family:'Fredoka One',cursive;
+  font-size:17px;
+  color:#7B2D8B;
+}
+.store-color-sub{
+  margin-top:4px;
+  font-family:'Nunito',sans-serif;
+  font-size:13px;
+  font-weight:800;
+  color:#8C7052;
+  line-height:1.35;
+}
+.store-color-preview{
+  width:36px;
+  height:36px;
+  border-radius:999px;
+  background:linear-gradient(180deg,#FFB65A 0%,#E99628 100%);
+  border:2px solid rgba(122,63,16,.18);
+  box-shadow:0 6px 16px rgba(0,0,0,.08);
+  flex-shrink:0;
+}
+.store-color-chevron{
+  font-family:'Fredoka One',cursive;
+  font-size:26px;
+  color:#C99A4A;
+  line-height:1;
+  flex-shrink:0;
+}
+.store-color-wheel{
+  width:100%;
+  height:64px;
+  border:none;
+  border-radius:18px;
+  background:none;
+  cursor:pointer;
+  padding:0;
+}
+.store-color-wheel:disabled{
+  cursor:not-allowed;
+  opacity:.55;
+}
+.store-color-wheel::-webkit-color-swatch-wrapper{padding:0;border-radius:18px;}
+.store-color-wheel::-webkit-color-swatch{border:none;border-radius:18px;}
+.store-color-wheel::-moz-color-swatch{border:none;border-radius:18px;}
+.store-color-actions{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+.store-color-default-chip{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+}
+.store-color-default-swatch{
+  width:18px;
+  height:18px;
+  border-radius:999px;
+  background:#ff8a1f;
+  border:2px solid rgba(122,63,16,.18);
+  box-shadow:0 4px 8px rgba(0,0,0,.08);
+}
+.store-color-btn{
+  border:none;
+  border-radius:16px;
+  min-height:48px;
+  font-family:'Fredoka One',cursive;
+  font-size:16px;
+  cursor:pointer;
+  transition:transform .1s, box-shadow .1s;
+}
+.store-color-btn:active{transform:translateY(2px);}
+.store-color-btn.primary{
+  background:linear-gradient(180deg,#9542AA 0%,#6D2880 100%);
+  color:#FFF7FF;
+  box-shadow:0 5px 0 #4A1A5A;
+}
+.store-color-btn.secondary{
+  background:linear-gradient(180deg,#FFF9EE 0%,#FFE9C7 100%);
+  color:#7A3F10;
+  box-shadow:0 5px 0 #E8C070;
+}
+.store-color-btn:disabled{
+  cursor:not-allowed;
+  opacity:.55;
+  box-shadow:none;
+}
+.store-color-modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:325;
+  align-items:center;
+  justify-content:center;
+  background:rgba(16,8,3,.66);
+  padding:20px;
+}
+.store-color-modal.active{
+  display:flex;
+}
+.store-color-modal-box{
+  width:min(92vw,360px);
+  background:linear-gradient(180deg,#FFFFFF 0%,#FFF6EA 100%);
+  border:2px solid #F0D8A0;
+  border-radius:26px;
+  padding:20px 18px 18px;
+  box-shadow:0 18px 48px rgba(0,0,0,.28);
+  animation:splashPop .28s cubic-bezier(.4,2,.6,1);
+}
+.store-color-modal-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+.store-color-modal-title{
+  font-family:'Fredoka One',cursive;
+  font-size:22px;
+  color:#7B2D8B;
+}
+.store-color-modal-sub{
+  margin-top:5px;
+  font-family:'Nunito',sans-serif;
+  font-size:13px;
+  font-weight:800;
+  color:#8C7052;
+  line-height:1.35;
+}
+.store-color-close{
+  width:42px;
+  height:42px;
+  border:none;
+  border-radius:999px;
+  background:linear-gradient(180deg,#FFF8EE 0%,#FFE7C1 100%);
+  color:#7A3F10;
+  font-family:'Fredoka One',cursive;
+  font-size:22px;
+  line-height:1;
+  cursor:pointer;
+  box-shadow:0 4px 0 #E8C070;
+  flex-shrink:0;
+}
+.store-color-close:active{
+  transform:translateY(2px);
+  box-shadow:none;
+}
+.store-color-modal-preview-row{
+  margin-top:16px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  background:rgba(255,248,236,.92);
+  border:1.5px solid rgba(232,192,112,.48);
+  border-radius:18px;
+  padding:12px 14px;
+  cursor:pointer;
+}
+.store-color-modal-preview{
+  width:54px;
+  height:54px;
+  border-radius:999px;
+  background:#ff8a1f;
+  border:2px solid rgba(122,63,16,.18);
+  box-shadow:0 8px 18px rgba(0,0,0,.08);
+  flex-shrink:0;
+}
+.store-color-modal-note{
+  font-family:'Nunito',sans-serif;
+  font-size:13px;
+  font-weight:800;
+  color:#8C7052;
+  line-height:1.35;
+}
+.store-color-wheel-wrap{
+  margin-top:14px;
+}
+.store-color-wheel-label{
+  margin-bottom:8px;
+  font-family:'Fredoka One',cursive;
+  font-size:13px;
+  color:#A07040;
+  letter-spacing:.8px;
+  text-transform:uppercase;
+}
 
 /* ===== GAME ===== */
 #game-screen{
@@ -797,14 +1078,20 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
   .home-title-art{width:min(86vw,500px);max-height:220px;margin-top:clamp(34px,8vh,60px);}
   .home-logo{font-size:clamp(72px,20vw,112px);margin-top:clamp(38px,10vh,76px);letter-spacing:2px;}
   .home-bottom-ui{width:min(100%,94vw);gap:10px;padding-bottom:20px;}
-  .home-action-dock{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;}
-  .home-side-btn{min-height:52px;font-size:clamp(13px,3.6vw,16px);padding:11px 8px;}
-  .home-icon-btn{width:54px;min-width:54px;min-height:54px;font-size:24px;padding:0;}
+  .home-action-dock{width:min(100%,94vw);min-height:86px;}
+  .home-side-rail{min-height:66px;padding:10px 14px 10px;gap:14px;}
+  .home-side-btn{min-height:50px;}
+  .home-icon-btn{width:52px;min-width:52px;min-height:52px;padding:0;border-radius:16px;}
+  .home-icon-glyph{width:23px;height:23px;}
   .home-play-image{width:clamp(86px,24vw,108px);}
   .play-cta{padding-left:52px;}
   #snark-bubble{max-width:92vw;padding:9px 14px;font-size:13px;}
   #game-controls{bottom:calc(env(safe-area-inset-bottom,0px) + 8px);padding:7px 9px;gap:8px;}
   .gc-btn{width:44px;height:44px;font-size:20px;}
+  .store-color-card{padding:10px;}
+  .store-color-preview-wrap{width:52px;height:52px;}
+  .store-color-modal{padding:14px;}
+  .store-color-modal-box{width:min(94vw,360px);padding:18px 16px 16px;}
 }
 
 /* ===== NEW GLOBAL CHAOS EFFECTS ===== */
@@ -963,6 +1250,306 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
   background:linear-gradient(180deg,#FFB65A 0%,#E99628 100%);
   color:white;
   box-shadow:0 5px 0 #A95E16;
+}
+
+.chaos-phone-card{
+  width:min(92vw,360px);
+  border-radius:30px;
+  overflow:hidden;
+  border:2px solid rgba(255,241,216,.22);
+  background:
+    radial-gradient(circle at 18% 12%,rgba(255,199,129,.24) 0%,transparent 28%),
+    radial-gradient(circle at 82% 88%,rgba(255,121,63,.16) 0%,transparent 32%),
+    linear-gradient(180deg,#201814 0%,#151014 100%);
+  box-shadow:0 26px 60px rgba(10,4,2,.48);
+  color:#FFF9F1;
+  position:relative;
+}
+.chaos-phone-top{
+  position:relative;
+  padding:14px 16px 8px;
+}
+.chaos-phone-notch{
+  position:absolute;
+  left:50%;
+  top:10px;
+  transform:translateX(-50%);
+  width:118px;
+  height:26px;
+  border-radius:0 0 18px 18px;
+  background:rgba(8,8,10,.94);
+  box-shadow:inset 0 -1px 0 rgba(255,255,255,.05);
+}
+.chaos-phone-status{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  font-family:'Nunito',sans-serif;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.6px;
+  color:rgba(255,245,233,.92);
+  text-transform:uppercase;
+}
+.chaos-phone-status-icons{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.chaos-phone-status-dot{
+  width:7px;
+  height:7px;
+  border-radius:999px;
+  background:#FFB65A;
+  box-shadow:0 0 0 2px rgba(255,182,90,.16);
+}
+.chaos-phone-status-bars{
+  display:flex;
+  align-items:flex-end;
+  gap:2px;
+  height:12px;
+}
+.chaos-phone-status-bars span{
+  width:3px;
+  border-radius:999px;
+  background:rgba(255,245,233,.92);
+}
+.chaos-phone-status-bars span:nth-child(1){height:4px;opacity:.54;}
+.chaos-phone-status-bars span:nth-child(2){height:7px;opacity:.72;}
+.chaos-phone-status-bars span:nth-child(3){height:10px;}
+.chaos-phone-status-bars span:nth-child(4){height:12px;}
+.chaos-phone-body{
+  padding:8px 18px 18px;
+}
+.chaos-phone-app{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:7px 12px;
+  border-radius:999px;
+  background:rgba(255,249,241,.08);
+  border:1px solid rgba(255,241,216,.16);
+  font-family:'Nunito',sans-serif;
+  font-size:12px;
+  font-weight:900;
+  color:rgba(255,243,229,.86);
+  letter-spacing:.4px;
+}
+.chaos-phone-app-icon{
+  width:22px;
+  height:22px;
+  border-radius:9px;
+  background:linear-gradient(180deg,#FFB65A 0%,#E99628 100%);
+  color:#4A1E08;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:13px;
+  box-shadow:0 5px 14px rgba(233,150,40,.24);
+}
+.chaos-phone-avatar-wrap{
+  display:flex;
+  justify-content:center;
+  margin-top:20px;
+}
+.chaos-phone-avatar{
+  width:104px;
+  height:104px;
+  border-radius:28px;
+  background:linear-gradient(180deg,#FFEAD2 0%,#FFD3A8 100%);
+  color:#5B2508;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:56px;
+  box-shadow:
+    0 0 0 10px rgba(255,240,218,.05),
+    0 16px 34px rgba(0,0,0,.26);
+  animation:chaosPhonePulse 1.2s ease-in-out infinite;
+}
+.chaos-phone-avatar.text{
+  width:52px;
+  height:52px;
+  border-radius:18px;
+  font-size:28px;
+  box-shadow:none;
+  animation:none;
+}
+.chaos-phone-call-label,
+.chaos-phone-thread-label{
+  margin-top:18px;
+  font-family:'Nunito',sans-serif;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:1.2px;
+  text-transform:uppercase;
+  color:rgba(255,224,195,.64);
+  text-align:center;
+}
+.chaos-phone-caller-name{
+  margin-top:8px;
+  font-family:'Fredoka One',cursive;
+  font-size:clamp(30px,8vw,36px);
+  color:#FFF7ED;
+  line-height:1.03;
+  text-align:center;
+  text-shadow:0 6px 18px rgba(0,0,0,.22);
+}
+.chaos-phone-caller-sub{
+  margin-top:8px;
+  font-family:'Nunito',sans-serif;
+  font-size:14px;
+  font-weight:800;
+  color:rgba(255,237,219,.74);
+  line-height:1.35;
+  text-align:center;
+}
+.chaos-phone-rings{
+  margin-top:18px;
+  display:flex;
+  justify-content:center;
+  gap:8px;
+}
+.chaos-phone-rings span{
+  width:10px;
+  height:10px;
+  border-radius:999px;
+  background:#FFB65A;
+  opacity:.34;
+  animation:chaosPhoneRing 1.2s ease-in-out infinite;
+}
+.chaos-phone-rings span:nth-child(2){animation-delay:.16s;}
+.chaos-phone-rings span:nth-child(3){animation-delay:.32s;}
+.chaos-phone-rings span:nth-child(4){animation-delay:.48s;}
+.chaos-phone-actions{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin-top:20px;
+}
+.chaos-phone-btn{
+  min-height:64px;
+  border:none;
+  border-radius:22px;
+  cursor:pointer;
+  padding:12px 10px;
+  font-family:'Nunito',sans-serif;
+  transition:transform .1s, box-shadow .1s;
+}
+.chaos-phone-btn:active{transform:translateY(2px);}
+.chaos-phone-btn-icon{
+  display:block;
+  font-size:24px;
+  line-height:1;
+}
+.chaos-phone-btn-label{
+  display:block;
+  margin-top:6px;
+  font-size:13px;
+  font-weight:900;
+  letter-spacing:.7px;
+  text-transform:uppercase;
+}
+.chaos-phone-btn-sub{
+  display:block;
+  margin-top:2px;
+  font-size:11px;
+  font-weight:800;
+  opacity:.8;
+}
+.chaos-phone-btn.ignore{
+  background:linear-gradient(180deg,#3C2D28 0%,#2A1E1B 100%);
+  color:#FCE8D4;
+  box-shadow:0 6px 0 #1A1210;
+}
+.chaos-phone-btn.answer{
+  background:linear-gradient(180deg,#FFB65A 0%,#E99628 100%);
+  color:#4A1F08;
+  box-shadow:0 6px 0 #A95E16;
+}
+.chaos-phone-thread-head{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-top:14px;
+  padding:10px 12px;
+  border-radius:22px;
+  background:rgba(255,249,241,.08);
+  border:1px solid rgba(255,241,216,.12);
+}
+.chaos-phone-thread-meta{
+  min-width:0;
+  flex:1;
+}
+.chaos-phone-thread-name{
+  font-family:'Fredoka One',cursive;
+  font-size:20px;
+  color:#FFF7ED;
+  line-height:1.05;
+}
+.chaos-phone-thread-sub{
+  margin-top:4px;
+  font-family:'Nunito',sans-serif;
+  font-size:12px;
+  font-weight:800;
+  color:rgba(255,230,204,.68);
+}
+.chaos-phone-thread{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:16px;
+}
+.chaos-phone-bubble{
+  max-width:82%;
+  padding:12px 14px;
+  border-radius:18px;
+  font-family:'Nunito',sans-serif;
+  font-size:14px;
+  font-weight:800;
+  line-height:1.34;
+  box-shadow:0 10px 24px rgba(0,0,0,.16);
+}
+.chaos-phone-bubble.outgoing{
+  align-self:flex-end;
+  background:linear-gradient(180deg,#FFB65A 0%,#ED9724 100%);
+  color:#4A1F08;
+  border-bottom-right-radius:8px;
+}
+.chaos-phone-bubble.incoming{
+  align-self:flex-start;
+  background:rgba(255,249,241,.12);
+  color:#FFF7ED;
+  border:1px solid rgba(255,241,216,.12);
+  border-bottom-left-radius:8px;
+}
+.chaos-phone-footer{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  margin-top:16px;
+  font-family:'Nunito',sans-serif;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.4px;
+  color:rgba(255,230,204,.56);
+}
+.chaos-phone-homebar{
+  width:118px;
+  height:5px;
+  border-radius:999px;
+  background:rgba(255,249,241,.28);
+  margin:16px auto 0;
+}
+@keyframes chaosPhonePulse{
+  0%,100%{transform:scale(1);}
+  50%{transform:scale(1.05);}
+}
+@keyframes chaosPhoneRing{
+  0%,100%{transform:translateY(0);opacity:.26;}
+  50%{transform:translateY(-5px);opacity:1;}
 }
 
 #onio.chaos-adjusting{
@@ -1204,11 +1791,29 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
     </div>
     <div class="home-bottom-ui">
       <div class="home-action-dock">
-        <button class="big-btn secondary home-side-btn home-icon-btn" onclick="showScreen('store-screen')" aria-label="Store">🛒</button>
+        <div class="home-side-rail">
+          <button class="home-side-btn home-icon-btn" onclick="showScreen('store-screen')" aria-label="Store">
+            <span class="home-icon-glyph" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <circle cx="9" cy="19" r="1.7"></circle>
+                <circle cx="18" cy="19" r="1.7"></circle>
+                <path d="M3.5 5h2l2 9.5h10.5l2-7.5H7"></path>
+                <path d="M10 8.5h8"></path>
+              </svg>
+            </span>
+          </button>
+          <button class="home-side-btn home-icon-btn" onclick="showScreen('profile-screen')" aria-label="Me">
+            <span class="home-icon-glyph" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="8" r="3.4"></circle>
+                <path d="M5.5 19c1.7-3 4.1-4.5 6.5-4.5s4.8 1.5 6.5 4.5"></path>
+              </svg>
+            </span>
+          </button>
+        </div>
         <button class="home-play-btn" onclick="startGame()" aria-label="Play">
           <img id="home-play-art" class="home-play-image" alt="Play">
         </button>
-        <button class="big-btn secondary home-side-btn home-icon-btn" onclick="showScreen('profile-screen')" aria-label="Me">👤</button>
       </div>
     </div>
   </div>
@@ -1280,13 +1885,25 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
       <div class="store-price-col"><div class="store-price">$2.99</div><div class="store-stock" id="stk-skip3">× 0</div></div>
     </div>
     <div class="store-section" style="margin-top:4px;">🎨 Looks</div>
-    <div class="store-item" onclick="attemptPurchase('colorViolet')">
-      <div class="store-icon">🟣</div>
+    <div class="store-item" onclick="attemptPurchase('colorPicker')">
+      <div class="store-icon">🎨</div>
       <div class="store-info">
-        <div class="store-name">Purple Onio</div>
-        <div class="store-desc">Unlock a purple Onio skin.<br><span class="store-note">Tap again later to equip it.</span></div>
+        <div class="store-name">Onio Color Picker</div>
+        <div class="store-desc">Unlock a custom color wheel for Onio.<br><span class="store-note">Pick any color you want, or switch back to default anytime.</span></div>
       </div>
-      <div class="store-price-col"><div class="store-price">$0.99</div><div class="store-stock" id="stk-colorViolet">buy</div></div>
+      <div class="store-price-col"><div class="store-price">$0.99</div><div class="store-stock" id="stk-colorPicker">unlock</div></div>
+    </div>
+    <div id="store-color-picker-card" class="store-color-card locked">
+      <button id="store-color-launch" class="store-color-launch" onclick="openStoreColorPickerModal()" disabled>
+        <div class="store-color-preview-wrap">
+          <div id="store-color-preview" class="store-color-preview" aria-hidden="true"></div>
+        </div>
+        <div class="store-color-meta">
+          <div class="store-color-title">Onio's Color</div>
+          <div class="store-color-sub" id="store-color-status">Unlock the color picker to customize him.</div>
+        </div>
+        <div class="store-color-chevron" aria-hidden="true">›</div>
+      </button>
     </div>
     <div class="store-section" style="margin-top:4px;">❤️ Support</div>
     <div class="store-item" onclick="attemptPurchase('donate')">
@@ -1511,6 +2128,33 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
       <button class="pm-btn" id="pm-confirm">confirm 💸</button>
     </div>
     <div class="pm-note">💳 Payments simulated — real IAP coming soon.</div>
+  </div>
+</div>
+
+<div id="store-color-modal" class="store-color-modal" onclick="closeStoreColorPickerModal(event)">
+  <div class="store-color-modal-box" onclick="event.stopPropagation()">
+    <div class="store-color-modal-head">
+      <div>
+        <div class="store-color-modal-title">Pick Onio's Color</div>
+        <div class="store-color-modal-sub" id="store-color-modal-status">Current: default orange.</div>
+      </div>
+      <button class="store-color-close" onclick="closeStoreColorPickerModal()" aria-label="Close color picker">×</button>
+    </div>
+    <div class="store-color-modal-preview-row" onclick="triggerStoreColorWheel()">
+      <div id="store-color-modal-preview" class="store-color-modal-preview" aria-hidden="true"></div>
+      <div class="store-color-modal-note">Choose any color here, or jump back to default orange.</div>
+    </div>
+    <div class="store-color-wheel-wrap">
+      <div class="store-color-wheel-label">Color Picker</div>
+      <input id="onio-color-wheel" class="store-color-wheel" type="color" value="#ff8a1f" aria-label="Choose Onio color" oninput="previewCustomOnioColor(this.value)">
+    </div>
+    <div class="store-color-actions" style="margin-top:14px;">
+      <button id="store-color-default" class="store-color-btn secondary store-color-default-chip" onclick="resetOnioColorToDefault()">
+        <span class="store-color-default-swatch" aria-hidden="true"></span>
+        <span>Default</span>
+      </button>
+      <button id="store-color-done" class="store-color-btn primary" onclick="closeStoreColorPickerModal()">Done</button>
+    </div>
   </div>
 </div>
 
@@ -1772,11 +2416,18 @@ const ONIO_COLORWAYS = {
   ocean: { filter: 'hue-rotate(146deg) saturate(1.18) brightness(1.04)' },
   mint: { filter: 'hue-rotate(104deg) saturate(1.12) brightness(1.05)' },
 };
-let cosmeticState = JSON.parse(localStorage.getItem('onio_cosmetics') || '{"equippedColorway":"classic","ownedColorways":["classic"]}');
-if (!cosmeticState || typeof cosmeticState !== 'object') cosmeticState = { equippedColorway:'classic', ownedColorways:['classic'] };
+const DEFAULT_ONIO_COLOR_HEX = '#ff8a1f';
+let cosmeticState = JSON.parse(localStorage.getItem('onio_cosmetics') || '{"equippedColorway":"classic","ownedColorways":["classic"],"hasColorPicker":false,"customColorHex":"#ff8a1f"}');
+if (!cosmeticState || typeof cosmeticState !== 'object') cosmeticState = { equippedColorway:'classic', ownedColorways:['classic'], hasColorPicker:false, customColorHex:DEFAULT_ONIO_COLOR_HEX };
 if (!Array.isArray(cosmeticState.ownedColorways) || !cosmeticState.ownedColorways.length) cosmeticState.ownedColorways = ['classic'];
 if (!cosmeticState.ownedColorways.includes('classic')) cosmeticState.ownedColorways.unshift('classic');
-if (!ONIO_COLORWAYS[cosmeticState.equippedColorway]) cosmeticState.equippedColorway = 'classic';
+cosmeticState.hasColorPicker = !!cosmeticState.hasColorPicker || cosmeticState.ownedColorways.includes('violet');
+if (typeof cosmeticState.customColorHex !== 'string' || !/^#([0-9a-f]{6})$/i.test(cosmeticState.customColorHex)) {
+  cosmeticState.customColorHex = cosmeticState.equippedColorway === 'violet' ? '#8f3ca4' : DEFAULT_ONIO_COLOR_HEX;
+}
+if (cosmeticState.equippedColorway === 'violet' && cosmeticState.hasColorPicker) cosmeticState.equippedColorway = 'custom';
+if (cosmeticState.equippedColorway === 'custom' && !cosmeticState.hasColorPicker) cosmeticState.equippedColorway = 'classic';
+if (!ONIO_COLORWAYS[cosmeticState.equippedColorway] && cosmeticState.equippedColorway !== 'custom') cosmeticState.equippedColorway = 'classic';
 function saveCosmetics() {
   localStorage.setItem('onio_cosmetics', JSON.stringify(cosmeticState));
 }
@@ -1996,8 +2647,8 @@ const PURCHASE_SNARKS = {
     "multiple skips. you're planning multiple losses. efficiency.",
     "four uses. four future embarrassments. congrats.",
     "honestly? this one hurt a little. not in a sad way.","giving money to a menace. peak decision making."],
-  colorViolet:["purple? dramatic choice.","great. now he looks even more suspicious.",
-    "you bought a skin. respectably vain.","that color is going to annoy me all run.","fine. purple Onio unlocked."],
+  colorPicker:["a whole color wheel? that's dangerous.","you bought customization. naturally.",
+    "fine. now you get to art-direct the menace.","this is more power than you deserve.","great. custom colors unlocked."],
   donate:["giving money and getting nothing back. this is my favorite purchase.",
     "pure generosity. i will use this to improve my trolling.",
     "the coffee will be used irresponsibly. i promise.",
@@ -2750,7 +3401,7 @@ function applyChaosEffect(effect, context={}) {
         () => { if (activeMinigameId !== 'tap') showFakeSafeZoneHazard(360 + Math.random()*520); },
         () => showFloatingChaosBanner('📘', 'instruction patch', getWrongInstructionLine(), 'cool', 1700 + Math.random()*500),
       ];
-      if (chaosState.level >= 3) deceptionPicks.push(() => spawnFakeOnioPop());
+      if (chaosState.level >= 2) deceptionPicks.push(() => spawnFakeOnioPop(), () => spawnFakeOnioPop());
       if (chaosState.level >= 5) deceptionPicks.push(
         () => showFakeoutMoment('PAUSED', 'lol no. still live.', 'default', 460 + Math.random()*260),
         () => showFakeoutMoment('RUN OVER', 'lol. jk.', 'danger', 520 + Math.random()*280),
@@ -2789,7 +3440,7 @@ function triggerChaos(context={}) {
   applyChaosGameplayModifier('engine_trigger');
 
   if (weakness === 'fast') {
-    if (Math.random() < 0.52) spawnFakeOnioPop();
+    if (Math.random() < 0.72) spawnFakeOnioPop();
     if (Math.random() < 0.72) showFloatingFakeTextNear(point.x, point.y, 420 + Math.random()*360);
     if (Math.random() < 0.58) spawnTapBaitNear(point.x, point.y, 420 + Math.random()*360);
     if (Math.random() < 0.6) showBehaviorWeaknessBanner(Math.random() < 0.5 ? 'too fast' : 'predictable');
@@ -3383,6 +4034,29 @@ function closeChaosPromptOverlay(overlay, doneLine='done.', delayMs=180) {
   }, delayMs));
 }
 
+function getChaosPhoneTimeLabel() {
+  const now = new Date();
+  const hour = now.getHours() % 12 || 12;
+  const minute = String(now.getMinutes()).padStart(2, '0');
+  return `${hour}:${minute}`;
+}
+
+function buildChaosPhoneTopMarkup(networkLabel='ONI LTE') {
+  return `
+    <div class="chaos-phone-top">
+      <div class="chaos-phone-notch"></div>
+      <div class="chaos-phone-status">
+        <span>${getChaosPhoneTimeLabel()}</span>
+        <div class="chaos-phone-status-icons">
+          <span>${networkLabel}</span>
+          <div class="chaos-phone-status-bars"><span></span><span></span><span></span><span></span></div>
+          <div class="chaos-phone-status-dot"></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function showChaosDecisionPrompt({
   eyebrow='interrupt',
   title='Incoming chaos',
@@ -3564,12 +4238,183 @@ function pickNextHomeScene() {
   return pool[homeSceneIdx];
 }
 
+function normalizeColorHex(hex=DEFAULT_ONIO_COLOR_HEX) {
+  const raw = String(hex || '').trim();
+  return /^#([0-9a-f]{6})$/i.test(raw) ? raw.toLowerCase() : DEFAULT_ONIO_COLOR_HEX;
+}
+
+function hexToRgb(hex=DEFAULT_ONIO_COLOR_HEX) {
+  const normalized = normalizeColorHex(hex).slice(1);
+  return {
+    r: parseInt(normalized.slice(0, 2), 16),
+    g: parseInt(normalized.slice(2, 4), 16),
+    b: parseInt(normalized.slice(4, 6), 16),
+  };
+}
+
+function rgbToHsl(r, g, b) {
+  let rr = r / 255;
+  let gg = g / 255;
+  let bb = b / 255;
+  const max = Math.max(rr, gg, bb);
+  const min = Math.min(rr, gg, bb);
+  let h = 0;
+  let s = 0;
+  const l = (max + min) / 2;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case rr:
+        h = ((gg - bb) / d) + (gg < bb ? 6 : 0);
+        break;
+      case gg:
+        h = ((bb - rr) / d) + 2;
+        break;
+      default:
+        h = ((rr - gg) / d) + 4;
+        break;
+    }
+    h /= 6;
+  }
+  return {
+    h: h * 360,
+    s: s * 100,
+    l: l * 100,
+  };
+}
+
+function buildCustomColorwayFilter(hex=DEFAULT_ONIO_COLOR_HEX) {
+  const { r, g, b } = hexToRgb(hex);
+  const { h, s, l } = rgbToHsl(r, g, b);
+  const rotate = Math.round(h - 28);
+  const saturate = (0.82 + (s / 100) * 1.8).toFixed(2);
+  const brightness = (0.78 + (l / 100) * 0.58).toFixed(2);
+  const contrast = (0.96 + (s / 100) * 0.2).toFixed(2);
+  return `hue-rotate(${rotate}deg) saturate(${saturate}) brightness(${brightness}) contrast(${contrast})`;
+}
+
 function getColorwayFilter(colorwayId='classic') {
+  if (colorwayId === 'custom' && cosmeticState.hasColorPicker) {
+    return buildCustomColorwayFilter(cosmeticState.customColorHex || DEFAULT_ONIO_COLOR_HEX);
+  }
   return (ONIO_COLORWAYS[colorwayId] || ONIO_COLORWAYS.classic || { filter:'none' }).filter || 'none';
+}
+
+function getDisplayedOnioColorHex() {
+  if (cosmeticState.hasColorPicker && cosmeticState.equippedColorway === 'custom') {
+    return normalizeColorHex(cosmeticState.customColorHex || DEFAULT_ONIO_COLOR_HEX);
+  }
+  return DEFAULT_ONIO_COLOR_HEX;
+}
+
+function getOnioColorStatusText(forModal=false) {
+  if (!cosmeticState.hasColorPicker) {
+    return 'Unlock the color picker to customize him.';
+  }
+  const usingCustom = cosmeticState.equippedColorway === 'custom';
+  if (forModal) {
+    return usingCustom ? 'Custom color selected.' : 'Using default orange.';
+  }
+  return usingCustom
+    ? 'Custom color selected. Tap to change it.'
+    : 'Using default orange. Tap to choose a custom color.';
 }
 
 function applyOnioColorway(colorwayId='classic') {
   setRootVar('--onio-color-filter', getColorwayFilter(colorwayId));
+}
+
+function syncOnioColorPickerUI() {
+  const card = document.getElementById('store-color-picker-card');
+  const launch = document.getElementById('store-color-launch');
+  const wheel = document.getElementById('onio-color-wheel');
+  const preview = document.getElementById('store-color-preview');
+  const modalPreview = document.getElementById('store-color-modal-preview');
+  const status = document.getElementById('store-color-status');
+  const modalStatus = document.getElementById('store-color-modal-status');
+  const doneBtn = document.getElementById('store-color-done');
+  const defaultBtn = document.getElementById('store-color-default');
+  if (!card || !wheel || !preview || !status || !defaultBtn) return;
+
+  const unlocked = !!cosmeticState.hasColorPicker;
+  const customHex = normalizeColorHex(cosmeticState.customColorHex || DEFAULT_ONIO_COLOR_HEX);
+  const activeHex = getDisplayedOnioColorHex();
+  const usingCustom = cosmeticState.equippedColorway === 'custom' && unlocked;
+
+  wheel.value = customHex;
+  wheel.disabled = !unlocked;
+  if (launch) launch.disabled = !unlocked;
+  if (doneBtn) doneBtn.disabled = !unlocked;
+  defaultBtn.disabled = !unlocked;
+  preview.style.background = activeHex;
+  if (modalPreview) modalPreview.style.background = activeHex;
+  card.classList.toggle('locked', !unlocked);
+  if (launch) launch.setAttribute('aria-disabled', unlocked ? 'false' : 'true');
+  status.textContent = getOnioColorStatusText(false);
+  if (modalStatus) {
+    modalStatus.textContent = getOnioColorStatusText(true);
+  }
+}
+
+function previewCustomOnioColor(hex) {
+  applyCustomOnioColor(hex);
+}
+
+function applyCustomOnioColor(hex=null) {
+  if (!cosmeticState.hasColorPicker) return;
+  cosmeticState.customColorHex = normalizeColorHex(hex || cosmeticState.customColorHex || DEFAULT_ONIO_COLOR_HEX);
+  cosmeticState.equippedColorway = 'custom';
+  saveCosmetics();
+  applyArtPack();
+  updateStoreStock();
+}
+
+function resetOnioColorToDefault() {
+  if (!cosmeticState.hasColorPicker) return;
+  cosmeticState.equippedColorway = 'classic';
+  saveCosmetics();
+  applyArtPack();
+  updateStoreStock();
+}
+
+function revealStoreColorPicker() {
+  const card = document.getElementById('store-color-picker-card');
+  if (!card) return;
+  card.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function triggerStoreColorWheel() {
+  const wheel = document.getElementById('onio-color-wheel');
+  if (!wheel || wheel.disabled) return;
+  try {
+    if (typeof wheel.showPicker === 'function') {
+      wheel.showPicker();
+      return;
+    }
+  } catch (_) {}
+  try {
+    wheel.click();
+  } catch (_) {}
+}
+
+function openStoreColorPickerModal() {
+  if (!cosmeticState.hasColorPicker) return;
+  const modal = document.getElementById('store-color-modal');
+  if (!modal) return;
+  syncOnioColorPickerUI();
+  modal.classList.add('active');
+  setTimeout(() => {
+    if (!modal.classList.contains('active')) return;
+    triggerStoreColorWheel();
+  }, 40);
+}
+
+function closeStoreColorPickerModal(event=null) {
+  if (event && event.target !== event.currentTarget) return;
+  const modal = document.getElementById('store-color-modal');
+  if (!modal) return;
+  modal.classList.remove('active');
 }
 
 function applySpriteToElement(el) {
@@ -3701,6 +4546,7 @@ function refreshHomeVisuals() {
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  if (id !== 'store-screen') closeStoreColorPickerModal();
   if (id !== 'game-screen') {
     gamePaused = false;
     document.getElementById('real-pause').classList.remove('active');
@@ -4013,13 +4859,15 @@ const STORE_ITEMS = {
   skip1:{name:'Lucky Skip',price:'$0.99',gives:{lucky:1}},
   skip2:{name:'Big Skip',price:'$1.99',gives:{big:1}},
   skip3:{name:'Chaos Bundle',price:'$2.99',gives:{lucky:3,big:1}},
-  colorViolet:{name:'Purple Onio',price:'$0.99',gives:{colorway:'violet'}},
+  colorPicker:{name:'Onio Color Picker',price:'$0.99',gives:{feature:'colorPicker'}},
   donate:{name:'Buy Onio a Coffee',price:'$1.99',gives:{}},
 };
 
 function openStoreView() {
+  closeStoreColorPickerModal();
   document.getElementById('store-snark').textContent = STORE_SNARKS[storeSnarkIdx++ % STORE_SNARKS.length];
   updateStoreStock();
+  syncOnioColorPickerUI();
 }
 function updateStoreStock() {
   const set = (id, n) => {
@@ -4030,40 +4878,41 @@ function updateStoreStock() {
   set('stk-skip1', inventory.lucky);
   set('stk-skip2', inventory.big);
   set('stk-skip3', inventory.lucky + inventory.big);
-  const colorEl = document.getElementById('stk-colorViolet');
+  const colorEl = document.getElementById('stk-colorPicker');
   if (colorEl) {
-    const owned = cosmeticState.ownedColorways.includes('violet');
-    const equipped = cosmeticState.equippedColorway === 'violet';
-    colorEl.textContent = equipped ? 'equipped' : (owned ? 'owned' : 'buy');
+    const owned = !!cosmeticState.hasColorPicker;
+    const equipped = cosmeticState.equippedColorway === 'custom';
+    colorEl.textContent = equipped ? 'equipped' : (owned ? 'owned' : 'unlock');
     colorEl.className = 'store-stock' + (owned ? ' owned' : '');
   }
+  syncOnioColorPickerUI();
 }
 
 function attemptPurchase(itemId) {
   const item = STORE_ITEMS[itemId];
   if (!item) return;
-  if (itemId === 'colorViolet' && cosmeticState.equippedColorway === 'violet') {
-    showToast('purple already equipped.');
+  if (itemId === 'colorPicker' && cosmeticState.hasColorPicker) {
+    openStoreColorPickerModal();
     return;
   }
   const snarks = PURCHASE_SNARKS[itemId] || ['Onio noticed.', 'interesting choice.', 'sure.'];
   document.getElementById('pm-snark').textContent = '"' + snarks[Math.floor(Math.random()*snarks.length)] + '"';
-  const isOwnedColor = itemId === 'colorViolet' && cosmeticState.ownedColorways.includes('violet');
-  document.getElementById('pm-item').textContent = item.name + (isOwnedColor ? ' — owned' : (' — ' + item.price));
+  const isOwnedColorTool = itemId === 'colorPicker' && cosmeticState.hasColorPicker;
+  document.getElementById('pm-item').textContent = item.name + (isOwnedColorTool ? ' — owned' : (' — ' + item.price));
   const descs = {
     skip1:'Adds 1 Lucky Skip. Start 5–12 depth ahead on your next game.',
     skip2:'Adds 1 Big Skip. Start 12–24 depth ahead — more chaos sooner.',
     skip3:'3× Lucky + 1× Big. Four chaotic depth boosts.',
-    colorViolet: isOwnedColor
-      ? 'Equip the purple Onio colorway.'
-      : 'Unlock and equip a purple Onio colorway.',
+    colorPicker: isOwnedColorTool
+      ? 'Your color wheel is already unlocked. Tap the swatch to change Onio.'
+      : 'Unlock a color wheel so you can choose any Onio color you want.',
     donate:'Pure donation. Onio gets a coffee. You get nothing. He\'s fine with this.',
   };
   document.getElementById('pm-desc').textContent = descs[itemId];
   document.getElementById('pm-cancel').textContent = 'nevermind';
   document.getElementById('pm-cancel').onclick = closePM;
-  document.getElementById('pm-confirm').textContent = itemId === 'colorViolet'
-    ? (isOwnedColor ? 'equip 🟣' : 'unlock 🟣')
+  document.getElementById('pm-confirm').textContent = itemId === 'colorPicker'
+    ? (isOwnedColorTool ? 'manage 🎨' : 'unlock 🎨')
     : 'confirm 💸';
   document.getElementById('pm-confirm').onclick = () => confirmPurchase(itemId);
   document.getElementById('pm-modal').classList.add('active');
@@ -4073,15 +4922,16 @@ function confirmPurchase(itemId) {
   const item = STORE_ITEMS[itemId];
   if (!item) return;
   let toast = '✓ done';
-  if (itemId === 'colorViolet') {
-    const owned = cosmeticState.ownedColorways.includes('violet');
-    if (!owned) cosmeticState.ownedColorways.push('violet');
-    cosmeticState.equippedColorway = 'violet';
+  if (itemId === 'colorPicker') {
+    cosmeticState.hasColorPicker = true;
+    cosmeticState.customColorHex = normalizeColorHex(cosmeticState.customColorHex || DEFAULT_ONIO_COLOR_HEX);
     saveCosmetics();
-    applyArtPack();
     closePM();
     updateStoreStock();
-    showToast(owned ? 'purple equipped.' : 'purple unlocked + equipped.');
+    syncOnioColorPickerUI();
+    revealStoreColorPicker();
+    setTimeout(openStoreColorPickerModal, 180);
+    showToast('color picker unlocked.');
     setTimeout(() => { document.getElementById('store-snark').textContent = STORE_SNARKS[storeSnarkIdx++ % STORE_SNARKS.length]; }, 400);
     return;
   }
@@ -5094,9 +5944,9 @@ function showLevelClear(newLevel, cb, flowId=activeChallengeFlowId) {
 
 // Chaos budget per challenge — grows with level
 function getTapChaosBudget() {
-  if (level <= 4)  return 0;                                 // lv1-4: clean onboarding
-  if (level <= 10) return 1;                                 // lv5-10: occasional chaos
-  if (level <= 20) return Math.floor(1 + (level-10)*0.25);  // 1→3
+  if (level <= 2)  return 0;                                 // lv1-2: clean onboarding
+  if (level <= 8)  return 1;                                 // lv3-8: occasional chaos
+  if (level <= 20) return Math.floor(1 + (level-8)*0.25);   // 1→4
   if (level <= 40) return Math.floor(3 + (level-20)*0.20);  // 3→7
   if (level <= 80) return Math.floor(7 + (level-40)*0.18);  // 7→14
   return Math.min(18, Math.floor(14 + (level-80)*0.08));    // cap gently
@@ -5104,9 +5954,9 @@ function getTapChaosBudget() {
 
 // Per-tap chaos fire chance — starts meaningful from level 2
 function getTapChaosChance() {
-  if (level <= 4)  return 0.00;
-  if (level <= 10) return 0.08 + (level-4)*0.02;            // 8%→20%
-  if (level <= 20) return 0.20 + (level-10)*0.018;          // 20%→38%
+  if (level <= 2)  return 0.00;
+  if (level <= 8)  return 0.12 + (level-2)*0.02;            // 12%→24%
+  if (level <= 20) return 0.24 + (level-8)*0.014;           // 24%→41%
   if (level <= 40) return 0.38 + (level-20)*0.011;          // 38%→60%
   if (level <= 80) return 0.60 + (level-40)*0.0045;         // 60%→78%
   return Math.min(0.88, 0.78 + (level-80)*0.0015);          // long-tail increase
@@ -5129,53 +5979,143 @@ function getSignDisplay(trueRemaining) {
 
 // Fake incoming call overlay
 function showFakeCall(cb=()=>{}) {
+  if (!pauseForChaosModal()) return false;
   const callerEmoji = ['😤','👹','💀','👻','🤡'][Math.floor(Math.random()*5)];
   const callerNames = ['Mom','Unknown','IRS','Your Boss','Chaos Corp','Onio\'s Lawyer','DO NOT ANSWER'];
   const caller = callerNames[Math.floor(Math.random()*callerNames.length)];
-  return showChaosDecisionPrompt({
-    eyebrow: 'incoming call',
-    title: caller,
-    body: 'Onio routed this directly into your minigame. Pick something so he can stop pretending this matters.',
-    secondaryLabel: 'ignore',
-    primaryLabel: 'answer',
-    mediaHtml: `
-      <div style="font-size:44px;line-height:1;margin-top:10px;">${callerEmoji}</div>
-      <div style="font-family:'Nunito',sans-serif;font-size:13px;color:#8A5932;font-weight:800;margin-top:8px;">game paused until you deal with it</div>
-    `,
-    onChoose: action => {
-      applyChaosGameplayModifier('fake_call');
-      setMessageTemp(action === 'answer' ? 'call ended.' : 'call ignored.', 960);
-      cb(action);
-    },
+  const overlay = document.createElement('div');
+  overlay.className = 'chaos-prompt-overlay';
+  overlay.innerHTML = `
+    <div class="chaos-phone-card">
+      ${buildChaosPhoneTopMarkup(Math.random() < 0.5 ? 'SPIRAL 5G' : 'ONI LTE')}
+      <div class="chaos-phone-body">
+        <div class="chaos-phone-app">
+          <span class="chaos-phone-app-icon">☎</span>
+          <span>Onio Voice</span>
+        </div>
+        <div class="chaos-phone-avatar-wrap">
+          <div class="chaos-phone-avatar">${callerEmoji}</div>
+        </div>
+        <div class="chaos-phone-call-label">incoming call</div>
+        <div class="chaos-phone-caller-name">${caller}</div>
+        <div class="chaos-phone-caller-sub">Onio Voice Relay • secure line requested</div>
+        <div class="chaos-phone-rings"><span></span><span></span><span></span><span></span></div>
+        <div class="chaos-phone-actions">
+          <button class="chaos-phone-btn ignore" type="button" data-action="ignore">
+            <span class="chaos-phone-btn-icon">📵</span>
+            <span class="chaos-phone-btn-label">Ignore</span>
+            <span class="chaos-phone-btn-sub">let it ring</span>
+          </button>
+          <button class="chaos-phone-btn answer" type="button" data-action="answer">
+            <span class="chaos-phone-btn-icon">📞</span>
+            <span class="chaos-phone-btn-label">Answer</span>
+            <span class="chaos-phone-btn-sub">deal with it</span>
+          </button>
+        </div>
+        <div class="chaos-phone-homebar"></div>
+      </div>
+    </div>
+  `;
+  arena.appendChild(overlay);
+
+  let settled = false;
+  function finish(action) {
+    if (settled) return;
+    settled = true;
+    applyChaosGameplayModifier('fake_call');
+    setMessageTemp(action === 'answer' ? 'call ended.' : 'call ignored.', 960);
+    cb(action);
+    closeChaosPromptOverlay(overlay, 'done.');
+  }
+
+  overlay.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      finish(btn.getAttribute('data-action') || 'ignore');
+    });
   });
+  return true;
 }
 
 // Fake text notification banner (non-blocking)
 function showFakeTextBanner(opts={}) {
-  const banners = [
-    "Onio: u ok? (i know the answer)",
-    "Mom: are you playing that game again",
-    "Unknown: you can't win this",
-    "Chaos Corp: your warranty has expired",
-    "Onio's Lawyer: cease tapping immediately",
+  if (!pauseForChaosModal()) return false;
+  const threads = [
+    { name:'Onio', emoji:'😈', status:'active now', incoming:'u ok? i know the answer', outgoing:'not helping' },
+    { name:'Mom', emoji:'👩', status:'2 unread', incoming:'are you playing that game again', outgoing:'maybe' },
+    { name:'Unknown', emoji:'👤', status:'unknown sender', incoming:'you cannot win this', outgoing:'who is this' },
+    { name:'Chaos Corp', emoji:'🌀', status:'service alert', incoming:'your warranty has expired', outgoing:'unsubscribe' },
+    { name:"Onio's Lawyer", emoji:'⚖️', status:'priority', incoming:'cease tapping immediately', outgoing:'absolutely not' },
   ];
-  const bannerText = Math.random() < 0.35
-    ? `System: ${getWrongInstructionLine()}`
-    : banners[Math.floor(Math.random()*banners.length)];
+  const systemThread = {
+    name:'System Patch',
+    emoji:'⚠️',
+    status:'Onio OS',
+    incoming:getWrongInstructionLine(),
+    outgoing:'that seems fake',
+  };
+  const thread = Math.random() < 0.35
+    ? systemThread
+    : threads[Math.floor(Math.random()*threads.length)];
   const persistText = !!opts.persistText;
-  return showChaosDecisionPrompt({
-    eyebrow: 'incoming message',
-    title: 'Messages',
-    body: bannerText,
-    secondaryLabel: 'ignore',
-    primaryLabel: 'open',
-    primaryAction: 'open',
-    mediaHtml: `<div style="font-size:42px;line-height:1;margin-top:10px;">💬</div>`,
-    onChoose: action => {
-      if (persistText) activateChallengePersistentChaos('text');
-      setMessageTemp(action === 'open' ? 'message handled.' : 'message ignored.', 960);
-    },
+  const overlay = document.createElement('div');
+  overlay.className = 'chaos-prompt-overlay';
+  overlay.innerHTML = `
+    <div class="chaos-phone-card">
+      ${buildChaosPhoneTopMarkup(Math.random() < 0.5 ? 'ONI MSG' : 'LOOP CHAT')}
+      <div class="chaos-phone-body">
+        <div class="chaos-phone-app">
+          <span class="chaos-phone-app-icon">💬</span>
+          <span>Messages</span>
+        </div>
+        <div class="chaos-phone-thread-head">
+          <div class="chaos-phone-avatar text">${thread.emoji}</div>
+          <div class="chaos-phone-thread-meta">
+            <div class="chaos-phone-thread-name">${thread.name}</div>
+            <div class="chaos-phone-thread-sub">${thread.status} • now</div>
+          </div>
+        </div>
+        <div class="chaos-phone-thread">
+          <div class="chaos-phone-bubble outgoing">${thread.outgoing}</div>
+          <div class="chaos-phone-bubble incoming">${thread.incoming}</div>
+        </div>
+        <div class="chaos-phone-footer">delivered by loop chat</div>
+        <div class="chaos-phone-actions">
+          <button class="chaos-phone-btn ignore" type="button" data-action="ignore">
+            <span class="chaos-phone-btn-icon">🕳️</span>
+            <span class="chaos-phone-btn-label">Ignore</span>
+            <span class="chaos-phone-btn-sub">leave unread</span>
+          </button>
+          <button class="chaos-phone-btn answer" type="button" data-action="open">
+            <span class="chaos-phone-btn-icon">✉️</span>
+            <span class="chaos-phone-btn-label">Open</span>
+            <span class="chaos-phone-btn-sub">see thread</span>
+          </button>
+        </div>
+        <div class="chaos-phone-homebar"></div>
+      </div>
+    </div>
+  `;
+  arena.appendChild(overlay);
+
+  let settled = false;
+  function finish(action) {
+    if (settled) return;
+    settled = true;
+    if (persistText) activateChallengePersistentChaos('text');
+    setMessageTemp(action === 'open' ? 'message handled.' : 'message ignored.', 960);
+    closeChaosPromptOverlay(overlay, 'done.');
+  }
+
+  overlay.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      finish(btn.getAttribute('data-action') || 'ignore');
+    });
   });
+  return true;
 }
 
 function showSystemBanner(icon, title, text, tone='default', stayMs=820) {
@@ -5256,14 +6196,14 @@ function spawnFakeOnioPop() {
   } while (attempts < 10 && Math.sqrt((px-onioX)**2+(py-onioY)**2) < 120);
 
   const ghost = document.createElement('div');
-  ghost.style.cssText = `position:absolute;font-size:72px;cursor:pointer;z-index:6;left:${px}px;top:${py}px;line-height:1;animation:popIn .2s cubic-bezier(.4,2,.6,1);`;
+  ghost.style.cssText = `position:absolute;font-size:80px;cursor:pointer;z-index:8;left:${px}px;top:${py}px;line-height:1;animation:popIn .2s cubic-bezier(.4,2,.6,1);filter:drop-shadow(0 10px 14px rgba(128,48,5,.26));`;
   ghost.innerHTML = buildOnioHTML('tongue');
-  ghost.style.width='72px'; ghost.style.height='72px'; ghost.style.fontSize='0';
+  ghost.style.width='80px'; ghost.style.height='80px'; ghost.style.fontSize='0';
 
   // Speech bubble attached to ghost — makes it feel alive
   const bubble = document.createElement('div');
   const ghostLines = ["tap me!","over here!","i'm the real one!","psst— here!","forget him, tap ME"];
-  bubble.style.cssText = `position:absolute;background:white;border:2.5px solid #555;border-radius:12px;padding:5px 10px;font-family:'Fredoka One',cursive;font-size:13px;color:#333;white-space:nowrap;bottom:76px;left:50%;transform:translateX(-50%);animation:popIn .2s ease;`;
+  bubble.style.cssText = `position:absolute;background:white;border:2.5px solid #555;border-radius:12px;padding:6px 11px;font-family:'Fredoka One',cursive;font-size:13px;color:#333;white-space:nowrap;bottom:84px;left:50%;transform:translateX(-50%);animation:popIn .2s ease;box-shadow:0 8px 20px rgba(0,0,0,.16);`;
   bubble.textContent = ghostLines[Math.floor(Math.random()*ghostLines.length)];
   ghost.appendChild(bubble);
 
@@ -5276,7 +6216,7 @@ function spawnFakeOnioPop() {
     setTimeout(()=>{ ghost.style.animation='missO .25s ease forwards'; setTimeout(()=>ghost.remove(),280); }, 400);
   });
   arena.appendChild(ghost);
-  setTimeout(()=>{ if(ghost.parentNode){ ghost.style.animation='missO .3s ease forwards'; setTimeout(()=>ghost.remove(),300); }}, 780 + Math.random()*180);
+  setTimeout(()=>{ if(ghost.parentNode){ ghost.style.animation='missO .3s ease forwards'; setTimeout(()=>ghost.remove(),300); }}, 1380 + Math.random()*320);
 }
 
 // Onio claims you missed even though tap counted — big dramatic overlay
@@ -5310,8 +6250,8 @@ function flashBlank(durationMs=800) {
 }
 
 function spawnTapChaosSwarm(durationMs=1700) {
-  const hold = Math.max(300, Math.min(1000, durationMs));
-  const seedCount = 6 + Math.floor(Math.random()*6); // 6-11
+  const hold = Math.max(1100, Math.min(2200, durationMs));
+  const seedCount = 7 + Math.floor(Math.random()*7); // 7-13
   const maxCount = Math.min(26, seedCount + 7 + Math.floor(level/3));
   const movers = [];
   const chatter = ['over here!', 'no, me!', 'im him!', 'tap me!', 'me me me', 'wrong one', 'this one!', 'nah this one'];
@@ -5328,8 +6268,8 @@ function spawnTapChaosSwarm(durationMs=1700) {
       ? randPos(20, 100)
       : { x: Math.max(12, Math.min(gW-88, atX + (Math.random()-.5)*110)), y: Math.max(96, Math.min(gH-96, atY + (Math.random()-.5)*100)) };
     const d = spawnOnioEl('😈', p.x, p.y, {
-      size: 32 + Math.random()*16,
-      opacity: 0.52 + Math.random()*0.28,
+      size: 38 + Math.random()*18,
+      opacity: 0.62 + Math.random()*0.22,
       anim: 0.4 + Math.random()*0.45,
     });
     d.style.pointerEvents = 'auto';
@@ -5560,11 +6500,11 @@ function cTap() {
       events.push({w:2, cost:0, fn:'fakeMissFn'});    // lies about your tap
       events.push({w:2, cost:0, fn:'glitchSignFn'});  // sign scrambles
       events.push({w:2, cost:0, fn:'shakeFn'});        // arena shake
-      // Level 3+
-      if (level >= 3) events.push({w:2, cost:0, fn:'fakeGhostFn'});   // fake Onio
+      // Level 2+
+      if (level >= 2) events.push({w:4, cost:0, fn:'fakeGhostFn'});   // fake Onio
       if (level >= 3) events.push({w:2, cost:0, fn:'tinyFn'});        // Onio shrinks
-      if (level >= 5) events.push({w:3, cost:0, fn:'cloneFn'});        // full-size decoy clones
-      if (level >= 8) events.push({w:2, cost:0, fn:'swarmChaosFn'});  // moving mini swarm
+      if (level >= 4) events.push({w:4, cost:0, fn:'cloneFn'});       // full-size decoy clones
+      if (level >= 6) events.push({w:3, cost:0, fn:'swarmChaosFn'});  // moving mini swarm
       // Level 4+
       if (level >= 4 && canDoPausing) events.push({w:2, cost:1, fn:'blankFn'});       // screen adjusts + pauses
       if (level >= 4 && canDoPausing) events.push({w:2, cost:1, fn:'textBannerFn'});  // incoming message
@@ -5664,9 +6604,9 @@ function cTap() {
 // FULL-SIZE TAP CLONES
 // ──────────────────────────────────────────────────────────────────────────────
 function spawnTapClones(remaining, flowId) {
-  const cloneCount = level <= 8 ? 1 : (Math.random() < 0.55 ? 2 : 1);
+  const cloneCount = level <= 4 ? 1 : level <= 10 ? 2 : (Math.random() < 0.65 ? 3 : 2);
   const liveClones = [];
-  const lifeMs = Math.max(1600, 2400 + Math.random()*1200);
+  const lifeMs = Math.max(2100, 2800 + Math.random()*1200);
   const taunts = ['wrong one. 😂','not me lol','haha. bye.','lol no.','try again 😈'];
   const spawnLines = ['find me.','which one? 😈','good luck.','pick one.','surprise 😈'];
   speech(spawnLines[Math.floor(Math.random()*spawnLines.length)], 900);
