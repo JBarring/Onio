@@ -188,6 +188,18 @@ html,body{
   padding:13px 14px;
   letter-spacing:1.2px;
 }
+.home-icon-btn{
+  width:64px;
+  min-width:64px;
+  min-height:64px;
+  padding:0;
+  border-radius:999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:28px;
+  line-height:1;
+}
 .home-play-btn{
   min-height:0;
   padding:0;
@@ -214,8 +226,7 @@ html,body{
     drop-shadow(0 2px 0 #301103)
     drop-shadow(0 -2px 0 #301103)
     drop-shadow(2px 2px 0 #301103)
-    drop-shadow(-2px 2px 0 #301103)
-    drop-shadow(0 14px 20px rgba(56,23,3,.32));
+    drop-shadow(-2px 2px 0 #301103);
 }
 
 /* ===== PROFILE ===== */
@@ -788,6 +799,7 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
   .home-bottom-ui{width:min(100%,94vw);gap:10px;padding-bottom:20px;}
   .home-action-dock{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;}
   .home-side-btn{min-height:52px;font-size:clamp(13px,3.6vw,16px);padding:11px 8px;}
+  .home-icon-btn{width:54px;min-width:54px;min-height:54px;font-size:24px;padding:0;}
   .home-play-image{width:clamp(86px,24vw,108px);}
   .play-cta{padding-left:52px;}
   #snark-bubble{max-width:92vw;padding:9px 14px;font-size:13px;}
@@ -834,6 +846,131 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
 #arena.melting-heavy {
   filter: blur(3px) saturate(2.4) hue-rotate(18deg) contrast(1.2);
   transition: filter 0.5s ease;
+}
+#arena.chaos-glitch-persist {
+  animation: glitch 0.85s steps(1) infinite;
+}
+
+.challenge-chaos-overlay {
+  position:absolute;
+  inset:0;
+  z-index:34;
+  pointer-events:none;
+}
+
+.challenge-chaos-text {
+  position:absolute;
+  inset:0;
+  z-index:39;
+  overflow:hidden;
+  pointer-events:none;
+}
+.challenge-chaos-text span{
+  position:absolute;
+  font-family:'Fredoka One',cursive;
+  font-size:clamp(14px,4vw,22px);
+  color:rgba(255,255,255,.92);
+  text-shadow:
+    2px 0 0 rgba(58,20,5,.85),
+    -2px 0 0 rgba(58,20,5,.85),
+    0 2px 0 rgba(58,20,5,.85),
+    0 -2px 0 rgba(58,20,5,.85);
+  letter-spacing:1px;
+  opacity:.78;
+  white-space:nowrap;
+  animation: chaosTextFall linear infinite;
+}
+@keyframes chaosTextFall {
+  from { transform: translateY(-16vh) rotate(-8deg); }
+  to   { transform: translateY(115vh) rotate(8deg); }
+}
+
+.chaos-prompt-overlay{
+  position:absolute;
+  inset:0;
+  z-index:92;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(10,8,16,.58);
+  backdrop-filter:blur(4px);
+  padding:18px;
+  animation:popIn .16s ease;
+  pointer-events:auto;
+}
+.chaos-prompt-card{
+  width:min(88vw,340px);
+  border-radius:20px;
+  border:2px solid rgba(255,232,195,.88);
+  background:linear-gradient(180deg,rgba(255,250,243,.98) 0%,rgba(255,240,220,.96) 100%);
+  box-shadow:0 18px 44px rgba(24,10,4,.35);
+  padding:18px 16px 16px;
+  text-align:center;
+}
+.chaos-prompt-eyebrow{
+  font-family:'Fredoka One',cursive;
+  font-size:11px;
+  letter-spacing:1.1px;
+  color:#8A3F09;
+  text-transform:uppercase;
+}
+.chaos-prompt-title{
+  font-family:'Fredoka One',cursive;
+  font-size:clamp(24px,7vw,30px);
+  color:#C0560A;
+  line-height:1.05;
+  margin-top:6px;
+}
+.chaos-prompt-body{
+  font-family:'Nunito',sans-serif;
+  font-size:15px;
+  color:#7A4A22;
+  font-weight:800;
+  line-height:1.38;
+  margin-top:10px;
+}
+.chaos-prompt-card .chaos-volume-hud{
+  position:relative;
+  top:auto;
+  left:auto;
+  transform:none;
+  margin:14px auto 0;
+  box-shadow:none;
+  min-width:0;
+}
+.chaos-prompt-actions{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  margin-top:16px;
+}
+.chaos-prompt-btn{
+  border:none;
+  border-radius:16px;
+  min-height:52px;
+  font-family:'Fredoka One',cursive;
+  font-size:18px;
+  cursor:pointer;
+  transition:transform .1s, box-shadow .1s;
+}
+.chaos-prompt-btn:active{transform:translateY(2px);}
+.chaos-prompt-btn.ignore{
+  background:linear-gradient(180deg,#FFFFFF 0%,#F7E7CC 100%);
+  color:#7A4A22;
+  box-shadow:0 5px 0 #D7B988;
+}
+.chaos-prompt-btn.answer{
+  background:linear-gradient(180deg,#FFB65A 0%,#E99628 100%);
+  color:white;
+  box-shadow:0 5px 0 #A95E16;
+}
+
+#onio.chaos-adjusting{
+  animation:chaosThinkBob .46s ease-in-out infinite alternate;
+}
+@keyframes chaosThinkBob{
+  from{transform:translateY(-4px) rotate(-4deg);}
+  to{transform:translateY(6px) rotate(4deg);}
 }
 
 /* Fake app update overlay */
@@ -1067,11 +1204,11 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
     </div>
     <div class="home-bottom-ui">
       <div class="home-action-dock">
-        <button class="big-btn secondary home-side-btn" onclick="showScreen('store-screen')">🛒 STORE</button>
+        <button class="big-btn secondary home-side-btn home-icon-btn" onclick="showScreen('store-screen')" aria-label="Store">🛒</button>
         <button class="home-play-btn" onclick="startGame()" aria-label="Play">
           <img id="home-play-art" class="home-play-image" alt="Play">
         </button>
-        <button class="big-btn secondary home-side-btn" onclick="showScreen('profile-screen')">👤 ME</button>
+        <button class="big-btn secondary home-side-btn home-icon-btn" onclick="showScreen('profile-screen')" aria-label="Me">👤</button>
       </div>
     </div>
   </div>
@@ -1141,6 +1278,15 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
         <div class="store-desc">3× Lucky + 1× Big Skip.<br><span class="store-note">4 depth skips. Onio is annoyed you got this.</span></div>
       </div>
       <div class="store-price-col"><div class="store-price">$2.99</div><div class="store-stock" id="stk-skip3">× 0</div></div>
+    </div>
+    <div class="store-section" style="margin-top:4px;">🎨 Looks</div>
+    <div class="store-item" onclick="attemptPurchase('colorViolet')">
+      <div class="store-icon">🟣</div>
+      <div class="store-info">
+        <div class="store-name">Purple Onio</div>
+        <div class="store-desc">Unlock a purple Onio skin.<br><span class="store-note">Tap again later to equip it.</span></div>
+      </div>
+      <div class="store-price-col"><div class="store-price">$0.99</div><div class="store-stock" id="stk-colorViolet">buy</div></div>
     </div>
     <div class="store-section" style="margin-top:4px;">❤️ Support</div>
     <div class="store-item" onclick="attemptPurchase('donate')">
@@ -1308,7 +1454,7 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
     <!-- fake text -->
     <div id="fake-text">
       <div class="ft-bar">
-        <div class="ft-av">😈</div>
+        <div class="ft-av" style="font-size:0;overflow:hidden;border-radius:50%;"></div>
         <div><div class="ft-name">Onio</div><div class="ft-online">● online</div></div>
       </div>
       <div class="ft-msgs" id="ft-msgs"></div>
@@ -1316,7 +1462,7 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
     </div>
 
     <!-- level splash -->
-    <div id="lvl-splash"><div id="splash-box">LEVEL 2!<br>😈</div></div>
+    <div id="lvl-splash"><div id="splash-box">LEVEL 2!</div></div>
 
     <!-- skip banner (inside game screen) -->
     <div id="skip-banner">
@@ -1621,6 +1767,7 @@ let currentHomeScene = null;
 
 const ONIO_COLORWAYS = {
   classic: { filter: 'none' },
+  violet: { filter: 'hue-rotate(248deg) saturate(1.34) brightness(0.98)' },
   berry: { filter: 'hue-rotate(292deg) saturate(1.28) brightness(1.03)' },
   ocean: { filter: 'hue-rotate(146deg) saturate(1.18) brightness(1.04)' },
   mint: { filter: 'hue-rotate(104deg) saturate(1.12) brightness(1.05)' },
@@ -1738,13 +1885,14 @@ function onioExpr(exprName, durationMs=700) {
 // Initialize every Onio element in the DOM
 function initOnioSprites() {
   const targets = [
-    { id:'onio', expr:'idle', cls:'expr-idle' },
-    { id:'mic-onio', expr:'idle', cls:'' },
-    { sel:'.cheeky-onio', expr:'smug', cls:'' },
-    { sel:'.pm-onio', expr:'idle', cls:'' },
-    { sel:'.rg-emoji', expr:'idle', cls:'expr-idle' },
-    { id:'death-emoji', expr:'dizzy', cls:'' },
-    { id:'home-monster-face', expr:'idle', cls:'expr-idle' },
+    { id:'onio',             expr:'idle',  cls:'expr-idle' },
+    { id:'mic-onio',         expr:'idle',  cls:'' },
+    { sel:'.cheeky-onio',    expr:'smug',  cls:'' },
+    { sel:'.pm-onio',        expr:'idle',  cls:'' },
+    { sel:'.rg-emoji',       expr:'idle',  cls:'expr-idle' },
+    { id:'death-emoji',      expr:'dizzy', cls:'' },
+    { id:'home-monster-face',expr:'idle',  cls:'expr-idle' },
+    { sel:'.ft-av',          expr:'smug',  cls:'' },
   ];
   targets.forEach(t => {
     const el = t.id ? document.getElementById(t.id) : document.querySelector(t.sel);
@@ -1848,6 +1996,8 @@ const PURCHASE_SNARKS = {
     "multiple skips. you're planning multiple losses. efficiency.",
     "four uses. four future embarrassments. congrats.",
     "honestly? this one hurt a little. not in a sad way.","giving money to a menace. peak decision making."],
+  colorViolet:["purple? dramatic choice.","great. now he looks even more suspicious.",
+    "you bought a skin. respectably vain.","that color is going to annoy me all run.","fine. purple Onio unlocked."],
   donate:["giving money and getting nothing back. this is my favorite purchase.",
     "pure generosity. i will use this to improve my trolling.",
     "the coffee will be used irresponsibly. i promise.",
@@ -2252,6 +2402,8 @@ let sfxBlockedWarned = false;
 let controlsLockedForChallenge = false;
 let activeMinigameId = null;
 let activeChaosIntervals = [];
+let activeChallengeChaosIntervals = [];
+let activeChallengeChaosTimeouts = [];
 let chaosSpikeUntil = 0;
 let nextChaosSpikeAt = 0;
 let persistentGameScreenTransform = '';
@@ -2274,12 +2426,22 @@ let chaosLagForcedMinMs = 0;
 let chaosLagForcedMaxMs = 0;
 let lastBehaviorReactionTrackMs = 0;
 let behaviorReactionUnsavedCount = 0;
+let chaosModalActive = false;
+let chaosPromptSnapshot = null;
 const DEPTHS_PER_TIER = 4;
 const chaosState = {
   level: 0,
   lastTriggerTime: 0,
   activeEffects: [],
   cooldown: 800, // ms between chaos triggers
+};
+const challengeChaosState = {
+  screenTone: 'none',
+  toneOpacity: 0,
+  flip: false,
+  glitch: false,
+  melt: false,
+  textRain: false,
 };
 const CHAOS_TUNING = {
   allowFakeouts: true,
@@ -2469,64 +2631,9 @@ function chaosApplyBatteryLow() {
 }
 
 function chaosApplyVolumePrank() {
-  const isBrightness = Math.random() < 0.45;
-  if (isBrightness) {
-    const dim = document.createElement('div');
-    dim.className = 'chaos-brightness-overlay';
-    arena.appendChild(dim);
-
-    const hud = document.createElement('div');
-    hud.className = 'chaos-volume-hud';
-    hud.innerHTML = `
-      <div class="chaos-volume-icon">☀️</div>
-      <div class="chaos-volume-label">BRIGHTNESS</div>
-      <div class="chaos-volume-bar"><div class="chaos-volume-fill" id="bright-fill" style="width:100%"></div></div>
-    `;
-    arena.appendChild(hud);
-
-    requestAnimationFrame(() => {
-      dim.classList.add('dim');
-      const fill = hud.querySelector('#bright-fill');
-      if (fill) fill.style.width = '3%';
-    });
-
-    scheduleChallengeTimeout(() => {
-      dim.style.transition = 'opacity .35s ease';
-      dim.style.opacity = '0';
-      const fill = hud.querySelector('#bright-fill');
-      if (fill) fill.style.width = '100%';
-      setTimeout(() => { dim.remove(); hud.remove(); }, 380);
-    }, 420 + Math.random()*520);
-    return;
-  }
-
-  const hud = document.createElement('div');
-  hud.className = 'chaos-volume-hud';
-  hud.innerHTML = `
-    <div class="chaos-volume-icon" id="vol-icon">🔊</div>
-    <div class="chaos-volume-label">VOLUME</div>
-    <div class="chaos-volume-bar"><div class="chaos-volume-fill" id="vol-fill" style="width:85%"></div></div>
-  `;
-  arena.appendChild(hud);
-
-  let vol = 85;
-  const drain = trackChaosInterval(setInterval(() => {
-    vol = Math.max(0, vol - 12);
-    const fill = hud.querySelector('#vol-fill');
-    const icon = hud.querySelector('#vol-icon');
-    if (fill) fill.style.width = vol + '%';
-    if (icon) icon.textContent = vol === 0 ? '🔇' : vol < 30 ? '🔈' : '🔊';
-    if (vol === 0) clearInterval(drain);
-  }, 80));
-
-  scheduleChallengeTimeout(() => {
-    clearInterval(drain);
-    const fill = hud.querySelector('#vol-fill');
-    const icon = hud.querySelector('#vol-icon');
-    if (fill) fill.style.width = '85%';
-    if (icon) icon.textContent = '🔊';
-    setTimeout(() => hud.remove(), 250);
-  }, 420 + Math.random()*520);
+  const roll = Math.random();
+  if (roll < 0.34) return runChaosAdjustmentSequence('volume');
+  return runChaosAdjustmentSequence(roll < 0.67 ? 'dark' : 'light');
 }
 
 function chaosApplyGravityShift() {
@@ -2563,9 +2670,8 @@ function chaosApplyGravityShift() {
 }
 
 function chaosApplyInterfaceMelt() {
-  const heavy = hits >= 20;
-  arena.classList.add(heavy ? 'melting-heavy' : 'melting');
-  scheduleChallengeTimeout(() => arena.classList.remove('melting', 'melting-heavy'), 420 + Math.random()*520);
+  activateChallengePersistentChaos('melt');
+  setMessageTemp('screen melting.');
 }
 
 function chaosApplyFakeUpdate() {
@@ -2590,30 +2696,29 @@ function applyChaosEffect(effect, context={}) {
           scheduleChallengeTimeout(() => onio.classList.remove('chaos-glitch'), 420);
         },
         () => showDeadPixels(360 + Math.random()*420),
+        () => activateChallengePersistentChaos('glitch'),
       ];
       if (chaosState.level >= 3) visualPicks.push(() => chaosApplyInterfaceMelt());
-      if (chaosState.level >= 4) visualPicks.push(() => showDarkScreen(360 + Math.random()*420));
+      if (chaosState.level >= 4) visualPicks.push(() => chaosApplyVolumePrank());
       if (chaosState.level >= 5) visualPicks.push(() => chaosApplyGravityShift());
+      if (chaosState.level >= 5) visualPicks.push(() => activateChallengePersistentChaos('flip'));
       visualPicks[Math.floor(Math.random()*visualPicks.length)]();
-      markChaosStateEffect('visual', 460);
+      markChaosStateEffect('visual', 1000);
       break;
     }
     case 'overlay': {
       const overlayPicks = [
-        () => showFakeTextChaos(360 + Math.random()*540, { point:pt }),
+        () => showFakeTextBanner({ persistText: chaosState.level >= 4 && Math.random() < 0.55 }),
         () => showFloatingChaosBanner('💬', 'interrupt', 'focus, maybe.', 'default', 650 + Math.random()*350),
       ];
-      if (chaosState.level >= 3) overlayPicks.push(
-        () => showSystemBanner('📞', 'Incoming Call', 'unknown chaos caller...', 'default', 1600 + Math.random()*600),
-        () => showFakeCall(() => {}),
-      );
+      if (chaosState.level >= 3) overlayPicks.push(() => showFakeCall(() => {}));
       if (chaosState.level >= 4) overlayPicks.push(
         () => chaosApplyVolumePrank(),
         () => chaosApplyBatteryLow(),
       );
       if (chaosState.level >= 6) overlayPicks.push(() => chaosApplyFakeUpdate());
       overlayPicks[Math.floor(Math.random()*overlayPicks.length)]();
-      markChaosStateEffect('overlay', 620);
+      markChaosStateEffect('overlay', 1600);
       break;
     }
     case 'input': {
@@ -2696,7 +2801,6 @@ function triggerChaos(context={}) {
     } else if (nextExpectedInputTs) {
       nextExpectedInputTs = Math.max(Date.now() + 60, nextExpectedInputTs - (70 + Math.random()*90));
     }
-    showFloatingChaosBanner('⏱️', 'urgency', 'hesitation detected.', 'danger', 600 + Math.random()*250);
     if (Math.random() < 0.64) showBehaviorWeaknessBanner('hesitating');
   }
 
@@ -2993,7 +3097,7 @@ function maybeTriggerBehaviorChaos(reason='pre_input') {
   const px = Number.isFinite(lastInputPoint.x) ? lastInputPoint.x : onioX + 36;
   const py = Number.isFinite(lastInputPoint.y) ? lastInputPoint.y : onioY + 36;
   const events = reason === 'hesitation'
-    ? ['urgency', 'wrong_instruction', 'safe_zone']
+    ? ['wrong_instruction', 'safe_zone', 'near_text']
     : reason === 'fast_tap'
       ? ['tap_bait', 'tap_bait', 'near_text', 'tap_bait', 'wrong_instruction']
       : ['near_text', 'tap_bait', 'wrong_instruction', 'safe_zone'];
@@ -3105,6 +3209,275 @@ function trackChaosInterval(intervalId) {
 function clearTrackedChaosIntervals() {
   activeChaosIntervals.forEach(clearInterval);
   activeChaosIntervals = [];
+}
+
+function trackChallengeChaosInterval(intervalId) {
+  activeChallengeChaosIntervals.push(intervalId);
+  return intervalId;
+}
+
+function trackChallengeChaosTimeout(timeoutId) {
+  activeChallengeChaosTimeouts.push(timeoutId);
+  return timeoutId;
+}
+
+function clearTrackedChallengeChaosTimers() {
+  activeChallengeChaosIntervals.forEach(clearInterval);
+  activeChallengeChaosIntervals = [];
+  activeChallengeChaosTimeouts.forEach(clearTimeout);
+  activeChallengeChaosTimeouts = [];
+}
+
+function getChallengeChaosOverlayOpacity(mode='dark') {
+  const lv = Math.max(0, Math.floor(Math.max(0, hits) / 5));
+  if (mode === 'light') return Math.min(0.34, 0.08 + lv * 0.04);
+  return Math.min(0.76, 0.18 + lv * 0.08);
+}
+
+function buildChallengeTextRain() {
+  let wrap = arena.querySelector('.challenge-chaos-text');
+  if (!challengeChaosState.textRain) {
+    if (wrap) wrap.remove();
+    return;
+  }
+  if (wrap) wrap.remove();
+  wrap = document.createElement('div');
+  wrap.className = 'challenge-chaos-text';
+  const lines = [
+    getWrongInstructionLine(),
+    'IGNORE THIS',
+    'WRONG BUTTON',
+    'NOPE',
+    'ANSWER IT',
+    'TOO SLOW',
+    'NOT THAT ONE',
+    'ONIO',
+  ];
+  const count = Math.min(10, 5 + Math.floor(Math.max(0, hits) / 5));
+  for (let i = 0; i < count; i++) {
+    const line = document.createElement('span');
+    line.textContent = lines[i % lines.length];
+    line.style.left = `${6 + Math.random() * 78}%`;
+    line.style.top = `${-18 - Math.random() * 30}%`;
+    line.style.animationDuration = `${5.5 - Math.min(3, Math.floor(Math.max(0, hits) / 8)) + Math.random() * 1.8}s`;
+    line.style.animationDelay = `${-Math.random() * 4}s`;
+    line.style.opacity = `${0.42 + Math.random() * 0.3}`;
+    wrap.appendChild(line);
+  }
+  arena.appendChild(wrap);
+}
+
+function applyChallengeChaosState() {
+  challengeChaosState.toneOpacity = challengeChaosState.screenTone === 'none'
+    ? 0
+    : getChallengeChaosOverlayOpacity(challengeChaosState.screenTone);
+
+  if (challengeChaosState.flip) setPersistentGameScreenTransform('scaleX(-1)');
+  else clearPersistentGameScreenTransform();
+
+  arena.classList.toggle('chaos-glitch-persist', !!challengeChaosState.glitch);
+  arena.classList.toggle('melting', !!challengeChaosState.melt && hits < 20);
+  arena.classList.toggle('melting-heavy', !!challengeChaosState.melt && hits >= 20);
+
+  let tone = arena.querySelector('.challenge-chaos-overlay');
+  if (challengeChaosState.screenTone !== 'none') {
+    if (!tone) {
+      tone = document.createElement('div');
+      tone.className = 'challenge-chaos-overlay';
+      arena.appendChild(tone);
+    }
+    tone.style.background = challengeChaosState.screenTone === 'light'
+      ? `rgba(255,255,255,${challengeChaosState.toneOpacity})`
+      : `rgba(0,0,0,${challengeChaosState.toneOpacity})`;
+  } else if (tone) {
+    tone.remove();
+  }
+
+  buildChallengeTextRain();
+}
+
+function resetChallengeChaosState() {
+  clearTrackedChallengeChaosTimers();
+  challengeChaosState.screenTone = 'none';
+  challengeChaosState.toneOpacity = 0;
+  challengeChaosState.flip = false;
+  challengeChaosState.glitch = false;
+  challengeChaosState.melt = false;
+  challengeChaosState.textRain = false;
+  chaosModalActive = false;
+  chaosPromptSnapshot = null;
+  arena.querySelectorAll('.challenge-chaos-overlay,.challenge-chaos-text,.chaos-prompt-overlay,.chaos-volume-hud.chaos-sequence').forEach(el => el.remove());
+  arena.classList.remove('chaos-glitch-persist', 'melting', 'melting-heavy');
+  onio.classList.remove('chaos-adjusting');
+  clearPersistentGameScreenTransform();
+}
+
+function activateChallengePersistentChaos(effectName='glitch') {
+  const gameScreen = document.getElementById('game-screen');
+  if (!gameScreen || !gameScreen.classList.contains('active')) return;
+  if (hasActiveInstructionOverlay()) return;
+  if (effectName === 'dark') challengeChaosState.screenTone = 'dark';
+  else if (effectName === 'light') challengeChaosState.screenTone = 'light';
+  else if (effectName === 'flip') challengeChaosState.flip = true;
+  else if (effectName === 'glitch') challengeChaosState.glitch = true;
+  else if (effectName === 'melt') challengeChaosState.melt = true;
+  else if (effectName === 'text') challengeChaosState.textRain = true;
+  applyChallengeChaosState();
+}
+
+function pauseForChaosModal() {
+  if (chaosModalActive || !document.getElementById('game-screen').classList.contains('active')) return false;
+  chaosModalActive = true;
+  chaosPromptSnapshot = {
+    trickActive,
+    onioPointer: onio.style.pointerEvents || 'auto',
+    suppressArenaMiss,
+    suppressSpeech,
+    controlsLocked: controlsLockedForChallenge,
+  };
+  gamePaused = true;
+  trickActive = false;
+  pauseDeathTimer();
+  clearSpeech();
+  onio.style.pointerEvents = 'none';
+  onio.classList.add('chaos-adjusting');
+  setCoreControlsLocked(true);
+  return true;
+}
+
+function resumeFromChaosModal(doneLine='done.') {
+  const snap = chaosPromptSnapshot;
+  chaosPromptSnapshot = null;
+  chaosModalActive = false;
+  gamePaused = false;
+  resumeDeathTimer();
+  onio.classList.remove('chaos-adjusting');
+  if (snap) {
+    trickActive = !!snap.trickActive;
+    onio.style.pointerEvents = snap.onioPointer || 'auto';
+    suppressArenaMiss = !!snap.suppressArenaMiss;
+    suppressSpeech = !!snap.suppressSpeech;
+    setCoreControlsLocked(!!snap.controlsLocked);
+  } else {
+    onio.style.pointerEvents = 'auto';
+    setCoreControlsLocked(false);
+  }
+  if (doneLine) {
+    const priorSuppress = suppressSpeech;
+    suppressSpeech = false;
+    speech(doneLine, 620);
+    suppressSpeech = priorSuppress;
+  }
+  updateHUD();
+}
+
+function closeChaosPromptOverlay(overlay, doneLine='done.', delayMs=180) {
+  if (overlay && overlay.parentNode) {
+    overlay.style.pointerEvents = 'none';
+    overlay.style.transition = 'opacity .18s ease';
+    overlay.style.opacity = '0';
+  }
+  trackChallengeChaosTimeout(setTimeout(() => {
+    if (overlay && overlay.parentNode) overlay.remove();
+    resumeFromChaosModal(doneLine);
+  }, delayMs));
+}
+
+function showChaosDecisionPrompt({
+  eyebrow='interrupt',
+  title='Incoming chaos',
+  body='Onio wants your attention.',
+  primaryLabel='answer',
+  secondaryLabel='ignore',
+  primaryAction='answer',
+  secondaryAction='ignore',
+  mediaHtml='',
+  doneLine='done.',
+  onChoose=null,
+} = {}) {
+  if (!pauseForChaosModal()) return false;
+  const overlay = document.createElement('div');
+  overlay.className = 'chaos-prompt-overlay';
+  overlay.innerHTML = `
+    <div class="chaos-prompt-card">
+      <div class="chaos-prompt-eyebrow">${eyebrow}</div>
+      <div class="chaos-prompt-title">${title}</div>
+      ${mediaHtml}
+      <div class="chaos-prompt-body">${body}</div>
+      <div class="chaos-prompt-actions">
+        <button class="chaos-prompt-btn ignore" type="button">${secondaryLabel}</button>
+        <button class="chaos-prompt-btn answer" type="button">${primaryLabel}</button>
+      </div>
+    </div>
+  `;
+  arena.appendChild(overlay);
+
+  let settled = false;
+  function choose(action) {
+    if (settled) return;
+    settled = true;
+    if (typeof onChoose === 'function') onChoose(action);
+    closeChaosPromptOverlay(overlay, doneLine);
+  }
+
+  const [ignoreBtn, answerBtn] = overlay.querySelectorAll('.chaos-prompt-btn');
+  if (ignoreBtn) ignoreBtn.addEventListener('click', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    choose(secondaryAction);
+  });
+  if (answerBtn) answerBtn.addEventListener('click', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    choose(primaryAction);
+  });
+  return true;
+}
+
+function runChaosAdjustmentSequence(mode='volume') {
+  if (!pauseForChaosModal()) return false;
+  const isVolume = mode === 'volume';
+  const isLight = mode === 'light';
+  const overlay = document.createElement('div');
+  overlay.className = 'chaos-prompt-overlay';
+  const toneOpacity = getChallengeChaosOverlayOpacity(isLight ? 'light' : 'dark');
+  const initialPct = isVolume ? 86 : (isLight ? 48 : 100);
+  const targetPct = isVolume
+    ? 12 + Math.round(Math.random() * 10)
+    : (isLight ? Math.min(100, 72 + Math.round(toneOpacity * 80)) : Math.max(16, Math.round(100 - toneOpacity * 100)));
+  const icon = isVolume ? '🔊' : (isLight ? '☀️' : '🌙');
+  const label = isVolume ? 'VOLUME' : 'BRIGHTNESS';
+  overlay.innerHTML = `
+    <div class="chaos-prompt-card">
+      <div class="chaos-prompt-eyebrow">Onio is thinking</div>
+      <div class="chaos-prompt-title">${isVolume ? 'Adjusting volume' : 'Adjusting screen'}</div>
+      <div class="chaos-prompt-body">${isVolume ? 'He wants you to read this first.' : 'This one sticks around for the rest of the minigame.'}</div>
+      <div class="chaos-volume-hud chaos-sequence">
+        <div class="chaos-volume-icon">${icon}</div>
+        <div class="chaos-volume-label">${label}</div>
+        <div class="chaos-volume-bar"><div class="chaos-volume-fill" style="width:${initialPct}%"></div></div>
+      </div>
+    </div>
+  `;
+  arena.appendChild(overlay);
+
+  const fill = overlay.querySelector('.chaos-volume-fill');
+  const iconEl = overlay.querySelector('.chaos-volume-icon');
+  requestAnimationFrame(() => {
+    if (fill) fill.style.width = `${targetPct}%`;
+    if (iconEl && isVolume) iconEl.textContent = targetPct <= 18 ? '🔇' : targetPct <= 40 ? '🔈' : '🔊';
+  });
+
+  trackChallengeChaosTimeout(setTimeout(() => {
+    if (mode === 'dark') activateChallengePersistentChaos('dark');
+    else if (mode === 'light') activateChallengePersistentChaos('light');
+    setMessageTemp(
+      isVolume ? 'volume adjusted.' : (isLight ? 'screen brightened.' : 'screen dimmed.'),
+      960
+    );
+    closeChaosPromptOverlay(overlay, 'done.', 220);
+  }, 1450 + Math.random() * 450));
+  return true;
 }
 
 function recordChallengeInputOnce() {
@@ -3274,11 +3647,14 @@ function applyHomeScene(scene=null) {
   setHomeImageAsset(playArtEl, HOME_PLAY_BUTTON_ASSET, 'Play');
   if (monsterEl) monsterEl.style.display = hideHeroMonster ? 'none' : 'inline-block';
 
-  const previewColorway = (currentHomeScene && currentHomeScene.previewColorway)
-    || (title && title.previewColorway)
-    || (animation && animation.previewColorway)
-    || cosmeticState.equippedColorway
-    || 'classic';
+  const equippedPreviewColorway = cosmeticState.equippedColorway || 'classic';
+  const previewColorway = equippedPreviewColorway !== 'classic'
+    ? equippedPreviewColorway
+    : ((currentHomeScene && currentHomeScene.previewColorway)
+      || (title && title.previewColorway)
+      || (animation && animation.previewColorway)
+      || equippedPreviewColorway
+      || 'classic');
   setRootVar('--home-onio-filter', getColorwayFilter(previewColorway));
   spawnBgMonsters(animation);
 }
@@ -3295,7 +3671,8 @@ function applyArtPack() {
     document.getElementById('onio'),
     document.getElementById('home-monster-face'),
     document.getElementById('mic-onio'),
-    document.getElementById('death-emoji'),
+    // death-emoji — handled by sprite system, skip ART_PACK batch
+    // document.getElementById('death-emoji'),
     document.querySelector('.pm-onio'),
     document.querySelector('.cheeky-onio'),
     document.querySelector('.rg-emoji'),
@@ -3510,7 +3887,7 @@ function sfx(kind) {
 
 function normalizePauseState() {
   const pauseEl = document.getElementById('real-pause');
-  if (gamePaused && !pauseEl.classList.contains('active')) gamePaused = false;
+  if (gamePaused && !pauseEl.classList.contains('active') && !chaosModalActive) gamePaused = false;
 }
 
 function openPauseMenu(e) {
@@ -3636,6 +4013,7 @@ const STORE_ITEMS = {
   skip1:{name:'Lucky Skip',price:'$0.99',gives:{lucky:1}},
   skip2:{name:'Big Skip',price:'$1.99',gives:{big:1}},
   skip3:{name:'Chaos Bundle',price:'$2.99',gives:{lucky:3,big:1}},
+  colorViolet:{name:'Purple Onio',price:'$0.99',gives:{colorway:'violet'}},
   donate:{name:'Buy Onio a Coffee',price:'$1.99',gives:{}},
 };
 
@@ -3652,27 +4030,61 @@ function updateStoreStock() {
   set('stk-skip1', inventory.lucky);
   set('stk-skip2', inventory.big);
   set('stk-skip3', inventory.lucky + inventory.big);
+  const colorEl = document.getElementById('stk-colorViolet');
+  if (colorEl) {
+    const owned = cosmeticState.ownedColorways.includes('violet');
+    const equipped = cosmeticState.equippedColorway === 'violet';
+    colorEl.textContent = equipped ? 'equipped' : (owned ? 'owned' : 'buy');
+    colorEl.className = 'store-stock' + (owned ? ' owned' : '');
+  }
 }
 
 function attemptPurchase(itemId) {
   const item = STORE_ITEMS[itemId];
-  const snarks = PURCHASE_SNARKS[itemId];
+  if (!item) return;
+  if (itemId === 'colorViolet' && cosmeticState.equippedColorway === 'violet') {
+    showToast('purple already equipped.');
+    return;
+  }
+  const snarks = PURCHASE_SNARKS[itemId] || ['Onio noticed.', 'interesting choice.', 'sure.'];
   document.getElementById('pm-snark').textContent = '"' + snarks[Math.floor(Math.random()*snarks.length)] + '"';
-  document.getElementById('pm-item').textContent = item.name + ' — ' + item.price;
+  const isOwnedColor = itemId === 'colorViolet' && cosmeticState.ownedColorways.includes('violet');
+  document.getElementById('pm-item').textContent = item.name + (isOwnedColor ? ' — owned' : (' — ' + item.price));
   const descs = {
     skip1:'Adds 1 Lucky Skip. Start 5–12 depth ahead on your next game.',
     skip2:'Adds 1 Big Skip. Start 12–24 depth ahead — more chaos sooner.',
     skip3:'3× Lucky + 1× Big. Four chaotic depth boosts.',
+    colorViolet: isOwnedColor
+      ? 'Equip the purple Onio colorway.'
+      : 'Unlock and equip a purple Onio colorway.',
     donate:'Pure donation. Onio gets a coffee. You get nothing. He\'s fine with this.',
   };
   document.getElementById('pm-desc').textContent = descs[itemId];
+  document.getElementById('pm-cancel').textContent = 'nevermind';
   document.getElementById('pm-cancel').onclick = closePM;
+  document.getElementById('pm-confirm').textContent = itemId === 'colorViolet'
+    ? (isOwnedColor ? 'equip 🟣' : 'unlock 🟣')
+    : 'confirm 💸';
   document.getElementById('pm-confirm').onclick = () => confirmPurchase(itemId);
   document.getElementById('pm-modal').classList.add('active');
 }
 
 function confirmPurchase(itemId) {
   const item = STORE_ITEMS[itemId];
+  if (!item) return;
+  let toast = '✓ done';
+  if (itemId === 'colorViolet') {
+    const owned = cosmeticState.ownedColorways.includes('violet');
+    if (!owned) cosmeticState.ownedColorways.push('violet');
+    cosmeticState.equippedColorway = 'violet';
+    saveCosmetics();
+    applyArtPack();
+    closePM();
+    updateStoreStock();
+    showToast(owned ? 'purple equipped.' : 'purple unlocked + equipped.');
+    setTimeout(() => { document.getElementById('store-snark').textContent = STORE_SNARKS[storeSnarkIdx++ % STORE_SNARKS.length]; }, 400);
+    return;
+  }
   if (item.gives.lucky) inventory.lucky += item.gives.lucky;
   if (item.gives.big)   inventory.big   += item.gives.big;
   saveStats();
@@ -3680,11 +4092,15 @@ function confirmPurchase(itemId) {
   updateStoreStock();
   updateSkipPill();
   const toasts = {skip1:"fine. it's in your inventory.",skip2:"big spender. noted.",skip3:"the bundle buyer. I'll remember this.",donate:"received. spent immediately."};
-  showToast(toasts[itemId] || '✓ done');
+  showToast(toasts[itemId] || toast);
   setTimeout(() => { document.getElementById('store-snark').textContent = STORE_SNARKS[storeSnarkIdx++ % STORE_SNARKS.length]; }, 400);
 }
 
-function closePM() { document.getElementById('pm-modal').classList.remove('active'); }
+function closePM() {
+  document.getElementById('pm-modal').classList.remove('active');
+  document.getElementById('pm-cancel').textContent = 'nevermind';
+  document.getElementById('pm-confirm').textContent = 'confirm 💸';
+}
 
 // ============================================================
 // GAME START / SKIP FLOW
@@ -4107,8 +4523,9 @@ function doDeathScreen() {
   saveStats(); saveProfile();
   onioExpr('dizzy', 2000);
   showScreen('death-screen');
-  const emojis=['😬','😤','💀','🤯','👑','💅','🔥','😂'];
-  document.getElementById('death-emoji').textContent = emojis[Math.min(level-1,emojis.length-1)];
+  // Death emoji is a sprite — just set expression based on depth
+  const deathEl = document.getElementById('death-emoji');
+  setOnioExpr(deathEl, level >= 6 ? 'pain' : 'dizzy');
   document.getElementById('death-lvl').textContent = `You reached Depth ${hits}`;
 
   // Mode-aware death roast
@@ -4148,6 +4565,7 @@ function cleanupAll() {
   beginNewChallengeFlow();
   clearChallengeTimeouts();
   clearTrackedChaosIntervals();
+  resetChallengeChaosState();
   chaosSpikeUntil = 0;
   nextChaosSpikeAt = 0;
   chaosSpeedBoostUntil = 0;
@@ -4266,6 +4684,7 @@ function onHit(force=false, sourceFlowId=null) {
   trickActive = false;
   if (currentTrickCleanup) { currentTrickCleanup(); currentTrickCleanup = null; }
   clearDeathTimer();
+  resetChallengeChaosState();
   onio.style.pointerEvents = 'none';
   if (lastChallengeId) recordChallengeResult(lastChallengeId, false, Date.now()-challengeStartMs);
   comboStreak++;
@@ -4710,53 +5129,29 @@ function getSignDisplay(trueRemaining) {
 
 // Fake incoming call overlay
 function showFakeCall(cb=()=>{}) {
-  // Non-blocking floating call card; gameplay continues underneath.
-  const overlay = document.createElement('div');
-  overlay.className = 'chaos-call-overlay';
-  overlay.style.cssText = [
-    'position:absolute',
-    'top:58px',
-    'left:10px',
-    'right:10px',
-    'z-index:46',
-    'background:#1a1a2e',
-    'border-radius:14px',
-    'padding:10px 12px',
-    'display:flex',
-    'align-items:center',
-    'gap:10px',
-    'box-shadow:0 10px 26px rgba(0,0,0,.35)',
-    'pointer-events:none',
-    'animation:popIn .14s ease',
-  ].join(';');
   const callerEmoji = ['😤','👹','💀','👻','🤡'][Math.floor(Math.random()*5)];
   const callerNames = ['Mom','Unknown','IRS','Your Boss','Chaos Corp','Onio\'s Lawyer','DO NOT ANSWER'];
   const caller = callerNames[Math.floor(Math.random()*callerNames.length)];
-  overlay.innerHTML = `
-    <div style="font-size:24px;line-height:1;">${callerEmoji}</div>
-    <div style="flex:1;min-width:0;">
-      <div style="font-family:'Fredoka One',cursive;font-size:11px;color:rgba(255,255,255,0.55);letter-spacing:.8px;">INCOMING CALL</div>
-      <div style="font-family:'Nunito',sans-serif;font-size:14px;color:white;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${caller}</div>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <div style="width:34px;height:34px;border-radius:50%;background:#E84030;display:flex;align-items:center;justify-content:center;font-size:16px;">📵</div>
-      <div style="width:34px;height:34px;border-radius:50%;background:#4CAF50;display:flex;align-items:center;justify-content:center;font-size:16px;">📞</div>
-    </div>
-  `;
-  arena.appendChild(overlay);
-
-  function dismiss() {
-    overlay.style.transition = 'opacity .16s ease, transform .16s ease';
-    overlay.style.opacity = '0';
-    overlay.style.transform = 'translateY(-8px)';
-    setTimeout(()=>{ overlay.remove(); cb(); }, 180);
-  }
-  const hold = 320 + Math.random()*500; // auto-dismiss under 1s including fade
-  setTimeout(()=>{ if (overlay.parentNode) dismiss(); }, hold);
+  return showChaosDecisionPrompt({
+    eyebrow: 'incoming call',
+    title: caller,
+    body: 'Onio routed this directly into your minigame. Pick something so he can stop pretending this matters.',
+    secondaryLabel: 'ignore',
+    primaryLabel: 'answer',
+    mediaHtml: `
+      <div style="font-size:44px;line-height:1;margin-top:10px;">${callerEmoji}</div>
+      <div style="font-family:'Nunito',sans-serif;font-size:13px;color:#8A5932;font-weight:800;margin-top:8px;">game paused until you deal with it</div>
+    `,
+    onChoose: action => {
+      applyChaosGameplayModifier('fake_call');
+      setMessageTemp(action === 'answer' ? 'call ended.' : 'call ignored.', 960);
+      cb(action);
+    },
+  });
 }
 
 // Fake text notification banner (non-blocking)
-function showFakeTextBanner() {
+function showFakeTextBanner(opts={}) {
   const banners = [
     "Onio: u ok? (i know the answer)",
     "Mom: are you playing that game again",
@@ -4767,12 +5162,20 @@ function showFakeTextBanner() {
   const bannerText = Math.random() < 0.35
     ? `System: ${getWrongInstructionLine()}`
     : banners[Math.floor(Math.random()*banners.length)];
-  const b = document.createElement('div');
-  b.className = 'chaos-text-banner';
-  b.style.cssText = `position:absolute;top:60px;left:12px;right:12px;background:#1a1a2e;border-radius:14px;padding:10px 13px;z-index:40;display:flex;gap:10px;align-items:center;animation:popIn .12s ease;box-shadow:0 4px 20px rgba(0,0,0,0.4);pointer-events:none;`;
-  b.innerHTML = `<div style="font-size:28px;">💬</div><div><div style="font-family:'Fredoka One',cursive;font-size:12px;color:rgba(255,255,255,0.5);">MESSAGES</div><div style="font-family:'Nunito',sans-serif;font-size:14px;color:white;font-weight:700;">${bannerText}</div></div>`;
-  arena.appendChild(b);
-  setTimeout(()=>{ b.style.transition='opacity .16s ease, transform .16s ease'; b.style.opacity='0'; b.style.transform='translateY(-8px)'; setTimeout(()=>b.remove(),190); }, 320 + Math.random()*500);
+  const persistText = !!opts.persistText;
+  return showChaosDecisionPrompt({
+    eyebrow: 'incoming message',
+    title: 'Messages',
+    body: bannerText,
+    secondaryLabel: 'ignore',
+    primaryLabel: 'open',
+    primaryAction: 'open',
+    mediaHtml: `<div style="font-size:42px;line-height:1;margin-top:10px;">💬</div>`,
+    onChoose: action => {
+      if (persistText) activateChallengePersistentChaos('text');
+      setMessageTemp(action === 'open' ? 'message handled.' : 'message ignored.', 960);
+    },
+  });
 }
 
 function showSystemBanner(icon, title, text, tone='default', stayMs=820) {
@@ -5148,8 +5551,8 @@ function cTap() {
       if (chaosBudget <= 0) return;
       if (Math.random() > getTapChaosChance()) return;
 
-      // Non-pausing events are FREE — don't consume budget
-      // Only pausing events (signTroll, callFn) consume budget
+      // Non-pausing events are FREE — don't consume budget.
+      // Anything that pauses gameplay needs budget so the minigame stays readable.
       const canDoPausing = chaosBudget >= 1;
 
       const events = [];
@@ -5163,8 +5566,8 @@ function cTap() {
       if (level >= 5) events.push({w:3, cost:0, fn:'cloneFn'});        // full-size decoy clones
       if (level >= 8) events.push({w:2, cost:0, fn:'swarmChaosFn'});  // moving mini swarm
       // Level 4+
-      if (level >= 4) events.push({w:2, cost:0, fn:'blankFn'});       // screen blanks
-      if (level >= 4) events.push({w:2, cost:0, fn:'textBannerFn'});  // fake text
+      if (level >= 4 && canDoPausing) events.push({w:2, cost:1, fn:'blankFn'});       // screen adjusts + pauses
+      if (level >= 4 && canDoPausing) events.push({w:2, cost:1, fn:'textBannerFn'});  // incoming message
       // Level 5+
       if (level >= 5) events.push({w:2, cost:0, fn:'flipFn'});        // screen mirrors
       // Pausing events — cost 1 budget each, less common
@@ -5208,20 +5611,18 @@ function cTap() {
           spawnFakeOnioPop();
           break;
         case 'blankFn':
-          flashBlank(600 + level*10);
+          runChaosAdjustmentSequence(Math.random() < 0.5 ? 'dark' : 'light');
           break;
         case 'swarmChaosFn':
           spawnTapChaosSwarm(1500 + Math.random()*800);
           speech(['too many me','good luck 👀','find me now'][Math.floor(Math.random()*3)], 480);
           break;
         case 'flipFn':
-          document.getElementById('game-screen').style.transform='scaleX(-1)';
-          setMsg("something feels off... 😏");
-          scheduleChallengeTimeout(()=>{ applyGameScreenTransform(); setMsg('tap me.'); },
-            Math.max(1000, 800+level*50));
+          activateChallengePersistentChaos('flip');
+          setMessageTemp('something feels off... 😏', 980);
           break;
         case 'textBannerFn':
-          showFakeTextBanner();
+          showFakeTextBanner({ persistText:true });
           break;
         case 'callFn':
           showFakeCall(()=>{});
@@ -5286,15 +5687,14 @@ function spawnTapClones(remaining, flowId) {
 
     const clone = document.createElement('div');
     clone.className = 'decoy';
-    clone.textContent = '😈';
+    clone.innerHTML = buildOnioHTML('smug');
     clone.style.cssText = [
       'position:absolute',`left:${px}px`,`top:${py}px`,
-      'font-size:72px','cursor:pointer','z-index:5','line-height:1',
+      'width:72px','height:72px','cursor:pointer','z-index:5','font-size:0',
       'filter:drop-shadow(0 8px 10px rgba(128,48,5,.22))',
       '-webkit-touch-callout:none','touch-action:none',
       'animation:popIn .18s cubic-bezier(.4,2,.6,1)',
     ].join(';');
-    applySpriteToElement(clone);
     arena.appendChild(clone);
     decoyEls.push(clone);
 
@@ -7062,9 +7462,10 @@ function cleanupChaos() {
   document.getElementById('fake-pause').classList.remove('active');
   document.getElementById('fake-text').classList.remove('active');
   document.getElementById('ft-close-wrap').style.display='';
-  arena.querySelectorAll('.chaos-call-overlay,.chaos-text-banner,.chaos-system-banner,.chaos-dark,.chaos-dead-pixels,.chaos-tap-bait,.chaos-safezone-hazard,.gravity-pill-clone,.chaos-volume-hud,.chaos-brightness-overlay').forEach(el => el.remove());
+  arena.querySelectorAll('.chaos-call-overlay,.chaos-text-banner,.chaos-system-banner,.chaos-dark,.chaos-dead-pixels,.chaos-tap-bait,.chaos-safezone-hazard,.gravity-pill-clone,.chaos-volume-hud,.chaos-brightness-overlay,.challenge-chaos-overlay,.challenge-chaos-text,.chaos-prompt-overlay').forEach(el => el.remove());
   document.getElementById('game-screen').classList.remove('chaos-shake','chaos-glitch');
-  onio.classList.remove('chaos-glitch');
+  onio.classList.remove('chaos-glitch', 'chaos-adjusting');
+  arena.classList.remove('chaos-glitch-persist', 'melting', 'melting-heavy');
 }
 
 // ============================================================
