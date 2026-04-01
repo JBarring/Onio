@@ -1088,8 +1088,19 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
   #snark-bubble{max-width:92vw;padding:9px 14px;font-size:13px;}
   #game-controls{bottom:calc(env(safe-area-inset-bottom,0px) + 8px);padding:7px 9px;gap:8px;}
   .gc-btn{width:44px;height:44px;font-size:20px;}
+  .store-item{padding:12px 12px;gap:10px;align-items:flex-start;}
+  .store-icon{font-size:30px;}
+  .store-name{font-size:15px;line-height:1.12;}
+  .store-desc{font-size:12px;line-height:1.28;}
+  .store-price-col{min-width:62px;padding-top:2px;}
+  .store-price{font-size:17px;}
+  .store-stock{font-size:11px;}
   .store-color-card{padding:10px;}
-  .store-color-preview-wrap{width:52px;height:52px;}
+  .store-color-launch{gap:10px;align-items:flex-start;}
+  .store-color-preview-wrap{width:48px;height:48px;}
+  .store-color-title{font-size:15px;line-height:1.1;}
+  .store-color-sub{font-size:11px;line-height:1.2;}
+  .store-color-chevron{font-size:22px;margin-top:10px;}
   .store-color-modal{padding:14px;}
   .store-color-modal-box{width:min(94vw,360px);padding:18px 16px 16px;}
 }
@@ -1900,7 +1911,7 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
         </div>
         <div class="store-color-meta">
           <div class="store-color-title">Onio's Color</div>
-          <div class="store-color-sub" id="store-color-status">Unlock the color picker to customize him.</div>
+          <div class="store-color-sub" id="store-color-status">Unlock color picker to customize.</div>
         </div>
         <div class="store-color-chevron" aria-hidden="true">›</div>
       </button>
@@ -1962,6 +1973,18 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
     </div>
 
     <!-- Instructions — tap to dismiss -->
+    <div class="instr-overlay" id="instr-tap">
+      <div class="instr-icon">👆</div>
+      <div class="instr-title">TAP ATTACK</div>
+      <div class="instr-sub">Tap Onio as many times as the sign says</div>
+      <div class="instr-tap-hint">tap to start</div>
+    </div>
+    <div class="instr-overlay" id="instr-dodge">
+      <div class="instr-icon">🏃</div>
+      <div class="instr-title">CATCH ME</div>
+      <div class="instr-sub">Chase Onio until he gives up, then tap fast</div>
+      <div class="instr-tap-hint">tap to start</div>
+    </div>
     <div class="instr-overlay" id="instr-hold">
       <div class="instr-icon">☝️</div>
       <div class="instr-title">HOLD IT!</div>
@@ -2136,7 +2159,7 @@ body:not(.mode-affectionate):not(.mode-lonely) #mood-indicator { display: none; 
     <div class="store-color-modal-head">
       <div>
         <div class="store-color-modal-title">Pick Onio's Color</div>
-        <div class="store-color-modal-sub" id="store-color-modal-status">Current: default orange.</div>
+        <div class="store-color-modal-sub" id="store-color-modal-status">Default orange active.</div>
       </div>
       <button class="store-color-close" onclick="closeStoreColorPickerModal()" aria-label="Close color picker">×</button>
     </div>
@@ -3094,6 +3117,12 @@ const challengeChaosState = {
   melt: false,
   textRain: false,
 };
+const tapCloneChaosState = {
+  flowId: 0,
+  active: false,
+  maxCount: 0,
+  entries: [],
+};
 const CHAOS_TUNING = {
   allowFakeouts: true,
   trackingMode: 'local',
@@ -3360,7 +3389,6 @@ function applyChaosEffect(effect, context={}) {
     case 'overlay': {
       const overlayPicks = [
         () => showFakeTextBanner({ persistText: chaosState.level >= 4 && Math.random() < 0.55 }),
-        () => showFloatingChaosBanner('💬', 'interrupt', 'focus, maybe.', 'default', 650 + Math.random()*350),
       ];
       if (chaosState.level >= 3) overlayPicks.push(() => showFakeCall(() => {}));
       if (chaosState.level >= 4) overlayPicks.push(
@@ -3547,10 +3575,20 @@ function applyChaosGameplayModifier(source='chaos') {
 function showFloatingChaosBanner(icon, title, text, tone='default', stayMs=780) {
   const b = document.createElement('div');
   const bg = tone === 'danger'
-    ? 'linear-gradient(180deg,#2A1717 0%,#1E0E0E 100%)'
+    ? 'linear-gradient(180deg,#FFF1EB 0%,#FFD8CA 100%)'
     : tone === 'cool'
-      ? 'linear-gradient(180deg,#152335 0%,#0F1A28 100%)'
-      : 'linear-gradient(180deg,#1a1a2e 0%,#141425 100%)';
+      ? 'linear-gradient(180deg,#EEF5FF 0%,#DCEAFF 100%)'
+      : 'linear-gradient(180deg,#FFF8EB 0%,#FFE7BF 100%)';
+  const titleColor = tone === 'danger'
+    ? 'rgba(122,34,16,.82)'
+    : tone === 'cool'
+      ? 'rgba(37,79,132,.78)'
+      : 'rgba(122,88,32,.78)';
+  const bodyColor = tone === 'danger'
+    ? '#6F2214'
+    : tone === 'cool'
+      ? '#214B7F'
+      : '#704814';
   b.className = 'chaos-system-banner';
   b.style.cssText = [
     'position:absolute',
@@ -3558,20 +3596,21 @@ function showFloatingChaosBanner(icon, title, text, tone='default', stayMs=780) 
     'left:10px',
     'right:10px',
     `background:${bg}`,
+    'border:2px solid rgba(176,118,42,.18)',
     'border-radius:14px',
     'padding:10px 12px',
     'z-index:43',
     'display:flex',
     'align-items:center',
     'gap:9px',
-    'box-shadow:0 10px 24px rgba(0,0,0,.35)',
+    'box-shadow:0 10px 24px rgba(64,35,12,.18)',
     'pointer-events:none',
     'animation:popIn .14s ease',
   ].join(';');
   b.innerHTML = `<div style="font-size:20px;line-height:1;">${icon}</div>
     <div style="flex:1;min-width:0;">
-      <div style="font-family:'Fredoka One',cursive;font-size:11px;letter-spacing:.7px;color:rgba(255,255,255,.72);text-transform:uppercase;">${title}</div>
-      <div style="font-family:'Nunito',sans-serif;font-size:13px;color:white;font-weight:800;line-height:1.25;">${text}</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:11px;letter-spacing:.7px;color:${titleColor};text-transform:uppercase;">${title}</div>
+      <div style="font-family:'Nunito',sans-serif;font-size:13px;color:${bodyColor};font-weight:800;line-height:1.25;">${text}</div>
     </div>`;
   arena.appendChild(b);
   const hold = Math.max(300, Math.min(780, stayMs));
@@ -4310,15 +4349,15 @@ function getDisplayedOnioColorHex() {
 
 function getOnioColorStatusText(forModal=false) {
   if (!cosmeticState.hasColorPicker) {
-    return 'Unlock the color picker to customize him.';
+    return 'Unlock color picker to customize.';
   }
   const usingCustom = cosmeticState.equippedColorway === 'custom';
   if (forModal) {
-    return usingCustom ? 'Custom color selected.' : 'Using default orange.';
+    return usingCustom ? 'Custom color active.' : 'Default orange active.';
   }
   return usingCustom
-    ? 'Custom color selected. Tap to change it.'
-    : 'Using default orange. Tap to choose a custom color.';
+    ? 'Custom color active. Tap to edit.'
+    : 'Default orange. Tap to edit.';
 }
 
 function applyOnioColorway(colorwayId='classic') {
@@ -5429,6 +5468,7 @@ function cleanupAll() {
   behaviorReactionUnsavedCount = 0;
   activeMinigameId = null;
   setCoreControlsLocked(false);
+  resetTapCloneChaosState();
   clearDeathTimer(); clearSpeech(); clearDecoys(); stopMic();
   if (shakeCheckInterval) { clearInterval(shakeCheckInterval); shakeCheckInterval=null; }
   document.getElementById('fake-pause').classList.remove('active');
@@ -6363,6 +6403,10 @@ function glitchSign(trueRemaining) {
 // MAIN cTap — instant response, chaos-budget, lying sign
 // ============================================================
 function cTap() {
+  showInstr('instr-tap', ()=>{ cTapCore(); });
+}
+
+function cTapCore() {
   const flowId = getActiveFlowId();
   let tapTarget;
   if (DEBUG.FORCE_TAP_COUNT !== null) {
@@ -6603,45 +6647,115 @@ function cTap() {
 // ──────────────────────────────────────────────────────────────────────────────
 // FULL-SIZE TAP CLONES
 // ──────────────────────────────────────────────────────────────────────────────
+function composeOnioVisualFilter(baseFilter='none', shadow='drop-shadow(0 8px 12px rgba(128,48,5,.24))') {
+  return baseFilter && baseFilter !== 'none' ? `${baseFilter} ${shadow}` : shadow;
+}
+
+function buildTapCloneFilterChoices() {
+  const currentColorway = cosmeticState.hasColorPicker && cosmeticState.equippedColorway === 'custom'
+    ? 'custom'
+    : (cosmeticState.equippedColorway || 'classic');
+  return [
+    getColorwayFilter(currentColorway),
+    getColorwayFilter(currentColorway),
+    getColorwayFilter('classic'),
+    getColorwayFilter('classic'),
+    getColorwayFilter('violet'),
+    getColorwayFilter('berry'),
+    getColorwayFilter('ocean'),
+    getColorwayFilter('mint'),
+  ];
+}
+
+function resetTapCloneChaosState() {
+  tapCloneChaosState.entries.forEach(entry => {
+    if (!entry) return;
+    if (entry.driftInt) clearInterval(entry.driftInt);
+    if (entry.el && entry.el.parentNode) entry.el.remove();
+  });
+  tapCloneChaosState.entries = [];
+  tapCloneChaosState.flowId = 0;
+  tapCloneChaosState.active = false;
+  tapCloneChaosState.maxCount = 0;
+  decoyEls = decoyEls.filter(d => d && d.parentNode);
+  onio.style.filter = '';
+}
+
 function spawnTapClones(remaining, flowId) {
-  const cloneCount = level <= 4 ? 1 : level <= 10 ? 2 : (Math.random() < 0.65 ? 3 : 2);
-  const liveClones = [];
-  const lifeMs = Math.max(2100, 2800 + Math.random()*1200);
+  if (tapCloneChaosState.flowId && tapCloneChaosState.flowId !== flowId) {
+    resetTapCloneChaosState();
+  }
+  tapCloneChaosState.flowId = flowId;
+  tapCloneChaosState.active = true;
+  const initialCloneCount = level <= 4 ? 2 : level <= 10 ? 3 : (Math.random() < 0.65 ? 4 : 3);
+  tapCloneChaosState.maxCount = Math.max(
+    tapCloneChaosState.maxCount,
+    Math.min(10, initialCloneCount + 3 + Math.floor(level / 6))
+  );
   const taunts = ['wrong one. 😂','not me lol','haha. bye.','lol no.','try again 😈'];
   const spawnLines = ['find me.','which one? 😈','good luck.','pick one.','surprise 😈'];
-  speech(spawnLines[Math.floor(Math.random()*spawnLines.length)], 900);
+  const filterChoices = buildTapCloneFilterChoices();
+  const sizeChoices = [58, 66, 72, 78, 86, 92];
+  const exprChoices = ['smug', 'tongue', 'wide', 'round', 'idle'];
+
+  if (tapCloneChaosState.entries.length === 0) {
+    speech(spawnLines[Math.floor(Math.random()*spawnLines.length)], 900);
+  } else {
+    speech(['more of me 😈', 'wrong one.', 'still not me.', 'oops. extra Onios.'][Math.floor(Math.random()*4)], 760);
+  }
 
   // Subtle amber glow on real Onio at low depth (fades out at depth 10+)
   if (level <= 10) onio.style.filter = 'drop-shadow(0 0 10px rgba(232,160,48,.8))';
 
-  function spawnOneClone() {
+  function removeClone(entry) {
+    if (!entry) return;
+    if (entry.driftInt) clearInterval(entry.driftInt);
+    const idx = tapCloneChaosState.entries.indexOf(entry);
+    if (idx >= 0) tapCloneChaosState.entries.splice(idx, 1);
+    if (entry.el && entry.el.parentNode) entry.el.remove();
+    decoyEls = decoyEls.filter(d => d && d.parentNode);
+    if (tapCloneChaosState.entries.length === 0) onio.style.filter = '';
+  }
+
+  function spawnOneClone(originX=null, originY=null) {
+    if (!trickActive || !isFlowCurrent(flowId)) return;
+    if (tapCloneChaosState.entries.length >= tapCloneChaosState.maxCount) return;
     let px, py, att=0;
     do {
-      px = 44 + Math.random()*(gW-160);
-      py = 110 + Math.random()*(gH-220);
+      px = originX === null
+        ? 44 + Math.random()*(gW-160)
+        : Math.max(28, Math.min(gW-122, originX + (Math.random() - 0.5) * 170));
+      py = originY === null
+        ? 110 + Math.random()*(gH-220)
+        : Math.max(100, Math.min(gH-132, originY + (Math.random() - 0.5) * 150));
       att++;
     } while (att < 14 && (
       Math.hypot(px-onioX, py-onioY) < 110 ||
-      liveClones.some(c => Math.hypot(px-c.x, py-c.y) < 90)
+      tapCloneChaosState.entries.some(c => Math.hypot(px-c.x, py-c.y) < 82)
     ));
 
     const clone = document.createElement('div');
+    const size = sizeChoices[Math.floor(Math.random()*sizeChoices.length)];
+    const expr = exprChoices[Math.floor(Math.random()*exprChoices.length)];
+    const cloneFilter = filterChoices[Math.floor(Math.random()*filterChoices.length)] || 'none';
     clone.className = 'decoy';
-    clone.innerHTML = buildOnioHTML('smug');
+    clone.innerHTML = buildOnioHTML(expr);
     clone.style.cssText = [
       'position:absolute',`left:${px}px`,`top:${py}px`,
-      'width:72px','height:72px','cursor:pointer','z-index:5','font-size:0',
-      'filter:drop-shadow(0 8px 10px rgba(128,48,5,.22))',
+      `width:${size}px`,`height:${size}px`,'cursor:pointer','z-index:6','font-size:0',
+      `filter:${composeOnioVisualFilter(cloneFilter, 'drop-shadow(0 10px 16px rgba(128,48,5,.22))')}`,
       '-webkit-touch-callout:none','touch-action:none',
+      'opacity:1',
       'animation:popIn .18s cubic-bezier(.4,2,.6,1)',
     ].join(';');
+    applySpriteToElement(clone);
     arena.appendChild(clone);
     decoyEls.push(clone);
 
-    const entry = {el:clone, x:px, y:py};
-    liveClones.push(entry);
+    const entry = {el:clone, x:px, y:py, driftInt:null};
+    tapCloneChaosState.entries.push(entry);
 
-    const driftInt = setInterval(()=>{
+    entry.driftInt = setInterval(()=>{
       if (!trickActive || gamePaused || !clone.parentNode){clearInterval(driftInt);return;}
       entry.x = Math.max(44, Math.min(gW-120, entry.x+(Math.random()-.5)*42));
       entry.y = Math.max(110, Math.min(gH-120, entry.y+(Math.random()-.5)*36));
@@ -6649,39 +6763,43 @@ function spawnTapClones(remaining, flowId) {
       clone.style.left = entry.x+'px';
       clone.style.top  = entry.y+'px';
     }, 340);
+    const driftInt = entry.driftInt;
 
     clone.addEventListener('pointerdown', e=>{
       e.stopPropagation();
       if (!trickActive || !isFlowCurrent(flowId)) return;
-      clearInterval(driftInt);
       const rc = arena.getBoundingClientRect();
       registerMiss(e.clientX-rc.left, e.clientY-rc.top);
       speech(taunts[Math.floor(Math.random()*taunts.length)], 520);
+      setOnioExpr(clone, Math.random() < 0.5 ? 'dizzy' : 'tongue');
+      const spawnMore = Math.random() < 0.72;
+      const extraCount = spawnMore ? 1 + (Math.random() < 0.45 ? 1 : 0) : 0;
       clone.style.transition='opacity .15s ease, transform .15s ease';
       clone.style.opacity='0'; clone.style.transform='scale(1.25)';
       setTimeout(()=>{
-        clone.remove();
-        const idx=liveClones.indexOf(entry); if(idx>=0)liveClones.splice(idx,1);
-        if (trickActive && isFlowCurrent(flowId) && remaining>2) spawnOneClone();
-        if (liveClones.length===0) onio.style.filter='drop-shadow(0 8px 10px rgba(128,48,5,.22))';
+        removeClone(entry);
+        if (!trickActive || !isFlowCurrent(flowId)) return;
+        if (spawnMore) {
+          for (let i=0; i<extraCount; i++) spawnOneClone(entry.x, entry.y);
+        } else if (remaining > 2 && tapCloneChaosState.entries.length === 0) {
+          spawnOneClone(entry.x, entry.y);
+        }
       }, 180);
     });
-
-    scheduleChallengeTimeout(()=>{
-      clearInterval(driftInt);
-      if (!clone.parentNode) return;
-      clone.style.transition='opacity .22s ease'; clone.style.opacity='0';
-      setTimeout(()=>clone.remove(), 240);
-      const idx=liveClones.indexOf(entry); if(idx>=0)liveClones.splice(idx,1);
-      if (liveClones.length===0) onio.style.filter='drop-shadow(0 8px 10px rgba(128,48,5,.22))';
-    }, lifeMs);
   }
 
-  for (let i=0; i<cloneCount; i++) scheduleChallengeTimeout(()=>spawnOneClone(), i*200);
+  const needed = Math.max(0, initialCloneCount - tapCloneChaosState.entries.length);
+  for (let i=0; i<needed; i++) {
+    scheduleChallengeTimeout(() => spawnOneClone(), i * 140);
+  }
 }
 
 
 function cDodge() {
+  showInstr('instr-dodge', ()=>{ cDodgeCore(); });
+}
+
+function cDodgeCore() {
   const flowId = getActiveFlowId();
   // How hard Onio fights: nearMissesToSurrender decreases with level
   // lv1-3: gives up after 3-5 near-misses (lazy)
